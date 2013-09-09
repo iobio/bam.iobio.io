@@ -1,0 +1,32 @@
+body {
+   font-family: Quicksand;
+   font-weight: 300;
+   margin: 10px 20px 0px 20px;
+}
+
+#header {
+   font-size: 76px;
+   color:#2d8fc1;
+   text-align: center;
+}
+
+#top {
+   width:100%;
+}
+
+.panel {
+   min-height: 100%; /* real browsers */
+   height: auto !important; /* real browsers */
+   height: 100%; /* IE6: treated as min-height*/
+   border: 1px solid red;
+   display: inline-flex;
+}
+
+#read-depth {
+   width: 36%;
+}
+
+#total-reads {
+   width: 33%;
+}
+

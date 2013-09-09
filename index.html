@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- <link href="http://designmodo.github.io/Flat-UI/bootstrap/css/bootstrap.css" rel="stylesheet"> -->
+        <link href="css/flat-ui.css" rel="stylesheet">
+        <style>
+            body {
+                font-family: Quicksand;
+                font-weight: 300;                
+            }
+            
+            header {
+               font-size: 46px;
+               color:#2d8fc1;
+               text-align: left;
+            }
+            
+            
+            section {
+                margin: 0px;
+                padding: 0px;
+                display: -webkit-flex;
+                display:         flex;
+                -webkit-flex-flow: row;
+                   flex-flow: row;
+            }
+
+            section#top {
+                min-height: 225px;
+            }
+            
+            section#middle {
+                margin-top: 15px;
+                min-height: 600px;
+            }
+            
+            .panel {
+                margin: 20px;
+                padding: 5px;
+                border: 1px solid rgb(230,230,230);
+                border-radius: 2pt;
+                text-align: center;
+            }
+            
+            .panel > .title { font-size: 30px}
+
+            .panel#read-depth {
+                -webkit-flex: 3 1 80%;
+                   flex: 3 1 80%;
+                -webkit-order: 1;
+                   order: 1;
+                height: 225px;
+            }
+
+            .panel#total-reads {
+                -webkit-flex: 1 5 20%;
+                   flex: 1 5 20%;
+                -webkit-order: 2;
+                   order: 2;
+            }
+            
+            #percents {
+                margin-right: 20px;
+                -webkit-flex: 1 4 40%;
+                   flex: 1 4 40%;
+                -webkit-order: 1;
+                   order: 1;
+                display: -webkit-flex;
+                -webkit-flex-direction: row;
+                -webkit-flex-wrap: wrap;
+            }
+            
+            
+            #distributions {
+                -webkit-flex: 1 2 60%;
+                   flex: 1 2 60%;
+                -webkit-order: 2;
+                   order: 2;
+                display: -webkit-flex;
+                -webkit-flex-direction: row;
+                -webkit-flex-wrap: wrap;
+            }
+            
+
+            .checkbox.checked, .checkbox.checked .icons{ color: #267FAD;}
+            .checkbox {padding-left: 18px;}
+            .checkbox, .checkbox .icons{ 
+                height: 13px;
+                line-height: 13px;
+                font-size: 13px;
+            }
+            
+            
+            #percents .percent {-webkit-flex: 1 1 30%}
+            #percents .percent svg { width: 100%; height:100%;}            
+            #distributions .distribution {-webkit-flex: 1 1 100%; height:200px}
+            
+            .regionBar rect {
+              fill: #33A7E4;
+              shape-rendering: crispEdges;
+            }
+            
+            .sampleBar rect {
+              fill: #2687BE;
+              shape-rendering: crispEdges;
+            }
+            
+
+            .bar text {
+              fill: 'black';
+            }
+
+            .axis path, .axis line {
+              fill: none;
+              stroke: #000;
+              shape-rendering: crispEdges;
+            }
+            
+            .sampleArc .fill {fill: #2687BE} 
+            .regionArc .fill {fill: #33A7E4}
+            
+
+/*                        .regionArc .fill {fill: #36B3F4}            */
+            .alpha {fill: rgba(45,143,193,0.2);}
+
+            .regionColor {
+                fill : #33A7E4;
+                color: #33A7E4;
+            }
+            
+            .sampleColor {
+                font-weight: 400;
+                fill : #2687BE;
+                color: #2687BE;
+            }
+
+
+            /* Too narrow to support three columns */
+            @media all and (max-width: 640px) {
+
+                #top, #page {
+                    -webkit-flex-flow: column;
+                        flex-flow: column;
+                }
+
+                #read-depth, #total-reads {
+                    /* Return them to document order */
+                    -webkit-order: 0;
+                        order: 0;
+                }
+
+                #total-reads {
+                    min-height: 50px;
+                    max-height: 50px;
+                }
+            }
+
+        </style>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="js/d3.v3.min.js"></script>
+        <script src="js/donut.d3.js"></script>
+        <script src="js/histogram.d3.js"></script>
+        <script src="js/bam.d3.js"></script>
+        <script src="js/socket.io.js"></script>
+        <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
+        
+        <script>
+            $(document).ready( function(){
+                (function () {
+                  var lastTime = 0;
+                  var vendors = ['ms', 'moz', 'webkit', 'o'];
+                  for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+                    window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+                    window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
+                  }
+                  if(!window.requestAnimationFrame)
+                    window.requestAnimationFrame = function (callback, element) {
+                      var currTime = new Date().getTime();
+                      var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                      var id = window.setTimeout(function () {
+                        callback(currTime + timeToCall);
+                      },
+                      timeToCall);
+                      lastTime = currTime + timeToCall;
+                      return id;
+                  };
+                  if(!window.cancelAnimationFrame)
+                    window.cancelAnimationFrame = function (id) {
+                      clearTimeout(id);
+                  };
+                }());
+                
+                $("#fragment-length-distribution input[type='checkbox']").change(function(){
+                    if ($(this).parent().hasClass("checked")) {
+                       window.fragChart(window.histograms.fragment, undefined, { 'klass' : 'sampleBar'})
+                        window.fragChart(window.regionHistograms.fragment, undefined, { 'klass' : 'regionBar' })                        
+                    } else {
+                        window.fragChart(window.histograms.fragment, undefined, { 'klass' : 'sampleBar', noOutliers : true})
+                        window.fragChart(window.regionHistograms.fragment, undefined, { 'klass' : 'regionBar', noOutliers : true })                        
+                    }
+                });
+                
+                // window.bamUrl = "http://bamMerger.iobio.io?cmd=11:" + getMin() + "-" + getMax() + "%20'http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam'&binary=true";
+                window.bamtoolsUrl = "http://bamtools.iobio.io";
+                window.fragChart    = histogramD3("#fragment-length-distribution");
+                window.readLengthChart    = histogramD3("#read-length-distribution");
+                window.mapQualChart = histogramD3("#mapping-quality-distribution");
+                window.readRegionChart = bamD3("#read-depth", 0.85, '#33A7E4');
+                window.header = "";
+                window.stats = {'Total reads' : {number : 0}, 'positionsAnalyzed' : 0};
+                window.rdDepth = {avg : 0, instances : 0};
+                window.histograms = { 'fragment' : [], 'readLength' : [], 'mapQuality' : [], 'readDepth' : [] };
+                window.regionHistograms = { 'fragment' : [], 'readLength' : [], 'mapQuality' : [], 'readDepth' : [] };
+                window.regionStats = {'Total reads' : {number : 0}};
+                
+                window.samplingSocket = setupSampleSocket();                
+                window.regionSocket = setupRegionSocket();
+                window.regionHistSocket = setupRegionHistSocket();
+                window.samplingHistSocket = setupSampleHistSocket();
+            });
+            
+            function resetRegionStats() {
+                window.regionStats = {'Total reads' : {number : 0}};
+            }
+            
+            function getBamUrl(chr,min,max) {
+                // var url = "http://bamMerger.iobio.io?cmd=" + chr + ":" + min + "-" + max + "%20'http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam'&binary=true";
+                var url = "http://0.0.0.0:8030?cmd=" + chr + ":" + min + "-" + max + "%20'http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam'&binary=true";
+                return url;
+            }
+            
+            function getStatsUrl(chr,min,max) {
+                var url = encodeURI( window.bamtoolsUrl + "?cmd=stats -in " + encodeURIComponent(getBamUrl(chr,min,max)) );
+                return url;
+            }
+            
+            function getReadsUrl(chr,min,max) {
+                var url = "http://0.0.0.0:7030" + "?parseByLine=true&format=json&cmd=convert -format json -in " + encodeURIComponent(getBamUrl(chr,min,max));
+                return encodeURI(url);
+            }
+                        
+            function getChr() {
+                return 11;
+            }
+            
+            function getMin() {
+                return 10108473;
+            }
+            
+            function getMax() {
+                //return 10128473;
+                return 10198473;
+            }
+            
+            function getReference() {
+                return window.references[11];
+            }
+            
+            function averageDepth() {
+                var d = (window.stats['Total reads'].number * d3.mean( window.histograms.readLength )) / window.stats.positionsAnalyzed;
+                return d;
+            }
+            
+            function drawRegionCharts() {
+                resetRegionStats();
+                getStats(window.regionSocket, 'regionResults', getChr(), getMin(), getMax());
+                getHistograms(window.regionHistSocket, 'regionHistResults', getChr(), getMin(), getMax())                        
+            }
+            
+            function parseStats(res) {
+                var stats = {};
+                var data = res.data;
+                console.log(data);
+                var lines = data.split("\n");
+                for( var i=0; i < lines.length; i++ ) {
+                    var fields = lines[i].split(":");
+                    if (fields.length == 2 && fields[1].trim() != "") {
+                        var values = fields[1].split("(");
+                        if ( values.length == 2 ) {
+                            stats[fields[0]] = {
+                                number : parseInt(values[0]),
+                                percent : parseInt(values[1].replace("-nan", "0").match(/\d+/)[0])
+                            };
+                        } else {
+                            stats[fields[0]] = { number : parseInt(values[0]) };
+                        }
+                    }
+                }
+                return stats
+            }
+            
+            function setupSampleSocket() {
+                var event = "sampleResults";
+                // var socket = io.connect( 'http://bamtools.iobio.io');
+                var socket = io.connect( 'http://0.0.0.0:7030');
+                socket.on(event, function(res) {
+                    var stats = parseStats(res);
+                    Object.keys(stats).forEach(function (key) { 
+                        if(window.stats[key] == undefined) {window.stats[key] = {}; window.stats[key].number = 0;}
+                        window.stats[key].number += stats[key].number;
+                        window.stats[key].percent = window.stats[key].number / window.stats['Total reads'].number * 100;
+                    })
+                    var donutChart = donutD3().radius(61).klass("sampleArc");
+                    if(window.stats['Total reads'].number > 0) { 
+                        updateTotalReads(window.stats);
+                        window.requestAnimationFrame( function() {updatePercentCharts(window.stats,donutChart);} ); 
+                    }
+                });
+                
+                socket.on('connecting', function () { console.log('connecting...')});                
+                socket.on('connect_failed', function () {console.log('why am i failing?!')});
+                socket.on('disconnect',function() {
+                      console.log('The client has disconnected!');
+                    });
+                return socket;
+            }
+            
+            function setupRegionSocket() {
+                var event = "regionResults";
+                // var socket = io.connect( 'http://bamtools.iobio.io');
+                var socket = io.connect( 'http://0.0.0.0:7030');
+                socket.on(event, function(res) {
+                    var stats = parseStats(res);
+                    Object.keys(stats).forEach(function (key) { 
+                        if(window.regionStats[key] == undefined) {window.regionStats[key] = {}; window.regionStats[key].number = 0;}
+                        window.regionStats[key].number += stats[key].number;
+                        window.regionStats[key].percent = window.regionStats[key].number / window.regionStats['Total reads'].number * 100;
+                    })
+                    var donutChart = donutD3().radius(70).klass("regionArc");
+                    if(window.regionStats['Total reads'].number > 0) 
+                        window.requestAnimationFrame( function() {updatePercentCharts(window.regionStats,donutChart); });
+                });
+                
+                socket.on('connecting', function () { console.log('connecting...')});                
+                socket.on('connect_failed', function () {console.log('why am i failing?!')});
+                socket.on('disconnect',function() {
+                      console.log('The client has disconnected!');
+                    });
+                return socket;
+            }
+            
+            function setupRegionHistSocket() {
+                var event = "regionHistResults";
+                // var url = getReadsUrl(chr, min, max);
+                var socket = io.connect( "http://0.0.0.0:7030" );
+                var histograms = window.regionHistograms;
+                // var numBins = 10;
+                // var binLength = (getMax() - getMin()) / numBins ;
+                // var readDepth = [];
+                var rafId = undefined;
+                socket.on(event, function(res) {
+                    var data = JSON.parse(res.data);
+                    for( var i=0; i < data.length; i++ ) {
+                        // only collect data on first read of pair
+                        if( data[i].mate && data[i].position < data[i].mate.position) {
+                            histograms.fragment.push( data[i].queryBases.length*2 + Math.abs(data[i].mate.insertSize) );                            
+                        }
+                        histograms.readLength.push( data[i].queryBases.length );
+                        histograms.mapQuality.push( data[i].mapQuality );
+                        
+                        if ( data[i].position >= getMin() )
+                            histograms.readDepth.push( {position: data[i].position, length: data[i].queryBases.length} )
+                    }
+                    window.cancelAnimationFrame(rafId);
+                    rafId = window.requestAnimationFrame( function() {updateHistogramCharts(histograms, d3.extent(window.histograms), "regionBar"); } );
+                });
+                return socket;
+                // socket.emit('run', { 'url': url })
+            }
+            
+            function setupSampleHistSocket() {
+                var event = "sampleHistResults";
+                // var url = getReadsUrl(chr, min, max);
+                var socket = io.connect( "http://0.0.0.0:7030" );
+                // var histograms = { 'fragment' : [], 'readLength' : [], 'mapQuality' : [], 'readDepth' : [] };
+                var histograms = window.histograms;
+                // var numBins = 10;
+                // var binLength = (getMax() - getMin()) / numBins ;
+                // var readDepth = [];
+                var rafId = undefined;
+                socket.on(event, function(res) {
+                    var data = JSON.parse(res.data);
+                    for( var i=0; i < data.length; i++ ) {
+                        // only collect data on first read of pair
+                        if( data[i].mate && data[i].position < data[i].mate.position) {
+                            histograms.fragment.push( data[i].queryBases.length*2 + Math.abs(data[i].mate.insertSize) );                            
+                        }
+                        histograms.readLength.push( data[i].queryBases.length );
+                        histograms.mapQuality.push( data[i].mapQuality );                                                
+                        
+                        // if ( data[i].position >= getMin() )
+                        //histograms.readDepth.push( data[i].position )
+                    }
+                    window.cancelAnimationFrame(rafId);
+                    rafId = window.requestAnimationFrame( function() {updateHistogramCharts(histograms, d3.extent(window.regionHistograms), "sampleBar"); } );
+                });
+                return socket;
+                // socket.emit('run', { 'url': url })
+            }
+            
+            
+            
+            function getStats(socket, event, chr, min, max) {
+                var url = getStatsUrl(chr,min,max);
+                socket.emit('run', { 'url': url, 'event' : event });
+            }
+            
+            function getHistograms(socket, event, chr, min, max) {
+                var url = getReadsUrl(chr,min,max);
+                console.log(url);
+                socket.emit('run', { 'url': url, 'event' : event });
+            }            
+            
+            function updateTotalReads(stats) {
+                // update total reads
+                if (stats["Total reads"]) {
+                    var reads = shortenNumber( stats["Total reads"].number );
+                    $("#total-reads>#value").html( reads[0] );
+                    $("#total-reads>#base").html( reads[1] || "" );
+                }
+            }
+            
+            function updatePercentCharts(stats, donutChart) {
+                var pie = d3.layout.pie()
+                   .sort(null)
+                   .value(function(d) { return d.percent; });
+                // var donutChart = donutD3();
+                var value = undefined;
+                
+                //update percent charts
+                var keys = ['Mapped reads', "'Proper-pairs'", "Forward strand", "Singletons", "Both pairs mapped", "Duplicates"]
+                var colors = ["rgb(45,143,193)", 'rgb(231, 76, 60)', "rgb(243, 156, 18)", "rgb(155, 89, 182)", "rgb(46, 204, 113)", "rgb(241, 196, 15)"];
+                keys.forEach( function(key,i) {
+                    var stat = stats[key];
+                    var id = "#" + key.replace(/'/g, "").toLowerCase().replace(/\s+/g, "-")
+                    if (!stat)  stat = { percent:0, number:0 };
+                    var data = [ stat, {percent : 100-stat.percent} ];
+                    var arc = d3.select(id + " svg").selectAll("." + donutChart.klass())
+                        .data(pie(data));
+                    donutChart(arc, colors[i]);                  
+                });
+                
+            }
+            
+            function updateHistogramCharts(histograms, otherMinMax, klass) {
+                // update fragment length distribution
+                if (histograms.fragment.length > 0 ) 
+                    window.fragChart(histograms.fragment, otherMinMax, { 'klass' : klass, noOutliers : true })
+                    
+                // update fragment length distribution
+                if (histograms.readLength.length > 0 ) 
+                    window.readLengthChart(histograms.readLength, otherMinMax, { 'klass' : klass })
+                
+                // update fragment length distribution
+                if (histograms.mapQuality.length > 0 ) 
+                    window.mapQualChart(histograms.mapQuality, otherMinMax, { 'klass' : klass })
+                    
+                // update read depth histogram
+                if (histograms.readDepth.length > 0 )  {
+                    if (klass == 'regionBar') {
+                        window.readRegionChart(histograms.readDepth, { minMax : [getMin(), getMax()], numBins: 20, avgDepth : averageDepth() } );
+                    }else {
+                        
+                        //window.readSampleChart(histograms.readDepth, { minMax : [1, getReference().length],numBins: 20} );
+                    }
+                }
+            }
+            
+            function shortenNumber(num) {
+                if(num.toString().length <= 3)
+                    return [num];
+                else if (num.toString().length <= 6)
+                    return [Math.round(num/1000), "thousand"];
+                else
+                    return [Math.round(num/1000000), "million"];
+            }
+            
+            function sample() {
+                var binLength = 100000;
+                var numBins = 3;
+                
+                for ( var i=0; i < window.references.length; i++) {
+                    var ref = window.references[i]
+                    var chr = ref.name;
+                    if (chr != "11")
+                        continue;
+                    
+                    var length = ref.length;
+                    var binSeparator = length / numBins;
+                    for ( var j=0; j < numBins; j++) {
+                        var min = Math.floor(j*binSeparator);
+                        var max = Math.ceil(min + binLength);
+                        window.stats.positionsAnalyzed += (max - min);
+                        // getHistograms( 
+                        //     function(histograms) { 
+                        //         
+                        //         updateSampleHistogramCharts(histograms) 
+                        //     }, 
+                        //     chr, 
+                        //     min, 
+                        //     max
+                        // );
+                        console.log("get " + j + ": " + min + "-" + max);
+                        getStats( window.samplingSocket, 'sampleResults', chr, min, max );
+                        getHistograms( window.samplingHistSocket, 'sampleHistResults', chr, min, max);
+                    }
+                    
+                }
+            }
+            
+            
+            function parseHeader() {
+                var url = encodeURI("http://samtools.iobio.io?cmd=view -H 'http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam'");
+                var socket = io.connect( url );
+                socket.on('results', function(res) {
+                    window.header += res.data;
+                })
+                socket.on("end", function() {
+                    window.references = [];
+                    var lines = window.header.split("\n");
+                    for ( var i=0; i<lines.length; i++) {
+                        var fields = lines[i].split("\t");
+                        if (fields[0] == "@SQ") {
+                            window.references.push( { name : fields[1].split("SN:")[1], length: parseInt(fields[2].split("LN:")[1]) } )
+                        }
+                    }
+                    sample();
+                })
+                socket.emit('run', { 'url': url })
+            }
+            
+        </script>
+    </head>
+    <body>
+        <header>bam<span style="color:rgb(200,200,200)">.iobio.io</span></header>
+        <section id="top">
+            <div id="read-depth" class="panel">
+                <div class="title">Reads</div>
+                <!-- <div id="read-region"></div>
+                <div id="read-sample"></div> -->
+            </div>
+            <div id="total-reads" class="panel">
+                <div class="title">Reads Sampled</div>
+                <div id="value" style="font-size:100px; color:#2687BE; text-align:center;padding-left:8px;">0</div>
+                <div id="base" style="font-size:20px; color:#2687BE; text-align:center;padding-left:8px;margin-top:-17px"></div>
+            </div>
+        </section>
+        <div style="width:200px;margin-top:10px; margin-left: auto; margin-right:auto"> 
+            <div style="display:inline-block;width:15px; height:12px; background:#33A7E4;border-radius:2px; margin-left: -20px;"></div> Region
+            <div style="display:inline-block;width:15px; height:12px; background:#2687BE;border-radius:2px;margin-left: 10px;"></div> Sampled
+        </div>
+        <section id="middle">
+            <div id="percents">
+                <div id="mapped-reads" class="percent panel">Mapped Reads
+                    <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                </div>
+                <div id="forward-strand" class="percent panel">Fwd/Rev Strand
+                    <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                </div>
+                <div id="proper-pairs" class="percent panel">Proper Pairs
+                    <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                </div>
+                <div id="singletons" class="percent panel">Singletons
+                    <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                </div>
+                <div id="both-pairs-mapped" class="percent panel">Both Pairs Mapped
+                    <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                </div>
+                <div id="duplicates" class="percent panel">Duplicates
+                    <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                </div>
+            </div>
+            <div id="distributions" >
+                <div id="fragment-length-distribution" class="distribution panel"><div>Fragment Length Distribution</div>
+                    <label class="checkbox" for="checkbox2" style="float:right;margin-right:5px;cursor:pointer" >
+                        <input type="checkbox"value="" id="checkbox2" data-toggle="checkbox" >
+                        Outliers
+                    </label>
+                </div>
+                <div id="read-length-distribution" class="distribution panel"><div>Read Length Distribution</div></div>
+                <div id="mapping-quality-distribution" class="distribution panel"><div>Mapping Quality Distribution</div></div>
+            </div>
+        </section>        
+        <script src="js/flatui-checkbox.js"></script>
+    </body>
+</html>
