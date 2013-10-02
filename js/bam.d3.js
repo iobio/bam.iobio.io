@@ -6,6 +6,8 @@ function bamD3(container, heightPct, color) {
    // var height = $(container).height() * 0.85;
    var formatCount = d3.format(",.0f");
    
+   var duration = 1000;
+   
    var x = d3.scale.linear()
        .range([0, width]);
    var svg = d3.select(container).append("svg")
@@ -21,7 +23,8 @@ function bamD3(container, heightPct, color) {
    
 
    function my(values, options) {
-      var minMax = d3.extent(values, function(elem) {return elem.position});
+      var minMax = d3.extent(values, function(elem) {return elem.position} );
+      var avgDepth = d3.mean(values, function(elem) { return elem.length } );
       var numBins = 20;
       if (options != undefined) {
          minMax = options.minMax || minMax;
@@ -37,13 +40,12 @@ function bamD3(container, heightPct, color) {
           (values);
       
       data.forEach(function(d) {
-         var length = d3.sum(d, function(elem){ return elem.length });
-         d.y = length / d.dx;
+         d.y = d3.mean(d, function(elem) {return elem.length});
       })
           
       var y = d3.scale.linear()
-          .domain([0, d3.max(data, function(d) { return d.y; })])
-          .range([height, 0]);
+          .domain([d3.min(data, function(d) { return d.y -2; }), d3.max(data, function(d) { return d.y+2; })])          
+          .range([height, 0])
           
       var lineFunction = d3.svg.line()
          .x(function(d) { return x(d.x) + x(x.domain()[0] + data[0].dx)/2; })
@@ -69,7 +71,10 @@ function bamD3(container, heightPct, color) {
          
       var yAxis = d3.svg.axis()
          .scale(y)
-         .tickFormat(function(d) { return d+"X";})
+         .tickFormat(function(d) { 
+            if (parseInt(d) == d)
+               return (d + "X");
+         })
          .orient("left");
       
       // handle new data
@@ -84,7 +89,7 @@ function bamD3(container, heightPct, color) {
              .attr("fill", "none");
        } else {
           svg.select("path").transition()
-             .duration(200)
+             .duration(duration)
              .attr("d", lineFunction(data))
        }
        
@@ -112,15 +117,15 @@ function bamD3(container, heightPct, color) {
             
        } else {
           svg.select(".avgdepth").transition()
-             .duration(200)
+             .duration(duration)
              .attr('x1', 0)
-             .attr('y1', y(options.avgDepth))
+             .attr('y1', y(avgDepth))
              .attr('x2', x(x.domain()[1]) )
-             .attr('y2', y(options.avgDepth))
+             .attr('y2', y(avgDepth))
          
          svg.select("#refText").transition()
-            .duration(200)
-            .attr("y", y(options.avgDepth) + 4)
+            .duration(duration)
+            .attr("y", y(avgDepth) + 4)
       }
        
        
@@ -128,67 +133,23 @@ function bamD3(container, heightPct, color) {
       var dotEnter = dot.enter().append("g")
          .attr("class", "dot")
          .attr("transform", function(d) { return "translate(" + x(d.x) + ",0)"; });
-         // .attr("transform", function(d) { return "translate(" + x(d.x) + "," +  parseInt(y(d.y) + (height-y(d.y))) + ")"; });
-          
-      // enter
-      // barEnter.append("rect")
-      //    .attr("x", 1)
-      //    .attr("width", x(x.domain()[0] + data[0].dx) - 1)
-      //    .attr("height", 0);
 
-      
+               
       dotEnter.append("circle")
          .attr("cx", x(x.domain()[0] + data[0].dx)/2)
          .attr("cy", y(0))
-         .attr("r", 0)
+         .attr("r", 5)
          .attr("fill", 'white')
          .attr("stroke", "white")
          .attr("stroke-width", "2px");
          
-         // .attr("fill", function(d) { 
-         //    if (d.y == 0) {return "white";} else { return '#d35400'; } 
-         // });
-         
-      // dotEnter.append("text")
-      //          .attr("dy", ".75em")
-      //          .attr("y", 6)
-      //          .attr("x", x(x.domain()[0] + data[0].dx) / 2)
-      //          .attr("text-anchor", "middle")
-      //          .text(function(d) { return formatCount(d.y); });
-      
-
-      // update
-      // dot.transition()
-      //    .duration(300)
-      //    .attr("transform", function(d) { return "translate(" + x(d.x) + ",0)"; });
-         // .attr("transform", function(d) { return "translate(" + x(d.x) + "," + Math.floor(y(d.y)) + ")"; });
-      
       dot.select("circle").transition()
-         .duration(200)
-         .attr("cy", 
-         function(d) { 
-            var h = 2;
-            return y(d.y); 
-         })
-         .attr("r", function(d) { 
-            if (d.y == 0) {return 0;} else { return 5; } 
-         })
-         .attr("fill", function(d) { 
-            if (d.y == 0) {return "white";} else { return color; } 
-         });
-         
-
-      // dot.select("text").transition()
-      //         .duration(500)
-      //         .attr("dy", ".75em")
-      //         .attr("y", -15)
-      //         .attr("x", x(x.domain()[0] + data[0].dx) / 2)
-      //         .attr("text-anchor", "middle")
-      //         .text(function(d) { if(d.y > 0) return formatCount(d.y); });
-      
+         .duration(duration)
+         .attr("cy", function(d) { return y(d.y); })
+         .attr("r", function(d) { if (d.y == 0) {return 0;} else { return 5; } })
+         .attr("fill", function(d) { if (d.y == 0) {return "white";} else { return color; } });            
+               
       dot.exit().remove(); 
-      
-      // 
       
       
       if (svg.select(".x.axis").empty()) {
@@ -199,7 +160,7 @@ function bamD3(container, heightPct, color) {
             .call(xAxis);
       } else {
          svg.select(".x.axis").transition()
-            .duration(200)
+            .duration(duration)
             .call(xAxis);
       }
       
@@ -210,7 +171,7 @@ function bamD3(container, heightPct, color) {
             .call(yAxis);
       } else {
          svg.select(".y.axis").transition()
-            .duration(200)
+            .duration(duration)
             .call(yAxis);
       }
       

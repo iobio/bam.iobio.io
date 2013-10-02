@@ -23,9 +23,9 @@ function histogramD3(container, heightPct) {
    function my(values, otherMinMax, options) {
       var klass = options.klass || 'bar';
       if (options.noOutliers) {
-         var av = values.sort();
-         var q1 = d3.quantile(av,0.25); 
-         var q3 = d3.quantile(av,0.75);
+         //var av = values.sort();
+         var q1 = d3.quantile(values,0.25); 
+         var q3 = d3.quantile(values,0.75);
          var iqr = (q3-q1) * 1.5; //
          var minMax = [ Math.max(q1-iqr,0), q3+iqr ];
       } else {
@@ -48,8 +48,12 @@ function histogramD3(container, heightPct) {
           .bins(x.ticks(numBins))
           (values);
       
+      if (klass == "regionBar")
+         var otherData = svg.selectAll(".sampleBar").data();
+      else
+         var otherData = svg.selectAll(".regionBar").data();
       var y = d3.scale.linear()
-          .domain([0, d3.max(data, function(d) { return d.y; })])
+          .domain([0, d3.max(data.concat(otherData), function(d) { return d.y; })])
           .range([height, 0]);
           
       var xAxis = d3.svg.axis()
@@ -79,11 +83,13 @@ function histogramD3(container, heightPct) {
             .attr("width", (x(x.domain()[0] + data[0].dx) - 1) / 2 -1)
             .attr("height", 0);
             //.attr("height", function(d) { return height - y(d.y); });
-      } else {
+      } else if (klass == "regionBar") {
          barEnter.append("rect")
             .attr("x", (x(x.domain()[0] + data[0].dx) - 1) / 2 + 1)
             .attr("width", (x(x.domain()[0] + data[0].dx) - 1) / 2 -1)
             .attr("height", 0);
+      } else {
+         alert('no class no class');
       }
 
       // barEnter.append("text")

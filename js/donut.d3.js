@@ -26,14 +26,14 @@ function donutD3() {
             .attr("dy", "-.1em")
             .style("text-anchor", "middle")
             .attr("class", "regionColor")
-            .text(function(d,i) { if(i==0) return d.data.number; });
+            .text(function(d,i) { if(i==0) return d.data; });
       } else {
          g.append("text")
             .attr("dy", "1.1em")
             .style("font-size", ".65em")
             .style("text-anchor", "middle")
             .attr("class", "sampleColor")
-            .text(function(d,i) { if(i==0) return d.data.number; });
+            .text(function(d,i) { if(i==0) return d.data; });
       }
          
       selection.select("path")
@@ -42,7 +42,7 @@ function donutD3() {
 
       selection.select("text")
          .text(function(d,i) { 
-            if(i==0) return d.data.number; 
+            if(i==0) return d.data; 
          });
       
    }
