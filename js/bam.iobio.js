@@ -24,10 +24,10 @@ var Bam = Class.extend({
       
       // set iobio servers
       this.iobio = {}
-      this.iobio.bamtools = "ws://0.0.0.0:7030";
-      this.iobio.samtools = "ws://0.0.0.0:8060";
-      this.iobio.bamMerger = "ws://0.0.0.0:8030";
-      this.iobio.bamstatsAlive = "ws://0.0.0.0:7100"
+      this.iobio.bamtools = "ws://bamtools.iobio.io";
+      this.iobio.samtools = "ws://samtools.iobio.io";
+      this.iobio.bamMerger = "ws://bammerger.iobio.io";
+      this.iobio.bamstatsAlive = "ws://bamstatsalive.iobio.io"
       
       return this;
    },
@@ -197,7 +197,7 @@ var Bam = Class.extend({
          stream.on('data', function(data, options) {
             var success = true;
             try {
-              var obj = $.parseJSON(buffer + data)
+              var obj = JSON.parse(buffer + data)
             } catch(e) {
               success = false;
               buffer += data;
@@ -243,7 +243,7 @@ var Bam = Class.extend({
             stream.on('data', function(data, options) {
                var success = true;
                try {
-                 var obj = $.parseJSON(buffer + data)
+                 var obj = JSON.parse(buffer + data)
                } catch(e) {
                  success = false;
                  buffer += data;

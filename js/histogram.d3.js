@@ -22,8 +22,12 @@ function histogramD3(container, heightPct) {
 
    function my(values, otherMinMax, options) {
       var klass = options.klass || 'bar';
+       if (klass == "regionBar")
+         var otherData = svg.selectAll(".sampleBar").data();
+      else
+         var otherData = svg.selectAll(".regionBar").data();
+      
       if (options.noOutliers) {
-         //var av = values.sort();
          var q1 = d3.quantile(values,0.25); 
          var q3 = d3.quantile(values,0.75);
          var iqr = (q3-q1) * 1.5; //
@@ -40,18 +44,14 @@ function histogramD3(container, heightPct) {
          minMax = options.minMax || minMax;
          numBins = options.numBins || numBins;
       }
-      x.domain( minMax );
+      x.domain( d3.extent(minMax.concat($.map(otherData, function(d) { return d.x; }))) );
       if(x.domain()[0] == x.domain()[1])
          x.domain([ x.domain()[0] - 10, x.domain()[1] + 10 ]);
       
       var data = d3.layout.histogram()
           .bins(x.ticks(numBins))
-          (values);
-      
-      if (klass == "regionBar")
-         var otherData = svg.selectAll(".sampleBar").data();
-      else
-         var otherData = svg.selectAll(".regionBar").data();
+          (values);     
+     
       var y = d3.scale.linear()
           .domain([0, d3.max(data.concat(otherData), function(d) { return d.y; })])
           .range([height, 0]);
@@ -82,7 +82,7 @@ function histogramD3(container, heightPct) {
             .attr("x", 1)
             .attr("width", (x(x.domain()[0] + data[0].dx) - 1) / 2 -1)
             .attr("height", 0);
-            //.attr("height", function(d) { return height - y(d.y); });
+
       } else if (klass == "regionBar") {
          barEnter.append("rect")
             .attr("x", (x(x.domain()[0] + data[0].dx) - 1) / 2 + 1)
@@ -104,7 +104,12 @@ function histogramD3(container, heightPct) {
       var allbar = svg.selectAll(".bar")
       allbar.transition()
          .duration(200)
-         .attr("transform", function(d) { return "translate(" + x(d.x) + "," + Math.floor(y(d.y)) + ")"; });
+         .attr("transform", function(d) { 
+            if (x(d.x) < 0) {
+               alert('huh?')
+            }
+            return "translate(" + x(d.x) + "," + Math.floor(y(d.y)) + ")"; 
+         });
 
       bar.select("rect").transition()
          .duration(200)
@@ -113,7 +118,7 @@ function histogramD3(container, heightPct) {
          
       svg.selectAll(".regionBar").select("rect").transition()
          .duration(200)
-         .attr("x", (x(x.domain()[0] + data[0].dx) - 1)/2 + 1)
+         .attr("x", (x(x.domain()[0] + data[0].dx) - 1)/2)
          .attr("width", (x(x.domain()[0] + data[0].dx) - 1)/2 -1 )
          .attr("height", function(d) { return Math.ceil(height - y(d.y)); });
          
