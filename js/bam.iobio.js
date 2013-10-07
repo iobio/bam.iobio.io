@@ -195,6 +195,7 @@ var Bam = Class.extend({
          var stream = client.createStream({event:'run', params : {'url':url}});
          var buffer = "";
          stream.on('data', function(data, options) {
+            if (data == undefined) return;
             var success = true;
             try {
               var obj = JSON.parse(buffer + data)
@@ -241,6 +242,7 @@ var Bam = Class.extend({
          client.on('open', function(stream){
             var stream = client.createStream({event:'run', params : {'url':url}});
             stream.on('data', function(data, options) {
+               if (data == undefined) return;
                var success = true;
                try {
                  var obj = JSON.parse(buffer + data)

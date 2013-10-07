@@ -234,6 +234,7 @@
         
         <script>
             $(document).ready( function(){
+                // check for window.requestAnimation frame and add it if it's not here.
                 (function () {
                   var lastTime = 0;
                   var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -262,15 +263,9 @@
                     if ($(this).parent().hasClass("checked")) {
                         window.fragChart(hist2array(window.sampleStats.frag_hist), undefined, { 'klass' : 'sampleBar'})
                         window.fragChart(hist2array(window.regionStats.frag_hist), undefined, { 'klass' : 'regionBar'})
-                        
-                        // window.fragChart(window.histograms.fragment, undefined, { 'klass' : 'sampleBar'})
-                        // window.fragChart(window.regionHistograms.fragment, undefined, { 'klass' : 'regionBar' })                        
                     } else {
                         window.fragChart(hist2array(window.sampleStats.frag_hist), undefined, { 'klass' : 'sampleBar', noOutliers : true })
                         window.fragChart(hist2array(window.regionStats.frag_hist), undefined, { 'klass' : 'regionBar', noOutliers : true })
-                        
-                        // window.fragChart(window.histograms.fragment, undefined, { 'klass' : 'sampleBar', noOutliers : true})
-                        // window.fragChart(window.regionHistograms.fragment, undefined, { 'klass' : 'regionBar', noOutliers : true })                        
                     }
                 });
                 
@@ -288,23 +283,17 @@
                 });
                 
                 document.getElementById('file').addEventListener('change', openBamFile, false);
-                            
-                window.bamtoolsUrl = "http://bamtools.iobio.io";
+                
+                
+                // initialize charts
                 window.fragChart    = histogramD3("#fragment-length-distribution");
                 window.readLengthChart    = histogramD3("#read-length-distribution");
                 window.mapQualChart = histogramD3("#mapping-quality-distribution");
                 window.readRegionChart = bamD3("#read-depth", 0.85, '#33A7E4');
-                window.header = "";
-                window.stats = {'Total reads' : {number : 0}, 'positionsAnalyzed' : 0};
-                window.rdDepth = {avg : 0, instances : 0};
-                window.histograms = { 'fragment' : [], 'readLength' : [], 'mapQuality' : [], 'readDepth' : [] };
-                window.regionHistograms = { 'fragment' : [], 'readLength' : [], 'mapQuality' : [], 'readDepth' : [] };
-                window.regionStats = {'Total reads' : {number : 0}};
-                
-                // new
                 window.sampleDonutChart = donutD3().radius(61).klass("sampleArc");
                 window.regionDonutChart = donutD3().radius(70).klass("regionArc");
                 
+                // hold onto stats
                 window.sampleStats = undefined;
                 window.regionStats = undefined;
                 
@@ -335,12 +324,6 @@
             	 window.bam = new Bam( bamFile, { bai: baiFile });
             	 
             	 goBam();
-            	 
-                 // window.bams.push({
-                 //     'type': 'file',
-                 //     'bamFile' : bamFile,
-                 //     'baiFile' : baiFile,
-                 // })
               } 
               
              function goBam() {
@@ -367,23 +350,7 @@
             function resetRegionStats() {
                 window.regionStats = {'Total reads' : {number : 0}};
             }
-            
-            function getBamUrl(chr,min,max) {
-                // var url = "http://bamMerger.iobio.io?cmd=" + chr + ":" + min + "-" + max + "%20'http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam'&binary=true";
-                var url = "http://0.0.0.0:8030?cmd=" + chr + ":" + min + "-" + max + "%20'http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam'&binary=true";
-                return url;
-            }
-            
-            function getStatsUrl(chr,min,max) {
-                var url = encodeURI( window.bamtoolsUrl + "?cmd=stats -in " + encodeURIComponent(getBamUrl(chr,min,max)) );
-                return url;
-            }
-            
-            function getReadsUrl(chr,min,max) {
-                var url = "http://0.0.0.0:7030" + "?parseByLine=true&format=json&cmd=convert -format json -in " + encodeURIComponent(getBamUrl(chr,min,max));
-                return encodeURI(url);
-            }
-                        
+                                    
             function getChr() {
                 return 11;
             }
@@ -399,150 +366,7 @@
             function getReference() {
                 return window.references[11];
             }
-            
-            // function averageDepth(stats) {
-            //     var d = (stats.total_reads * d3.mean( window.histograms.readLength )) / window.stats.positionsAnalyzed;
-            //     return d;
-            // }
-            
-            function drawRegionCharts() {
-                resetRegionStats();
-                getStats(window.regionSocket, 'regionResults', getChr(), getMin(), getMax());
-                getHistograms(window.regionHistSocket, 'regionHistResults', getChr(), getMin(), getMax())                        
-            }
-            
-            function parseStats(data) {
-                var stats = {};
-                var lines = data.split("\n");
-                for( var i=0; i < lines.length; i++ ) {
-                    var fields = lines[i].split(":");
-                    if (fields.length == 2 && fields[1].trim() != "") {
-                        var values = fields[1].split("(");
-                        if ( values.length == 2 ) {
-                            stats[fields[0]] = {
-                                number : parseInt(values[0]),
-                                percent : parseInt(values[1].replace("-nan", "0").match(/\d+/)[0])
-                            };
-                        } else {
-                            stats[fields[0]] = { number : parseInt(values[0]) };
-                        }
-                    }
-                }
-                return stats
-            }
-            
-            function setupSampleSocket() {
-                var event = "sampleResults";
-                // var socket = io.connect( 'http://bamtools.iobio.io');
-                var socket = io.connect( 'http://0.0.0.0:7030');
-                socket.on(event, function(res) {
-                    var stats = parseStats(res);
-                    Object.keys(stats).forEach(function (key) { 
-                        if(window.stats[key] == undefined) {window.stats[key] = {}; window.stats[key].number = 0;}
-                        window.stats[key].number += stats[key].number;
-                        window.stats[key].percent = window.stats[key].number / window.stats['Total reads'].number * 100;
-                    })
-                    var donutChart = donutD3().radius(61).klass("sampleArc");
-                    if(window.stats['Total reads'].number > 0) { 
-                        updateTotalReads(window.stats);
-                        window.requestAnimationFrame( function() {updatePercentCharts(window.stats,donutChart);} ); 
-                    }
-                });
-                
-                return socket;
-            }
-            
-            function setupRegionSocket() {
-                var event = "regionResults";
-                // var socket = io.connect( 'http://bamtools.iobio.io');
-                var socket = io.connect( 'http://0.0.0.0:7030');
-                socket.on(event, function(res) {
-                    var stats = parseStats(res);
-                    Object.keys(stats).forEach(function (key) { 
-                        if(window.regionStats[key] == undefined) {window.regionStats[key] = {}; window.regionStats[key].number = 0;}
-                        window.regionStats[key].number += stats[key].number;
-                        window.regionStats[key].percent = window.regionStats[key].number / window.regionStats['Total reads'].number * 100;
-                    })
-                    var donutChart = donutD3().radius(70).klass("regionArc");
-                    if(window.regionStats['Total reads'].number > 0) 
-                        window.requestAnimationFrame( function() {updatePercentCharts(window.regionStats,donutChart); });
-                });
-                
-                return socket;
-            }
-            
-            function setupRegionHistSocket() {
-                var event = "regionHistResults";
-                // var url = getReadsUrl(chr, min, max);
-                var socket = io.connect( "http://0.0.0.0:7030" );
-                var histograms = window.regionHistograms;
-                // var numBins = 10;
-                // var binLength = (getMax() - getMin()) / numBins ;
-                // var readDepth = [];
-                var rafId = undefined;
-                socket.on(event, function(res) {
-                    var data = JSON.parse(res.data);
-                    for( var i=0; i < data.length; i++ ) {
-                        // only collect data on first read of pair
-                        if( data[i].mate && data[i].position < data[i].mate.position) {
-                            histograms.fragment.push( data[i].queryBases.length*2 + Math.abs(data[i].mate.insertSize) );                            
-                        }
-                        histograms.readLength.push( data[i].queryBases.length );
-                        histograms.mapQuality.push( data[i].mapQuality );
-                        
-                        if ( data[i].position >= getMin() )
-                            histograms.readDepth.push( {position: data[i].position, length: data[i].queryBases.length} )
-                    }
-                    window.cancelAnimationFrame(rafId);
-                    rafId = window.requestAnimationFrame( function() {updateHistogramCharts(histograms, d3.extent(window.histograms), "regionBar"); } );
-                });
-                return socket;
-                // socket.emit('run', { 'url': url })
-            }
-            
-            function setupSampleHistSocket() {
-                var event = "sampleHistResults";
-                // var url = getReadsUrl(chr, min, max);
-                var socket = io.connect( "http://0.0.0.0:7030" );
-                // var histograms = { 'fragment' : [], 'readLength' : [], 'mapQuality' : [], 'readDepth' : [] };
-                var histograms = window.histograms;
-                // var numBins = 10;
-                // var binLength = (getMax() - getMin()) / numBins ;
-                // var readDepth = [];
-                var rafId = undefined;
-                socket.on(event, function(res) {
-                    var data = JSON.parse(res.data);
-                    for( var i=0; i < data.length; i++ ) {
-                        // only collect data on first read of pair
-                        if( data[i].mate && data[i].position < data[i].mate.position) {
-                            histograms.fragment.push( data[i].queryBases.length*2 + Math.abs(data[i].mate.insertSize) );                            
-                        }
-                        histograms.readLength.push( data[i].queryBases.length );
-                        histograms.mapQuality.push( data[i].mapQuality );                                                
-                        
-                        // if ( data[i].position >= getMin() )
-                        //histograms.readDepth.push( data[i].position )
-                    }
-                    window.cancelAnimationFrame(rafId);
-                    rafId = window.requestAnimationFrame( function() {updateHistogramCharts(histograms, d3.extent(window.regionHistograms), "sampleBar"); } );
-                });
-                return socket;
-                // socket.emit('run', { 'url': url })
-            }
-            
-            
-            
-            function getStats(socket, event, chr, min, max) {
-                var url = getStatsUrl(chr,min,max);
-                socket.emit('run', { 'url': url, 'event' : event });
-            }
-            
-            function getHistograms(socket, event, chr, min, max) {
-                var url = getReadsUrl(chr,min,max);
-                console.log(url);
-                socket.emit('run', { 'url': url, 'event' : event });
-            }            
-            
+                                    
             function updateTotalReads(totalReads) {
                 // update total reads
                 var reads = shortenNumber( totalReads );
@@ -569,42 +393,29 @@
             }
             
             function updateHistogramCharts(histograms, otherMinMax, klass) {
-                // update fragment length distribution
-                //if (keys(histograms.frag_hist).length > 0 ) 
-                
+                // update fragment length distribution                
                 window.fragChart(hist2array(histograms.frag_hist), otherMinMax, { 'klass' : klass, noOutliers : true })
                     
                 // update fragment length distribution
-                //if (keys(histograms.length_hist).length > 0 ) 
                 window.readLengthChart(hist2array(histograms.length_hist), otherMinMax, { 'klass' : klass })
                 
                 // update fragment length distribution
-                //if (keys(histograms.mapq_hist).length > 0 ) 
                 window.mapQualChart(hist2array(histograms.mapq_hist), otherMinMax, { 'klass' : klass })
                     
                 // update read depth histogram
-                //if (keys(histograms.read_depth).length > 0 )  {
-                    if (klass == 'regionBar') {
-                        // add absolute position information
-                        var a = [];
-                        var binSize = parseInt((getMax() - getMin()) / 256);
-                        var binPos = 0;
-                        for ( var i in histograms.base_coverage) {                            
-                            var binPos = parseInt(i);
-                            var instances = histograms.base_coverage[i];
-                            a.push( {position:getMin() + binPos * binSize, length: instances/binSize} );
-                            // for ( var j=0; j < instances; j++)
-                            //                                 // if (getMin() + position <= getMax())
-                            //                                     a.push( getMin() + binPos * binSize );
-                            
-                            binPos += 1;
-                        }
-                        window.readRegionChart(a, { minMax : [getMin(), getMax()], numBins: 20 } );
-                    }else {
-                        
-                        //window.readSampleChart(histograms.readDepth, { minMax : [1, getReference().length],numBins: 20} );
+                if (klass == 'regionBar') {
+                    // add absolute position information
+                    var a = [];
+                    var binSize = parseInt((getMax() - getMin()) / 256);
+                    var binPos = 0;
+                    for ( var i in histograms.base_coverage) {                            
+                        var binPos = parseInt(i);
+                        var instances = histograms.base_coverage[i];
+                        a.push( {position:getMin() + binPos * binSize, length: instances/binSize} );
+                        binPos += 1;
                     }
-                //}
+                    window.readRegionChart(a, { minMax : [getMin(), getMax()], numBins: 20 } );
+                }
             }
             
             function shortenNumber(num) {
@@ -615,40 +426,7 @@
                 else
                     return [Math.round(num/1000000), "million"];
             }
-            
-            function sample() {
-                var binLength = 100000;
-                var numBins = 3;
-                
-                for ( var i=0; i < window.references.length; i++) {
-                    var ref = window.references[i]
-                    var chr = ref.name;
-                    if (chr != "11")
-                        continue;
-                    
-                    var length = ref.length;
-                    var binSeparator = length / numBins;
-                    for ( var j=0; j < numBins; j++) {
-                        var min = Math.floor(j*binSeparator);
-                        var max = Math.ceil(min + binLength);
-                        window.stats.positionsAnalyzed += (max - min);
-                        // getHistograms( 
-                        //     function(histograms) { 
-                        //         
-                        //         updateSampleHistogramCharts(histograms) 
-                        //     }, 
-                        //     chr, 
-                        //     min, 
-                        //     max
-                        // );
-                        console.log("get " + j + ": " + min + "-" + max);
-                        getStats( window.samplingSocket, 'sampleResults', chr, min, max );
-                        getHistograms( window.samplingHistSocket, 'sampleHistResults', chr, min, max);
-                    }
-                    
-                }
-            }
-            
+                        
             function hist2array(hist) {
                 var a = [];
                 for ( var i in hist) {
@@ -659,27 +437,7 @@
                 }
                 return a;
             }
-            
-            function parseHeader() {
-                var url = encodeURI("http://samtools.iobio.io?cmd=view -H 'http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam'");
-                var socket = io.connect( url );
-                socket.on('results', function(res) {
-                    window.header += res.data;
-                })
-                socket.on("end", function() {
-                    window.references = [];
-                    var lines = window.header.split("\n");
-                    for ( var i=0; i<lines.length; i++) {
-                        var fields = lines[i].split("\t");
-                        if (fields[0] == "@SQ") {
-                            window.references.push( { name : fields[1].split("SN:")[1], length: parseInt(fields[2].split("LN:")[1]) } )
-                        }
-                    }
-                    sample();
-                })
-                socket.emit('run', { 'url': url })
-            }
-            
+                        
             function displayBamUrlBox() {
                 $('#bam-url').css('visibility','visible');
                 $("#bam-url").children("input").focus();

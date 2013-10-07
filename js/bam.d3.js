@@ -40,7 +40,7 @@ function bamD3(container, heightPct, color) {
           (values);
       
       data.forEach(function(d) {
-         d.y = d3.mean(d, function(elem) {return elem.length});
+         d.y = d3.mean(d, function(elem) {return parseInt(elem.length*100)/100});
       })
           
       var y = d3.scale.linear()
@@ -80,7 +80,7 @@ function bamD3(container, heightPct, color) {
       // handle new data
       var dot = svg.selectAll(".dot")
           .data(data);
-        
+          
        if (svg.select("path").empty()) {
           svg.append("path")
              .attr("d", lineFunction(data))
