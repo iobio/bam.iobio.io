@@ -459,12 +459,16 @@
         <header><a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span></a></header>
         <div id="selectData">
             <!-- <input type="file" id="files" name="files[]" multiple /> -->
-            <div style="width:600px; margin-left:auto; margin-right:auto; margin-top: 200px">
-                <div class="file" onClick="$('#bam-url').css('visibility', 'hidden')">
+            <div style="width:600px; margin-left:auto; margin-right:auto; margin-top: 100px">
+                <div style="margin-left:auto;margin-right:auto;font-size: 33px; color: rgb(110,110,110); margin-bottom:70px">                
+                    bam.iobio.io uses realtime sampling to generate global statistics of your bam file in a few seconds.
+                </div>
+                
+                <!-- <div class="file" onClick="$('#bam-url').css('visibility', 'hidden')">
                     <input type="file" name="files[]" id="file"  multiple />
                     <label class="file-button" for="file" >Choose Bam File</label>
-                </div>
-                <div class="file-button" style="float:right" onClick="displayBamUrlBox()">Choose Bam Url</div>
+                </div> -->
+                <div class="file-button" style="text-align:center" onClick="displayBamUrlBox()">Choose Bam Url</div>
                 <div style="clear:both"></div>
             </div>
             <div id='bam-url' style="margin-top:24px;width:600px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
