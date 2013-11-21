@@ -18,10 +18,13 @@
             header a {text-decoration:none; color:#2d8fc1}
                         
             .file {
-              width: 350px;
+              width: 250px;
+              text-align:center;
             }
             .file-button{
                 border-radius: 4px;
+                width: 250px;
+                float:right;
                 background: #2d8fc1;;
                 padding: 22px 30px;
                 color: #fff;
@@ -325,9 +328,8 @@
             	    alert('must select both a .bam and .bai file');
             	 }
             	 
-            	 window.bam = new Bam( bamFile, { bai: baiFile });
-            	 
-            	 goBam();
+                 window.bam = new Bam( bamFile, { bai: baiFile });
+                 goBam();            	             	
               } 
               
              function goBam() {
@@ -335,19 +337,19 @@
                  $("#showData").css("visibility", "visible")
                  
                  // get sample stats
-                 window.bam.sampleStats(11, function(data){ 
+                 window.bam.sampleStats( function(data){ 
                     window.sampleStats = data;
                     updatePercentCharts(data, window.sampleDonutChart)
                     updateTotalReads(data.total_reads);
                     updateHistogramCharts(data, undefined, "sampleBar")
-                 });
+                 },{start:60495});
                  
                  // get region stats
                  window.bam.stats(getChr(), getMin(), getMax(), function(data){ 
-                     window.regionStats = data;
-                     updatePercentCharts(data, window.regionDonutChart)
-                     updateHistogramCharts(data, undefined, "regionBar")
-                 });
+                    window.regionStats = data;
+                    updatePercentCharts(data, window.regionDonutChart)
+                    updateHistogramCharts(data, undefined, "regionBar")
+                });
              } 
                                 
             
@@ -356,15 +358,16 @@
             }
                                     
             function getChr() {
-                return 11;
+                return 20;
             }
             
             function getMin() {
-                return 10108473;
+                return 17600217;
+                // return 10108473;
             }
             
             function getMax() {
-                return 10198473;
+                return 17690217; // 10198473;
             }
             
             function getReference() {
@@ -459,12 +462,12 @@
         <header><a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span></a></header>
         <div id="selectData">
             <!-- <input type="file" id="files" name="files[]" multiple /> -->
-            <div style="width:600px; margin-left:auto; margin-right:auto; margin-top: 100px">
+            <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
                 <div style="margin-left:auto;margin-right:auto;font-size: 33px; color: rgb(110,110,110); margin-bottom:70px">                
                     bam.iobio.io uses realtime sampling to generate global statistics of your bam file in a few seconds.
                 </div>
                 
-                <div class="file" onClick="$('#bam-url').css('visibility', 'hidden')" style="display:none">
+                <div class="file" onClick="$('#bam-url').css('visibility', 'hidden')">
                     <input type="file" name="files[]" id="file"  multiple />
                     <label class="file-button" for="file" >Choose Bam File</label>
                 </div>
@@ -528,7 +531,11 @@
                     <div id="read-length-distribution" class="distribution panel"><div>Read Length Distribution</div></div>
                     <div id="mapping-quality-distribution" class="distribution panel"><div>Mapping Quality Distribution</div></div>
                 </div>
-            </section>        
+            </section>   
+            <!-- <textarea id="samt" width='800' height='400' style="border: 1px solid red"></textarea>     
+            <textarea rows="4" cols="50">
+            At w3schools.com you will learn how to make a website. We offer free tutorials in all web development technologies. 
+            </textarea> -->
         </div>
         <script src="js/flatui-checkbox.js"></script>
     </body>

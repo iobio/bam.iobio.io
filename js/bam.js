@@ -336,12 +336,15 @@ BamFile.prototype.readBamRecords = function(ba, offset, sink, min, max, chrId) {
         record.cigar = cigar;
     
         var seq = '';
-        var seqBytes = (lseq + 1) >> 1;
+        var seqBytes = (lseq + 1 ) >> 1;
         for (var j = 0; j < seqBytes; ++j) {
             var sb = ba[p + j];
             seq += SEQRET_DECODER[(sb & 0xf0) >> 4];
             seq += SEQRET_DECODER[(sb & 0x0f)];
         }
+        // acount for odd sequences and remove last character
+        // this is needed b\c each character is a half byte and we are taking a byte at a time
+        if (lseq % 2 == 1) seq = seq.slice(0, seq.length-1);
         p += seqBytes;
         record.seq = seq;
 

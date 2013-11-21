@@ -21,6 +21,7 @@ function histogramD3(container, heightPct) {
    
 
    function my(values, otherMinMax, options) {
+      if (values.length == 0) return;
       var klass = options.klass || 'bar';
        if (klass == "regionBar")
          var otherData = svg.selectAll(".sampleBar").data();
