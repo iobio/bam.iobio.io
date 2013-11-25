@@ -15,7 +15,7 @@ var Bam = Class.extend({
          this.bam = undefined;
          var me = this;
          makeBam(this.bamBlob, this.baiBlob, function(bam) {
-            me.headerStr = bam.header;
+            me.setHeader(bam.header);
             me.provide(bam); 
          });
       } else if ( this.bamUri.slice(0,4) == "http" ) {
@@ -89,7 +89,7 @@ var Bam = Class.extend({
          var me = this;
          // send data to samtools when it asks for it
          client.on('stream', function(stream, options) {
-            stream.write(me.headerStr);
+            stream.write(me.header.toStr);
             regions.forEach(function(region){
                me.convert('sam', region.name, region.start, region.end, function(data,e) {   
                   stream.write(data);
@@ -116,8 +116,8 @@ var Bam = Class.extend({
          if(options && options.noHeader)
             callback(data, e);
          else {
-            me.header(function(h) {
-               callback(h + data, e);
+            me.getHeader(function(h) {
+               callback(h.toStr + data, e);
             })
          }
       }, { 'format': format })
@@ -135,30 +135,44 @@ var Bam = Class.extend({
       // Filters BAM file(s) by user-specified criteria
    },
    
-   header: function(callback) {
+   getHeader: function(callback) {
       var me = this;
-      if (me.headerStr)
-         callback(me.headerStr);
+      if (me.header)
+         callback(me.header);
       else if (me.sourceType == 'file')
-         me.promise(function() { me.header(callback); })
+         me.promise(function() { me.getHeader(callback); })
       else {
          var client = BinaryClient(this.iobio.samtools);
          var url = encodeURI( this.iobio.samtools + '?cmd=view -H ' + this.bamUri)
          client.on('open', function(stream){
             var stream = client.createStream({event:'run', params : {'url':url}});
-            var header = ""
+            var headerStr = ""
             stream.on('data', function(data, options) {
-               header += data;
+               headerStr += data;
             });
             stream.on('end', function() { 
-               me.headerStr = header;
-               callback(header);
+               me.setHeader(headerStr)               
+               callback(me.header);
             });
          });
       }
          
       // need to make this work for URL bams
       // need to incorporate real promise framework throughout
+   },
+   
+   setHeader: function(headerStr) {
+      var header = { sq:[], toStr : headerStr };
+      var lines = headerStr.split("\n");
+      for ( var i=0; i<lines.length; i++) {
+         var fields = lines[i].split("\t");
+         if (fields[0] == "@SQ") {
+            var name = fields[1].split("SN:")[1];
+            var length = parseInt(fields[2].split("LN:")[1]);
+            header.sq.push({name:name, end:1+length});
+         }
+      }               
+      this.header = header;
    },
    	
    index: function() {
@@ -225,12 +239,14 @@ var Bam = Class.extend({
       function goSampling(SQs) {      
          var regions = [];
          for (var j=0; j < SQs.length; j++) {
-            var length = SQs[j].end - SQs[j].start;
+            var sqStart = SQs[j].start || options.start || 1;
+            var length = SQs[j].end - sqStart;
             if ( length < options.binSize * options.binNumber) {
                regions.push(SQs[j])
             } else {
-               for (var i=0; i < options.binNumber; i++) {         
-                  var regionStart = parseInt(SQs[j].start + length/options.binNumber * i);
+               for (var i=0; i < options.binNumber; i++) {   
+                  
+                  var regionStart = parseInt(sqStart + length/options.binNumber * i);
                   regions.push({
                      'name' : SQs[j].name,
                      'start' : regionStart,
@@ -266,21 +282,8 @@ var Bam = Class.extend({
       if ( options.sequenceNames != undefined && options.sequenceNames.length == 1 && options.start != undefined && options.end != undefined) {
          goSampling([{name:options.sequenceNames[0], start:options.start, end:options.end}]);
       } else  {
-         this.header(function(header) {
-            var lines = header.split("\n");
-            var SQs = [];
-            for ( var i=0; i<lines.length; i++) {
-               var fields = lines[i].split("\t");
-               if (fields[0] == "@SQ") {
-                  var name = fields[1].split("SN:")[1];
-                  var length = parseInt(fields[2].split("LN:")[1]);
-                  if (!options.sequenceNames || options.sequenceNames.indexOf(name) != -1) {
-                     //goSampling(name, 1, 1+length);  
-                     SQs.push({name:name, start:options.start, end:1+length});
-                  }                        
-               }
-            }
-            goSampling(SQs);
+         this.getHeader(function(header) {            
+            goSampling(header.sq);
          })
       }
    }   
