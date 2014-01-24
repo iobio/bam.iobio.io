@@ -15,7 +15,7 @@
                text-align: left;               
             }
             header a:visited {color:none;}
-            header a {text-decoration:none; color:#2d8fc1}
+            header a {text-decoration:none; color:#2d8fc1;}
                         
             .file {
               width: 250px;
@@ -25,7 +25,7 @@
                 border-radius: 4px;
                 width: 250px;
                 float:right;
-                background: #2d8fc1;;
+                background: #2d8fc1;
                 padding: 22px 30px;
                 color: #fff;
                 font-size:24px;
@@ -74,7 +74,7 @@
             
             .panel > .title { font-size: 30px}
 
-            .panel#read-depth {
+            .panel#depth-distribution {
                 -webkit-flex: 3 1 80%;
                    flex: 3 1 80%;
                 -webkit-order: 1;
@@ -125,16 +125,14 @@
             #percents .percent svg { width: 100%; height:100%;}            
             #distributions .distribution {-webkit-flex: 1 1 100%; height:200px}
             
-            .regionBar rect {
-              fill: #33A7E4;
+            .bar rect {
+              fill: #2d8fc1;
               shape-rendering: crispEdges;
-            }
+            }  
             
-            .sampleBar rect {
-              fill: #2687BE;
-              shape-rendering: crispEdges;
-            }
-            
+            .bar rect.unselected {
+                fill: #9C9E9F;
+            }          
 
             .bar text {
               fill: 'black';
@@ -146,22 +144,21 @@
               shape-rendering: crispEdges;
             }
             
-            .sampleArc .fill {fill: #2687BE} 
-            .regionArc .fill {fill: #33A7E4}
-            
-
-/*                        .regionArc .fill {fill: #36B3F4}            */
+            .arc .fill {fill: #2d8fc1}             
             .alpha {fill: rgba(45,143,193,0.2);}
 
-            .regionColor {
-                fill : #33A7E4;
-                color: #33A7E4;
+            .arc .percent {
+                fill : rgb(100,100,100);
+                color: rgb(100,100,100);
+                font-size: 23px;
             }
             
-            .sampleColor {
+            .arc .total {
+                font-size: 10px;
+                letter-spacing: 3px;
                 font-weight: 400;
-                fill : #2687BE;
-                color: #2687BE;
+                fill : rgb(200,200,200);
+                color: rgb(200,200,200);
             }
             
             .arrow_box {
@@ -196,12 +193,49 @@
             .arrow_box input {
                 border: none;
                 outline: none;
-                width:510px;
+                width:610px;
                 margin: 8px;
                 color: #2d8fc1;
                 font:300 30px quicksand;
             }
             .arrow_box button { font:300 28px quicksand;}
+            
+            .brush .extent {
+              stroke: #000;
+              fill-opacity: .125;
+              shape-rendering: crispEdges;
+            }
+            
+            .resize path {
+                fill: #eee;
+                stroke: #666;
+            } 
+            
+            
+            #seq-list {
+                list-style-type:none;
+                margin:0;
+                padding:0;                
+            }
+            
+            
+            .seq-buttons {
+                display: inline;
+                margin-right: 6px;
+                padding: 0px 20px 0px 20px;
+                border-radius: 3px;
+                color: #2d8fc1;
+                font-family: helvetica;
+                font-size: 0.6em;
+                border: 1px solid #2d8fc1;
+                cursor:pointer;
+                cursor: hand;
+            }   
+            
+            .seq-buttons.selected {
+                background: #2d8fc1;
+                color: white;
+            }
 
             /* Too narrow to support three columns */
             @media all and (max-width: 640px) {
@@ -211,7 +245,7 @@
                         flex-flow: column;
                 }
 
-                #read-depth, #total-reads {
+                #depth-distribution, #total-reads {
                     /* Return them to document order */
                     -webkit-order: 0;
                         order: 0;
@@ -224,18 +258,22 @@
             }
 
         </style>
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="js/jquery.min.js"></script>
         <script src="js/class.js"></script>
+        <script src="js/rdp.js"></script>
         <script src="js/d3.v3.min.js"></script>
+        <script src="js/queue.min.js"></script>
         <script src="js/donut.d3.js"></script>
         <script src="js/histogram.d3.js"></script>
+        <script src="js/movingLine.d3.js"></script>
         <script src="js/bam.d3.js"></script>
-        <script src="js/bam.iobio.js"></script>
-        <script src="js/bam.js"></script>
-        <script src="js/bin.js"></script>
-        <script src="js/inflate.js"></script>
+        <script src="js/bam.iobio.js/bam.iobio.js"></script>
+        <script src="js/bam.iobio.js/bam.js"></script>
+        <script src="js/bam.iobio.js/bin.js"></script>
+        <script src="js/bam.iobio.js/inflate.js"></script>
         <script src="js/binary.js"></script>
-        <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
+        <link href='css/quicksand.css' rel='stylesheet' type='text/css'>
+        <!-- <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'> -->
         
         <script>
             $(document).ready( function(){
@@ -267,13 +305,10 @@
                 }());
                 
                 $("#fragment-length-distribution input[type='checkbox']").change(function(){
-                    if ($(this).parent().hasClass("checked")) {
-                        window.fragChart(hist2array(window.sampleStats.frag_hist), undefined, { 'klass' : 'sampleBar'})
-                        window.fragChart(hist2array(window.regionStats.frag_hist), undefined, { 'klass' : 'regionBar'})
-                    } else {
-                        window.fragChart(hist2array(window.sampleStats.frag_hist), undefined, { 'klass' : 'sampleBar', noOutliers : true })
-                        window.fragChart(hist2array(window.regionStats.frag_hist), undefined, { 'klass' : 'regionBar', noOutliers : true })
-                    }
+                    if ($(this).parent().hasClass("checked"))
+                        window.fragChart(hist2array(window.sampleStats.frag_hist), { noOutliers : true })
+                    else
+                        window.fragChart(hist2array(window.sampleStats.frag_hist), { noOutliers : true })
                 });
                 
                 $('#url-input').focus(function() {
@@ -293,8 +328,9 @@
                 
                 
                 // initialize charts
-                window.fragChart    = histogramD3("#fragment-length-distribution");
-                window.readLengthChart    = histogramD3("#read-length-distribution");
+                window.depthChart = movingLineD3("#depth-distribution");
+                window.fragChart = histogramD3("#fragment-length-distribution");
+                window.readLengthChart = histogramD3("#read-length-distribution");
                 window.mapQualChart = histogramD3("#mapping-quality-distribution");
                 window.readRegionChart = bamD3("#read-depth", 0.85, '#33A7E4');
                 window.sampleDonutChart = donutD3().radius(61).klass("sampleArc");
@@ -336,20 +372,36 @@
                  $("#selectData").css("display", "none");
                  $("#showData").css("visibility", "visible")
                  
-                 // get sample stats
-                 window.bam.sampleStats( function(data){ 
-                    window.sampleStats = data;
-                    updatePercentCharts(data, window.sampleDonutChart)
-                    updateTotalReads(data.total_reads);
-                    updateHistogramCharts(data, undefined, "sampleBar")
-                 },{start:60495});
-                 
-                 // get region stats
-                 window.bam.stats(getChr(), getMin(), getMax(), function(data){ 
-                    window.regionStats = data;
-                    updatePercentCharts(data, window.regionDonutChart)
-                    updateHistogramCharts(data, undefined, "regionBar")
-                });
+                 // get read depth
+                 window.bam.estimateBaiReadDepth(function(readDepth) {                     
+                     var dID = undefined;
+                     // find biggest read depth
+                     $.each(readDepth, function(name,points) { if (dID == undefined || readDepth[dID].length < points.length) dID=name; });
+                     // update depth distribution    
+                     window.depthChart.on("brushend", function(x,brush) {
+                        var options = { sequenceNames:[getSelectedSeqId()] };
+                        if (!brush.empty()) {
+                            options.start = parseInt(brush.extent()[0]);
+                            options.end = parseInt(brush.extent()[1]);
+                        }
+                        window.bam.sampleStats( function(data){ 
+                            window.sampleStats = data;
+                            updatePercentCharts(data, window.sampleDonutChart)
+                            updateTotalReads(data.total_reads);
+                            updateHistogramCharts(data, undefined, "sampleBar")
+                        },options);
+                     });
+
+                     // create seq buttons
+                     var htmlstr = "";
+                     
+                     $.each(Object.keys(readDepth), function(i,d) {
+                         htmlstr += "<li onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + d + "'>" + d + "</li>"
+                     })
+                     $('#depth-distribution').append("<ul id='seq-list'>" + htmlstr + "</ul>");
+                     setSelectedSeq( $(".seq-buttons[data-id='"+ dID + "']")[0]);
+                     
+                 });                 
              } 
                                 
             
@@ -380,6 +432,25 @@
                 $("#total-reads>#base").html( reads[1] || "" );
             }
             
+            function setSelectedSeq(selected) {
+                var dataId = selected.getAttribute("data-id");
+                $(".seq-buttons.selected").removeClass("selected");
+                $(selected).addClass("selected");  
+                window.depthChart( window.bam.readDepth[dataId] );  
+
+                // update selected stats
+                window.bam.sampleStats( function(data){ 
+                    window.sampleStats = data;
+                    updatePercentCharts(data, window.sampleDonutChart)
+                    updateTotalReads(data.total_reads);
+                    updateHistogramCharts(data, undefined, "sampleBar")
+                },{sequenceNames:[dataId]});            
+            }
+            
+            function getSelectedSeqId() {
+              return $(".seq-buttons.selected").attr("data-id");  
+            }
+                        
             function updatePercentCharts(stats, donutChart) {
                 var pie = d3.layout.pie()
                    .sort(null);
@@ -391,37 +462,23 @@
                 keys.forEach( function(key,i) {
                     var stat = stats[key];                    
                     var data = [ stat, stats['total_reads'] - stat ];
-                    var arc = d3.select('#'+key + " svg").selectAll("." + donutChart.klass())
+                    var arc = d3.select('#'+key + " svg").selectAll(".arc")
                         .data(pie(data));
                     donutChart(arc, colors[i]);                  
                 });
                 
             }
             
-            function updateHistogramCharts(histograms, otherMinMax, klass) {
-                // update fragment length distribution                
-                window.fragChart(hist2array(histograms.frag_hist), otherMinMax, { 'klass' : klass, noOutliers : true })
-                    
-                // update fragment length distribution
-                window.readLengthChart(hist2array(histograms.length_hist), otherMinMax, { 'klass' : klass })
+            function updateHistogramCharts(histograms, otherMinMax, klass) {                
                 
-                // update fragment length distribution
-                window.mapQualChart(hist2array(histograms.mapq_hist), otherMinMax, { 'klass' : klass })
+                // update fragment length distribution                
+                window.fragChart(hist2array(histograms.frag_hist), { noOutliers : true });
                     
-                // update read depth histogram
-                if (klass == 'regionBar') {
-                    // add absolute position information
-                    var a = [];
-                    var binSize = parseInt((getMax() - getMin()) / 256);
-                    var binPos = 0;
-                    for ( var i in histograms.base_coverage) {                            
-                        var binPos = parseInt(i);
-                        var instances = histograms.base_coverage[i];
-                        a.push( {position:getMin() + binPos * binSize, length: instances/binSize} );
-                        binPos += 1;
-                    }
-                    window.readRegionChart(a, { minMax : [getMin(), getMax()], numBins: 20 } );
-                }
+                // update read length distribution
+                window.readLengthChart(hist2array(histograms.length_hist));
+                
+                // update map quality distribution
+                window.mapQualChart(hist2array(histograms.mapq_hist));                    
             }
             
             function shortenNumber(num) {
@@ -473,7 +530,7 @@
                 <div class="file-button" style="text-align:center" onClick="displayBamUrlBox()">Choose Bam Url</div>
                 <div style="clear:both"></div>
             </div>
-            <div id='bam-url' style="margin-top:24px;width:600px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
+            <div id='bam-url' style="margin-top:24px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
                 <input id="url-input" value="http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam" ></input><button onClick="openBamUrl()">Go</button>
             </div>
             
@@ -484,10 +541,9 @@
         </div>
         <div id="showData">
             <section id="top">
-                <div id="read-depth" class="panel">
-                    <div class="title">Reads</div>
-                    <!-- <div id="read-region"></div>
-                    <div id="read-sample"></div> -->
+                <div id="depth-distribution" class="panel">
+                    <div class="title">Read Depth</div>
+                    <ul id="sequences"></ul>
                 </div>
                 <div id="total-reads" class="panel">
                     <div class="title">Reads Sampled</div>
@@ -495,10 +551,6 @@
                     <div id="base" style="font-size:1.4vw; letter-spacing:2px; color:#2687BE; text-align:center;padding-left:8px;margin-top:-17px"></div>
                 </div>
             </section>
-            <div style="width:200px;margin-top:10px; margin-left: auto; margin-right:auto"> 
-                <div style="display:inline-block;width:15px; height:12px; background:#33A7E4;border-radius:2px; margin-left: -20px;"></div> Region
-                <div style="display:inline-block;width:15px; height:12px; background:#2687BE;border-radius:2px;margin-left: 10px;"></div> Sampled
-            </div>
             <section id="middle">
                 <div id="percents">
                     <div id="mapped_reads" class="percent panel">Mapped Reads
