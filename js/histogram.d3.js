@@ -1,5 +1,5 @@
 function histogramD3(container) {
-   var margin = {top: 20, right: 30, bottom: 30, left: 30},
+   var margin = {top: 20, right: 0, bottom: 30, left: 45},
           width = $(container).width()*0.98 - margin.left - margin.right,
           height = $(container).height()*0.85 - margin.top - margin.bottom;
 
@@ -18,34 +18,34 @@ function histogramD3(container) {
    function my(values, options) {
       
       if (options && options.noOutliers) {
-         var q1 = d3.quantile(values,0.25); 
-         var q3 = d3.quantile(values,0.75);
+         var q1 = quantile(values,0.25); 
+         var q3 = quantile(values,0.75);
          var iqr = (q3-q1) * 1.5; //
          var minMax = [ Math.max(q1-iqr,0), q3+iqr ];
       } else {
-         var minMax = d3.extent(values);
+         var minMax = d3.extent(values, function(d) { return parseInt(d[0]); });
       }
       
       x.domain(minMax);
       // check for single value histogram
       if(x.domain()[0] == x.domain()[1])
             x.domain([ x.domain()[0] - 10, x.domain()[1] + 10 ]);
-                  
-      // var brush = d3.svg.brush()
-      //     .x(x)
-      //     .on("brush", brushed);
-      // var arc = d3.svg.arc()
-      //    .outerRadius(height / 2)
-      //    .startAngle(0)
-      //    .endAngle(function(d, i) { return i ? -Math.PI : Math.PI; });
-      
-      var data = d3.layout.histogram()
-          .bins(x.ticks(numBins))
-          (values);
 
       var y = d3.scale.linear()
-          .domain([0, d3.max(data, function(d) { return d.y; })])
+          .domain([0, d3.max(values, function(d) { return d[1]; })])
           .range([height, 0]);
+          
+      var yAxis = d3.svg.axis()
+        .scale(y)
+        .tickFormat(function (d) {
+           if ((d / 1000000) >= 1)
+             d = d / 1000000 + "M";
+           else if ((d / 1000) >= 1)
+             d = d / 1000 + "K";
+           return d;            
+        })
+        .ticks(6)
+        .orient("left");      
 
       var xAxis = d3.svg.axis()
           .scale(x)
@@ -59,26 +59,40 @@ function histogramD3(container) {
           .orient("bottom");
 
       var bar = svg.selectAll(".bar")
-          .data(data)
+          .data(values)
         .enter().append("g")
           .attr("class", "bar")
-          .attr("transform", function(d) { return "translate(" + x(d.x) + "," + height + ")"; });
+          .attr("transform", function(d) { return "translate(" + x(d[0]) + "," + height + ")"; });
 
       bar.append("rect")
           .attr("x", 1)
-          .attr("width", x(x.domain()[0] + data[0].dx) - 1)
-          .attr("height", function(d) { return 0; });
+          .attr("width", Math.max(x(x.domain()[0]+1),1))
+          .attr("height", function(d) { return 0; })
+          .on("mouseover", function(d) {  
+                   div.transition()        
+                       .duration(200)      
+                       .style("opacity", .9);      
+                   div .html(d[0] + ", " + d[1])                                 
+                       .style("left", (d3.event.pageX) + "px") 
+                       .style("text-align", 'left')    
+                       .style("top", (d3.event.pageY - 24) + "px");    
+                   })                  
+               .on("mouseout", function(d) {       
+                   div.transition()        
+                       .duration(500)      
+                       .style("opacity", 0);   
+             });
           
       // update
       bar = svg.selectAll('.bar');
       bar.transition()
          .duration(200)
-         .attr("transform", function(d) { return "translate(" + x(d.x) + "," + Math.floor(y(d.y)) + ")"; });
+         .attr("transform", function(d) { return "translate(" + x(d[0]) + "," + Math.floor(y(d[1])) + ")"; });
          
       bar.select("rect").transition()
          .duration(200)
-         .attr("width", (x(x.domain()[0] + data[0].dx) - 1))
-         .attr("height", function(d) { return Math.ceil(height - y(d.y)); });
+         .attr("width", Math.max(x(x.domain()[0]+1),1))
+         .attr("height", function(d) { return parseInt(d[0]) >= minMax[0] ? Math.ceil(height - y(d[1])) : 0; });
       
       // update x axis
       if (svg.select(".x.axis").empty()) {
@@ -90,7 +104,40 @@ function histogramD3(container) {
          svg.select(".x.axis").transition()
             .duration(200)
             .call(xAxis);
-      }   
+      }  
+      
+      // update y axis
+      if (svg.select(".y.axis").empty()) {
+         svg.append("g")
+            .attr("class", "y axis")
+            // .attr("transform", "translate(0," + height + ")")
+            .call(yAxis);
+      } else {
+         svg.select(".y.axis").transition()
+            .duration(200)
+            .call(yAxis);
+      }
+      
+      function quantile(arr, p) {
+         var length = arr.reduce(function(previousValue, currentValue, index, array){
+           return previousValue + currentValue[1];
+         }, 0) - 1;
+         var H = length * p + 1, 
+          h = Math.floor(H);
+          
+         var hValue, hMinus1Value, currValue = 0;
+         for (var i=0; i < arr.length; i++) {
+            currValue += arr[i][1];
+            if (hMinus1Value == undefined && currValue >= (h-1))
+               hMinus1Value = arr[i][0];
+            if (hValue == undefined && currValue >= h) {
+               hValue = arr[i][0];
+               break;
+            }
+         } 
+          var v = +hMinus1Value, e = H - h;
+          return e ? v + e * (hValue - v) : v;
+      } 
       
    }
    

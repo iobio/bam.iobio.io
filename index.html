@@ -3,6 +3,16 @@
     <head>
         <!-- <link href="http://designmodo.github.io/Flat-UI/bootstrap/css/bootstrap.css" rel="stylesheet"> -->
         <link href="css/flat-ui.css" rel="stylesheet">
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-47481907-2', 'iobio.io');
+          ga('send', 'pageview');
+
+        </script>
         <style>
             body {
                 font-family: Quicksand;
@@ -121,9 +131,9 @@
             }
             
             
-            #percents .percent {-webkit-flex: 1 1 30%}
-            #percents .percent svg { width: 100%; height:100%;}            
-            #distributions .distribution {-webkit-flex: 1 1 100%; height:200px}
+            #percents .percent {-webkit-flex: 1 1 30%; position:relative}
+            #percents .percent svg { width: 100%; height:100% }            
+            #distributions .distribution {-webkit-flex: 1 1 100%; height:200px; position:relative; /*padding: 0px 15px 0px 15px*/}
             
             .bar rect {
               fill: #2d8fc1;
@@ -211,8 +221,18 @@
                 stroke: #666;
             } 
             
+            .chart-chooser {
+                font-size: 14px;
+                color: rgb(180,180,180);                
+                font-weight: 400;
+                text-align: right;
+            }
+            
+            .chart-chooser .selected {color:#2d8fc1; border-bottom: 1px solid #2d8fc1}
+            .chart-chooser span { margin: 0px 5px 0px 5px; padding-bottom: 3px; cursor:pointer;}
             
             #seq-list {
+                overflow-x: scroll;
                 list-style-type:none;
                 margin:0;
                 padding:0;                
@@ -235,6 +255,32 @@
             .seq-buttons.selected {
                 background: #2d8fc1;
                 color: white;
+            }
+            
+            .samplingLoader {
+                font-size:14px;
+                color:#2687BE;
+                position:absolute;
+                width:100%;
+                margin-top: 70px;
+                margin-left:-6px;
+                display:none;
+            }
+            .samplingLoader img {
+                height:9px;
+            }
+            
+            div.tooltip {   
+              position: absolute;           
+              text-align: center;           
+              z-index:20;
+              color:white;
+              padding: 4px 6px 4px 6px;             
+              font: 11px arial;        
+              background: rgb(80,80,80);   
+              border: 0px;      
+              border-radius: 4px;           
+              pointer-events: none;         
             }
 
             /* Too narrow to support three columns */
@@ -261,11 +307,12 @@
         <script src="js/jquery.min.js"></script>
         <script src="js/class.js"></script>
         <script src="js/rdp.js"></script>
-        <script src="js/d3.v3.min.js"></script>
+        <script src="js/d3.js"></script>
         <script src="js/queue.min.js"></script>
         <script src="js/donut.d3.js"></script>
         <script src="js/histogram.d3.js"></script>
         <script src="js/movingLine.d3.js"></script>
+        <script src="js/nprogress.js"></script>
         <script src="js/bam.d3.js"></script>
         <script src="js/bam.iobio.js/bam.iobio.js"></script>
         <script src="js/bam.iobio.js/bam.js"></script>
@@ -273,6 +320,7 @@
         <script src="js/bam.iobio.js/inflate.js"></script>
         <script src="js/binary.js"></script>
         <link href='css/quicksand.css' rel='stylesheet' type='text/css'>
+        <link href='css/nprogress.css' rel='stylesheet' type='text/css'>
         <!-- <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'> -->
         
         <script>
@@ -306,7 +354,7 @@
                 
                 $("#fragment-length-distribution input[type='checkbox']").change(function(){
                     if ($(this).parent().hasClass("checked"))
-                        window.fragChart(hist2array(window.sampleStats.frag_hist), { noOutliers : true })
+                        window.fragChart(hist2array(window.sampleStats.frag_hist), { noOutliers : false })
                     else
                         window.fragChart(hist2array(window.sampleStats.frag_hist), { noOutliers : true })
                 });
@@ -373,18 +421,28 @@
                  $("#showData").css("visibility", "visible")
                  
                  // get read depth
-                 window.bam.estimateBaiReadDepth(function(readDepth) {                     
+                 window.bam.estimateBaiReadDepth(function(readDepth) {   
+                     // turn off read depth loading msg
+                     $("#readDepthLoadingMsg").css("display", "none");
+                     // turn on sampling message
+                     $(".samplingLoader").css("display", "block");
                      var dID = undefined;
                      // find biggest read depth
                      $.each(readDepth, function(name,points) { if (dID == undefined || readDepth[dID].length < points.length) dID=name; });
                      // update depth distribution    
                      window.depthChart.on("brushend", function(x,brush) {
-                        var options = { sequenceNames:[getSelectedSeqId()] };
+                        var options = { sequenceNames:[getSelectedSeqId()], onEnd:function(){NProgress.done()} };
                         if (!brush.empty()) {
                             options.start = parseInt(brush.extent()[0]);
                             options.end = parseInt(brush.extent()[1]);
                         }
+                        $("section#middle svg").css("display", "none");
+                        $(".samplingLoader").css("display", "block");
+                        updateTotalReads(0);
+                        NProgress.start();
                         window.bam.sampleStats( function(data){ 
+                            $(".samplingLoader").css("display", "none");
+                            $("section#middle svg").css("display", "block");
                             window.sampleStats = data;
                             updatePercentCharts(data, window.sampleDonutChart)
                             updateTotalReads(data.total_reads);
@@ -402,11 +460,19 @@
                      setSelectedSeq( $(".seq-buttons[data-id='"+ dID + "']")[0]);
                      
                  });                 
-             } 
-                                
+             }                               
             
             function resetRegionStats() {
                 window.regionStats = {'Total reads' : {number : 0}};
+            }
+            
+            function resetBrush() {
+                var brush = window.depthChart.brush();
+                var g = d3.selectAll("#depth-distribution .brush")
+                brush.clear();
+                brush(g);
+                // no need to trigger event? since setSelected sq will do it
+                //brush.event(g);
             }
                                     
             function getChr() {
@@ -437,14 +503,23 @@
                 $(".seq-buttons.selected").removeClass("selected");
                 $(selected).addClass("selected");  
                 window.depthChart( window.bam.readDepth[dataId] );  
-
+                // reset brush
+                resetBrush();
+                // turn on sampling message and off svg
+                $("section#middle svg").css("display", "none");
+                $(".samplingLoader").css("display", "block");      
+                updateTotalReads(0);          
+                NProgress.start();
                 // update selected stats
                 window.bam.sampleStats( function(data){ 
+                    // turn off sampling message
+                    $(".samplingLoader").css("display", "none");
+                    $("section#middle svg").css("display", "block");
                     window.sampleStats = data;
                     updatePercentCharts(data, window.sampleDonutChart)
                     updateTotalReads(data.total_reads);
                     updateHistogramCharts(data, undefined, "sampleBar")
-                },{sequenceNames:[dataId]});            
+                },{ sequenceNames:[dataId], onEnd:function(){NProgress.done()} });            
             }
             
             function getSelectedSeqId() {
@@ -475,10 +550,27 @@
                 window.fragChart(hist2array(histograms.frag_hist), { noOutliers : true });
                     
                 // update read length distribution
-                window.readLengthChart(hist2array(histograms.length_hist));
+                if ($("#read-length-distribution .selected").html() == "Length")
+                    window.readLengthChart(hist2array(histograms.length_hist));
+                else
+                    window.readLengthChart(hist2array(histograms.coverage_hist));
                 
                 // update map quality distribution
-                window.mapQualChart(hist2array(histograms.mapq_hist));                    
+                if ($("#mapping-quality-distribution .selected").html() == "Mapping")
+                    window.mapQualChart(hist2array(histograms.mapq_hist));
+                else
+                    window.mapQualChart(hist2array(histograms.baseq_hist));
+            }
+            
+            function toggleChart(elem, chartId) {
+                if ($(elem).hasClass("selected")) return;
+                // toggle selected
+                var pair = [elem, $(elem).siblings()[0]];
+                $(pair).toggleClass('selected');
+                
+                // redraw chart
+                var dataId = elem.getAttribute("data-id")                
+                window[chartId](hist2array( window.sampleStats[dataId]) );
             }
             
             function shortenNumber(num) {
@@ -493,10 +585,11 @@
             function hist2array(hist) {
                 var a = [];
                 for ( var i in hist) {
-                    var position = i;
-                    var instances = hist[i];
-                    for ( var j=0; j < instances; j++)
-                        a.push( parseInt(position) );
+                   a.push([ i,hist[i] ]);
+                    // var position = i;
+                    //                     var instances = hist[i];
+                    // for ( var j=0; j < instances; j++)
+                    //                         a.push( parseInt(position) );
                 }
                 return a;
             }
@@ -517,7 +610,6 @@
     <body>
         <header><a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span></a></header>
         <div id="selectData">
-            <!-- <input type="file" id="files" name="files[]" multiple /> -->
             <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
                 <div style="margin-left:auto;margin-right:auto;font-size: 33px; color: rgb(110,110,110); margin-bottom:70px">                
                     bam.iobio.io uses realtime sampling to generate global statistics of your bam file in a few seconds.
@@ -533,16 +625,12 @@
             <div id='bam-url' style="margin-top:24px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
                 <input id="url-input" value="http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam" ></input><button onClick="openBamUrl()">Go</button>
             </div>
-            
-            <!-- <span>Chromosome </span><input id="chromosome" value="11"/>
-            <span style="margin-left: 10px">Start Pos </span><input id="startpos" value="10108473"/>
-            <span style="margin-left: 10px">End Pos </span><input id="endpos" value="10198473"/>
-            <button onClick="testBam()" style="margin-left: 10px">Test Bam</button> -->
         </div>
         <div id="showData">
             <section id="top">
                 <div id="depth-distribution" class="panel">
                     <div class="title">Read Depth</div>
+                    <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:40px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
                     <ul id="sequences"></ul>
                 </div>
                 <div id="total-reads" class="panel">
@@ -553,22 +641,28 @@
             </section>
             <section id="middle">
                 <div id="percents">
-                    <div id="mapped_reads" class="percent panel">Mapped Reads
+                    <div id="mapped_reads" class="percent panel">Mapped Reads                        
+                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                         <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
                     </div>
                     <div id="forward_strands" class="percent panel">Fwd/Rev Strand
+                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                         <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
                     </div>
                     <div id="proper_pairs" class="percent panel">Proper Pairs
+                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                         <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
                     </div>
                     <div id="singletons" class="percent panel">Singletons
+                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                         <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
                     </div>
                     <div id="both_mates_mapped" class="percent panel">Both Pairs Mapped
+                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                         <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
                     </div>
                     <div id="duplicates" class="percent panel">Duplicates
+                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                         <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
                     </div>
                 </div>
@@ -578,9 +672,16 @@
                             <input type="checkbox"value="" id="checkbox2" data-toggle="checkbox" >
                             Outliers
                         </label>
+                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                     </div>
-                    <div id="read-length-distribution" class="distribution panel"><div>Read Length Distribution</div></div>
-                    <div id="mapping-quality-distribution" class="distribution panel"><div>Mapping Quality Distribution</div></div>
+                    <div id="read-length-distribution" class="distribution panel"><div>Read Distribution</div>
+                    <div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'readLengthChart')" data-id="coverage_hist">Coverage</span><span onclick="toggleChart(this,'readLengthChart')" data-id="length_hist">Length</span></div>
+                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                    </div>
+                    <div id="mapping-quality-distribution" class="distribution panel"><div>Quality Distribution</div>
+                        <div class="chart-chooser"><span onclick="toggleChart(this,'mapQualChart')" data-id="mapq_hist" class="selected">Mapping</span><span data-id="baseq_hist" onclick="toggleChart(this,'mapQualChart')">Base</span></div>
+                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                    </div>
                 </div>
             </section>   
             <!-- <textarea id="samt" width='800' height='400' style="border: 1px solid red"></textarea>     
@@ -589,5 +690,11 @@
             </textarea> -->
         </div>
         <script src="js/flatui-checkbox.js"></script>
+        <script>
+            var div = d3.select("body").append("div")   
+                .html("hhlllhh")
+                .attr("class", "tooltip")               
+                .style("opacity", 1);
+        </script>             
     </body>
 </html>

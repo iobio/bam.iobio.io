@@ -21,15 +21,14 @@ function movingLineD3(container) {
   
    function my(data, options) {
       
-      // handle options
-     // options = options || {};
+      
       
       var epsilonRate = 0.3;
       var epislon = parseInt( epsilonRate * (data[data.length-1].pos - data[0].pos) / width );
       var points = data.map(function(d) { return [d.pos,d.depth]; });
       data = properRDP(points, epislon);
       
-      x.domain(d3.extent(data, function(d){ return d[0]; }));
+      x.domain(d3.extent(data, function(d){ return d[0]; }));            
       var y = d3.scale.linear().domain([0, d3.max(data, function(d){ return d[1]; })]).range([height,0]);
       
       var xAxis = d3.svg.axis()
@@ -42,10 +41,28 @@ function movingLineD3(container) {
              return d;            
           })
           .orient("bottom");
-         
-      // if (options.brushend != undefined) 
-      //        brush.on("brushend", function(x,brush) { alert('hihi') } );   
-      //        // brush.on("brushend", function(x,brush) { options.brushend(x,brush); } );   
+      
+       // add mouseover
+       var formatter = d3.format(',');
+       svg.on("mouseover", function() {  
+             div.transition()        
+                 .duration(200)      
+                 .style("opacity", .9);      
+             div .html(formatter(parseInt(x.invert(d3.event.pageX - $(this).position().left))))
+                 .style("left", (d3.event.pageX) + "px") 
+                 .style("text-align", 'left')    
+                 .style("top", (d3.event.pageY - 24) + "px");    
+             })                  
+         .on("mousemove", function() {       
+            div.html(formatter(parseInt(x.invert(d3.event.pageX - $(this).position().left))))
+               .style("left", (d3.event.pageX) + "px") 
+               .style("top", (d3.event.pageY - 24) + "px");
+          })               
+         .on("mouseout", function() {       
+             div.transition()        
+                 .duration(500)      
+                 .style("opacity", 0);   
+       });   
          
       var line = d3.svg.line()
         .interpolate("step-after")
@@ -97,20 +114,19 @@ function movingLineD3(container) {
             .attr("y", -6)
             .attr("height", height + 6);
       
-      function brushed() {
-           alert("end");
-           window.mybrush = brush;
-           window.myx = x;
-          // x.domain(brush.empty() ? x.domain() : brush.extent());
-          // focus.select("path").attr("d", area);
-          // focus.select(".x.axis").call(xAxis);
-        }
    }
    
    my.on = function(ev, listener) { 
       if (ev == "brush" || ev == "brushstart" || ev == "brushend")
          brush.on(ev, function() { listener(x,brush); } );
+      return my;
    }
+   
+   my.brush = function(value) {
+      if (!arguments.length) return brush;
+      brush = value;
+      return my;
+   };
    
    return my;
 }
