@@ -1,7 +1,7 @@
 function movingLineD3(container) {
-   var margin = {top: 20, right: 30, bottom: 30, left: 30},
+   var margin = {top: 0, right: 30, bottom: 30, left: 30},
           width = $(container).width()*0.98 - margin.left - margin.right,
-          height = $(container).height()*0.65 - margin.top - margin.bottom;
+          height = $(container).height()*0.60 - margin.top - margin.bottom;
 
    var numBins = 20;
    
@@ -13,7 +13,7 @@ function movingLineD3(container) {
           
    var svg = d3.select(container).append("svg")
       .attr("width", '98%')
-      .attr("height", '65%')
+      .attr("height", '60%')
       .attr('viewBox',"0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
       .attr("preserveAspectRatio", "none")
       .append("g")

@@ -26,6 +26,18 @@ function histogramD3(container) {
          var minMax = d3.extent(values, function(d) { return parseInt(d[0]); });
       }
       
+      // get average
+      var totalValue = 0;
+      var numValues = 0;
+      for (var i=0, len = values.length; i < len; i++) {
+         var value = parseInt(values[i][0]);
+         if (  value >= minMax[0] && value <= minMax[1] ) {
+            totalValue += value * parseFloat(values[i][1]);
+            numValues += parseFloat(values[i][1]);
+         }
+      }
+      var avg = totalValue / numValues;
+      
       x.domain(minMax);
       // check for single value histogram
       if(x.domain()[0] == x.domain()[1])
@@ -61,11 +73,13 @@ function histogramD3(container) {
       var bar = svg.selectAll(".bar")
           .data(values)
         .enter().append("g")
+          .style("z-index", 5)
           .attr("class", "bar")
           .attr("transform", function(d) { return "translate(" + x(d[0]) + "," + height + ")"; });
 
       bar.append("rect")
           .attr("x", 1)
+          .style("z-index", 5)
           .attr("width", Math.max(x(x.domain()[0]+1),1))
           .attr("height", function(d) { return 0; })
           .on("mouseover", function(d) {  
@@ -93,6 +107,35 @@ function histogramD3(container) {
          .duration(200)
          .attr("width", Math.max(x(x.domain()[0]+1),1))
          .attr("height", function(d) { return parseInt(d[0]) >= minMax[0] ? Math.ceil(height - y(d[1])) : 0; });
+         
+      // set avg
+      var half = x(x.domain()[0]+1) / 2;
+      var avgLineG =  svg.selectAll(".avg")
+            .data([avg])
+         .enter().append("g")
+            .attr("class", "avg")
+            .style("z-index", 10)
+            .attr("transform", function(d) { return "translate(" + parseInt(x(d)+half) + "," + 0 + ")"; });
+      
+      var avgLine = avgLineG.append("line")
+         .attr("x1", 0)
+         .attr("x2", 0)
+         .attr("y1", height)
+         .attr("y2", -8)
+         .style("z-index", 10)
+         .style("stroke", "rgb(60,60,60)")
+         .style('stroke-dasharray', "5, 5")
+         .style("stroke-width", "1px")
+      
+      var avgText = avgLineG.append("text")
+            .text("avg")
+            .style("fill", "rgb(180,180,180)")
+            .attr("y", "-10");         
+         
+      svg.selectAll(".avg").transition()
+         .duration(200)
+         .attr("transform", function(d) { return "translate(" + parseInt(x(d)+half) + "," + 0 + ")"; });
+
       
       // update x axis
       if (svg.select(".x.axis").empty()) {

@@ -372,7 +372,7 @@ var Bam = Class.extend({
          }      
          
          var client = BinaryClient(me.iobio.bamstatsAlive);
-         var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=' + encodeURIComponent(me._getBamRegionsUrl(regions)));
+         var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 1000 ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
                   // var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 1000 ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
          var buffer = "";
          client.on('open', function(stream){
