@@ -459,9 +459,17 @@
                         updateTotalReads(0);
                         NProgress.start();
                         window.bam.sampleStats( function(data){ 
+                            // hide spinner
                             $(".samplingLoader").css("display", "none");
                             $("section#middle svg").css("display", "block");
+                            // save stats
                             window.sampleStats = data;
+                            // update progress bar
+                            var length = options.end - options.start;
+                            var percentDone = Math.round( ((data.last_read_position-options.start) / length) * 100) / 100;
+                            console.log(percentDone);
+                            if (NProgress.status < percentDone) NProgress.set(percentDone);
+                            // update charts
                             updatePercentCharts(data, window.sampleDonutChart)
                             updateTotalReads(data.total_reads);
                             updateHistogramCharts(data, undefined, "sampleBar")
@@ -536,6 +544,11 @@
                     $(".samplingLoader").css("display", "none");
                     $("section#middle svg").css("display", "block");
                     window.sampleStats = data;
+                    // update progress bar
+                    var length = window.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == dataId)return curr; }, false).end;
+                    var percentDone = Math.round( (data.last_read_position / length) * 100) / 100;
+                    if (NProgress.status < percentDone) NProgress.set(percentDone);
+                    // update charts
                     updatePercentCharts(data, window.sampleDonutChart)
                     updateTotalReads(data.total_reads);
                     updateHistogramCharts(data, undefined, "sampleBar")

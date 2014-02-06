@@ -345,7 +345,7 @@ var Bam = Class.extend({
    sampleStats: function(callback, options) {
       // Prints some basic statistics from sampled input BAM file(s)      
       options = $.extend({
-         binSize : 50000, // defaults
+         binSize : 200000, // defaults
          binNumber : 10,
          start : 1,
       },options);
@@ -373,7 +373,7 @@ var Bam = Class.extend({
          
          var client = BinaryClient(me.iobio.bamstatsAlive);
          var regStr = JSON.stringify(regions.map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));
-         var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 1000 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
+         var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 30000 -f 2000 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
          var buffer = "";
          client.on('open', function(stream){
             var stream = client.createStream({event:'run', params : {'url':url}});

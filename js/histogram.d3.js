@@ -1,5 +1,5 @@
 function histogramD3(container) {
-   var margin = {top: 20, right: 0, bottom: 30, left: 45},
+   var margin = {top: 20, right: 0, bottom: 30, left: 50},
           width = $(container).width()*0.98 - margin.left - margin.right,
           height = $(container).height()*0.85 - margin.top - margin.bottom;
 
