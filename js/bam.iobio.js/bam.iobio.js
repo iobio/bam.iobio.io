@@ -24,14 +24,10 @@ var Bam = Class.extend({
       // set iobio servers
       this.iobio = {}
       this.iobio.bamtools = "ws://bamtools.iobio.io";
-      this.iobio.bamtools = "ws://0.0.0.0:7030";
-      // this.iobio.samtools = "ws://samtools.iobio.io";
-      this.iobio.samtools = "ws://0.0.0.0:8060";
-      // this.iobio.bamReadDepther = "ws://bamReadDepther.iobio.io";
-      this.iobio.bamReadDepther = "ws://0.0.0.0:8021";
+      this.iobio.samtools = "ws://samtools.iobio.io";
+      this.iobio.bamReadDepther = "ws://bamReadDepther.iobio.io";
       this.iobio.bamMerger = "ws://bammerger.iobio.io";
-      // this.iobio.bamstatsAlive = "ws://bamstatsalive.iobio.io"
-      this.iobio.bamstatsAlive = "ws://0.0.0.0:7100"
+      this.iobio.bamstatsAlive = "ws://bamstatsalive.iobio.io"
       
       return this;
    },
