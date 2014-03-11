@@ -486,7 +486,8 @@
                      
                      setSelectedSeq( $(".seq-buttons[data-id='"+ dID + "']")[0]);
                      
-                 });                 
+                 });  
+                                
              }                               
             
             function resetRegionStats() {
@@ -551,7 +552,8 @@
                     updatePercentCharts(data, window.sampleDonutChart)
                     updateTotalReads(data.total_reads);
                     updateHistogramCharts(data, undefined, "sampleBar")
-                },{ sequenceNames:[dataId], onEnd:function(){NProgress.done()} });            
+                },{ sequenceNames:[dataId], onEnd:function(){NProgress.done();} 
+                });            
             }
             
             function getSelectedSeqId() {
@@ -579,6 +581,7 @@
             function updateHistogramCharts(histograms, otherMinMax, klass) {                
                 
                 // update fragment length distribution                
+                if (Object.keys(histograms.coverage_hist).length == 0) histograms.coverage_hist[0] = '1.0';
                 window.readCoverageDistChart(hist2array(histograms.coverage_hist));
                     
                 // update read length distribution
@@ -602,7 +605,7 @@
                 
                 // redraw chart
                 var dataId = elem.getAttribute("data-id")                
-                var outlier = elem.getAttribute('data-outlier') === 'true'
+                var outlier = elem.getAttribute('data-outlier') === 'true' || elem.getAttribute('data-outlier') == null;
                 window[chartId](hist2array( window.sampleStats[dataId]), { noOutliers : !outlier } );
             }
             

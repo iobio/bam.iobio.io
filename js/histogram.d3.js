@@ -71,13 +71,14 @@ function histogramD3(container) {
           .orient("bottom");
 
       var bar = svg.selectAll(".bar")
-          .data(values)
-        .enter().append("g")
+          .data(values);
+          
+      var barEnter = bar.enter().append("g")
           .style("z-index", 5)
           .attr("class", "bar")
           .attr("transform", function(d) { return "translate(" + x(d[0]) + "," + height + ")"; });
 
-      bar.append("rect")
+      barEnter.append("rect")
           .attr("x", 1)
           .style("z-index", 5)
           .attr("width", Math.max(x(x.domain()[0]+1),1))
@@ -96,7 +97,9 @@ function histogramD3(container) {
                        .duration(500)      
                        .style("opacity", 0);   
              });
-          
+      // remove
+      bar.exit().remove();
+      
       // update
       bar = svg.selectAll('.bar');
       bar.transition()
