@@ -28,7 +28,6 @@ var Bam = Class.extend({
       this.iobio.bamReadDepther = "ws://bamReadDepther.iobio.io";
       this.iobio.bamMerger = "ws://bammerger.iobio.io";
       this.iobio.bamstatsAlive = "ws://bamstatsalive.iobio.io"
-      
       return this;
    },
    
@@ -345,8 +344,8 @@ var Bam = Class.extend({
    sampleStats: function(callback, options) {
       // Prints some basic statistics from sampled input BAM file(s)      
       options = $.extend({
-         binSize : 50000, // defaults
-         binNumber : 10,
+         binSize : 40000, // defaults
+         binNumber : 20,
          start : 1,
       },options);
       var me = this;
