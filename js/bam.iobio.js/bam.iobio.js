@@ -358,9 +358,12 @@ var Bam = Class.extend({
             if ( length < options.binSize * options.binNumber) {
                regions.push(SQs[j])
             } else {
-               for (var i=0; i < options.binNumber; i++) {   
-                  
-                  var regionStart = parseInt(sqStart + length/options.binNumber * i);
+               // get random numbers
+               var randos = [];
+               for (var i=0; i < options.binNumber; i++) {   randos.push( Math.random() ); }
+               randos = randos.sort();
+               for (var k=0; k < randos.length; k++) {
+                  var regionStart = sqStart + parseInt(randos[k] * length)
                   regions.push({
                      'name' : SQs[j].name,
                      'start' : regionStart,
