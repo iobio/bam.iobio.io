@@ -50,8 +50,24 @@
               left: 0;
               top: 0;
               opacity: 0.01;
+              visibility:hidden;
               cursor: pointer;
-            }        
+            } 
+            
+            #bedfile-button{
+                position:absolute;
+                right:90px;
+                top:20px;
+                font-size:13px;
+                color: rgb(60,60,60);
+                letter-spacing: 0.06em;
+                cursor: pointer;
+                border-bottom: 1px solid rgb(180,180,180);
+            }
+            #bedfile {
+              visibility:hidden;
+              display:none;
+            }       
             #showData {
                 visibility: hidden;
             }            
@@ -90,6 +106,7 @@
                 -webkit-order: 1;
                    order: 1;
                 height: 225px;
+                position:relative;
             }
 
             .panel#total-reads {
@@ -239,7 +256,7 @@
             .chart-chooser span { margin: 0px 5px 0px 5px; padding-bottom: 3px; cursor:pointer;}
             
             #seq-list {
-                overflow-x: scroll;
+                overflow-x: auto;
                 list-style-type:none;
                 margin:0;
                 padding:0;                
@@ -376,6 +393,10 @@
                     window.lengthChart(hist2array(window.sampleStats[chartId]), { noOutliers : !outliers })                        
                 });
                 
+                $("#depth-distribution input[type='checkbox']").change(function(){
+                    goSampling({sequenceNames : [ getSelectedSeqId() ]});
+                });
+                
                 $('#url-input').focus(function() {
                     if (this.setSelectionRange) {
                         this.setSelectionRange(7, 7);
@@ -390,6 +411,7 @@
                 });
                 
                 document.getElementById('file').addEventListener('change', openBamFile, false);
+                document.getElementById('bedfile').addEventListener('change', openBedFile, false);
                 
                 
                 // initialize charts
@@ -399,15 +421,44 @@
                 window.mapQualChart = histogramD3("#mapping-quality-distribution");
                 window.readRegionChart = bamD3("#read-depth", 0.85, '#33A7E4');
                 window.sampleDonutChart = donutD3().radius(61).klass("sampleArc");
-                window.regionDonutChart = donutD3().radius(70).klass("regionArc");
+                // window.regionDonutChart = donutD3().radius(70).klass("regionArc");
                 
                 // hold onto stats
                 window.sampleStats = undefined;
                 window.regionStats = undefined;
                 
-                window.bam = undefined;
+                // default sampling values
+                window.samplingBinSize = 40000;
+                window.binNumber = 20;
+                window.binSize = 40000;
+                window.sampleMultiplier = 1;
+                window.sampleMultiplierLimit = 4;
                 
+                window.bam = undefined;
             });
+            
+            function openBedFile(event) {
+                
+                if (event.target.files.length != 1) {
+                   alert('must select a bed file');
+                   return;
+                }
+
+                // check file extension
+                var fileType = /[^.]+$/.exec(event.target.files[0].name)[0];            
+                if (fileType != 'bed')  {
+            	    alert('must select both a .bed file');
+            	    return;
+        	    }
+            	 
+	            // read bed file and store
+	            var reader = new FileReader();
+                reader.onload = function(theFile) {
+                    window.bed = this.result;
+                    goSampling({sequenceNames : [ getSelectedSeqId() ]});
+                }
+                reader.readAsText(event.target.files[0])
+              }             
             
             function openBamFile(event) {
                 
@@ -448,31 +499,12 @@
                      $.each(readDepth, function(name,points) { if (dID == undefined || readDepth[dID].length < points.length) dID=name; });
                      // update depth distribution    
                      window.depthChart.on("brushend", function(x,brush) {
-                        var options = { sequenceNames:[getSelectedSeqId()], onEnd:function(){NProgress.done()} };
+                        var options = { sequenceNames:[getSelectedSeqId()] };
                         if (!brush.empty()) {
                             options.start = parseInt(brush.extent()[0]);
                             options.end = parseInt(brush.extent()[1]);
                         }
-                        $("section#middle svg").css("display", "none");
-                        $(".samplingLoader").css("display", "block");
-                        updateTotalReads(0);
-                        NProgress.start();
-                        window.bam.sampleStats( function(data){ 
-                            // hide spinner
-                            $(".samplingLoader").css("display", "none");
-                            $("section#middle svg").css("display", "block");
-                            // save stats
-                            window.sampleStats = data;
-                            // update progress bar
-                            var length = options.end - options.start;
-                            var percentDone = Math.round( ((data.last_read_position-options.start) / length) * 100) / 100;
-                            console.log(percentDone);
-                            if (NProgress.status < percentDone) NProgress.set(percentDone);
-                            // update charts
-                            updatePercentCharts(data, window.sampleDonutChart)
-                            updateTotalReads(data.total_reads);
-                            updateHistogramCharts(data, undefined, "sampleBar")
-                        },options);
+                        goSampling(options);
                      });
 
                      // create seq buttons
@@ -482,7 +514,10 @@
                          htmlstr += "<li onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + d + "'>" + d + "</li>"
                      })
                      $('#depth-distribution').append("<ul id='seq-list'>" + htmlstr + "</ul>");
-                     $('#depth-distribution').append("<div style='font-size:13px;color:rgb(80,80,80);font-weight:400;margin-top:2px'>Reference(s)</div>");
+                     // handle reference label getting pushed down if scrollbar appears
+                     if( $("#seq-list")[0].offsetWidth < $("#seq-list")[0].scrollWidth) var marginTop = "-12px";
+                     else marginTop = "2px";
+                     $('#depth-distribution').append("<div style='font-size:13px;color:rgb(80,80,80);font-weight:400;margin-top:"+marginTop+"; width:100px;margin-left:auto;margin-right:auto'>Reference(s)</div>");
                      
                      setSelectedSeq( $(".seq-buttons[data-id='"+ dID + "']")[0]);
                      
@@ -523,7 +558,7 @@
                 // update total reads
                 var reads = shortenNumber( totalReads );
                 $("#total-reads>#value").html( reads[0] );
-                $("#total-reads>#base").html( reads[1] || "" );
+                $("#total-reads>#base>#number").html( reads[1] || "" );
             }
             
             function setSelectedSeq(selected) {
@@ -533,6 +568,18 @@
                 window.depthChart( window.bam.readDepth[dataId] );  
                 // reset brush
                 resetBrush();
+               // start sampling
+               goSampling({ sequenceNames:[dataId] }); 
+            }
+            
+            function goSampling(options) {
+                // add default options
+                options = $.extend({
+                    exomeSampling : 'checked' == $("#depth-distribution input").attr("checked"),
+                    bed : window.bed,
+                    onEnd:function(){NProgress.done();}   
+                },options); 
+                
                 // turn on sampling message and off svg
                 $("section#middle svg").css("display", "none");
                 $(".samplingLoader").css("display", "block");      
@@ -545,15 +592,34 @@
                     $("section#middle svg").css("display", "block");
                     window.sampleStats = data;
                     // update progress bar
-                    var length = window.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == dataId)return curr; }, false).end;
-                    var percentDone = Math.round( (data.last_read_position / length) * 100) / 100;
+                    if (options.start != null && options.end != null) {
+                        var length = options.end - options.start;
+                        var percentDone = Math.round( ((data.last_read_position-options.start) / length) * 100) / 100;
+                    } else {
+                        var length = window.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
+                        var percentDone = Math.round( (data.last_read_position / length) * 100) / 100;
+                    }
                     if (NProgress.status < percentDone) NProgress.set(percentDone);
                     // update charts
                     updatePercentCharts(data, window.sampleDonutChart)
                     updateTotalReads(data.total_reads);
                     updateHistogramCharts(data, undefined, "sampleBar")
-                },{ sequenceNames:[dataId], onEnd:function(){NProgress.done();} 
-                });            
+                },options);
+            }
+            
+            function sampleMore() {
+                if (window.sampleMultiplier >= window.sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
+                window.sampleMultiplier += 1;
+                var options = {
+                    sequenceNames : [ getSelectedSeqId() ],
+                    binNumber : window.binNumber + parseInt(window.binNumber/4 * window.sampleMultiplier),
+                    binSize : window.binSize + parseInt(window.binSize/4 * window.sampleMultiplier)
+                }
+                if (window.depthChart.brush().extent().length != 0 && window.depthChart.brush().extent().toString() != "0,0") {
+                    options.start = parseInt(window.depthChart.brush().extent()[0]);
+                    options.end = parseInt(window.depthChart.brush().extent()[1]);
+                }
+                goSampling(options);
             }
             
             function getSelectedSeqId() {
@@ -567,23 +633,26 @@
                 
                 //update percent charts
                 var keys = ['mapped_reads', "proper_pairs", "forward_strands", "singletons", "both_mates_mapped", "duplicates"]
-                var colors = ["rgb(45,143,193)", 'rgb(231, 76, 60)', "rgb(243, 156, 18)", "rgb(155, 89, 182)", "rgb(46, 204, 113)", "rgb(241, 196, 15)"];
+                // var colors = ["rgb(45,143,193)", 'rgb(231, 76, 60)', "rgb(243, 156, 18)", "rgb(155, 89, 182)", "rgb(46, 204, 113)", "rgb(241, 196, 15)"];
                 keys.forEach( function(key,i) {
                     var stat = stats[key];                    
                     var data = [ stat, stats['total_reads'] - stat ];
                     var arc = d3.select('#'+key + " svg").selectAll(".arc")
                         .data(pie(data));
-                    donutChart(arc, colors[i]);                  
+                    donutChart(arc);                  
                 });
                 
             }
             
-            function updateHistogramCharts(histograms, otherMinMax, klass) {                
+            function updateHistogramCharts(histograms, otherMinMax, klass) {  
                 
                 // update fragment length distribution                
                 if (Object.keys(histograms.coverage_hist).length == 0) histograms.coverage_hist[0] = '1.0';
-                window.readCoverageDistChart(hist2array(histograms.coverage_hist));
-                    
+                if('checked' == $("#depth-distribution input").attr("checked")) 
+                    window.readCoverageDistChart(hist2array(histograms.coverage_hist), {min : 11});
+                else
+                    window.readCoverageDistChart(hist2array(histograms.coverage_hist));
+
                 // update read length distribution
                 if ($("#length-distribution .selected").attr("data-id") == "length_hist")
                     window.lengthChart(hist2array(histograms.length_hist));
@@ -667,13 +736,23 @@
                 <div id="depth-distribution" class="panel">
                     <div class="title">Read Coverage</div>
                     <div style="font-size:13px;color:rgb(170,170,170)">(drag to select region)</div>
+                    <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
+                        <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
+                        Exome
+                    </label>
+                    <input type="file" name="files[]" id="bedfile"  multiple />
+                    <!-- <label id="bedfile-button" for="bedfile" >Add Bed</label> -->
                     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
                     <!-- <ul id="sequences"></ul> -->
                 </div>
                 <div id="total-reads" class="panel">
                     <div class="title">Reads Sampled</div>
                     <div id="value" style="font-size:7vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
-                    <div id="base" style="font-size:1.4vw; letter-spacing:6px; color:#2687BE; text-align:center;padding-left:8px;margin-top:-17px"></div>
+                    <div id="base" style="font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;margin-top:-17px">
+                        <span id="number"></span>
+                        <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-7px;cursor:pointer" onClick="sampleMore()"  src="images/more_sampling.png"></img>
+                    </div>
+                    
                 </div>
             </section>
             <section id="middle">
@@ -705,10 +784,6 @@
                 </div>
                 <div id="distributions" >
                     <div id="read-coverage-distribution" class="distribution panel"><div>Read Coverage Distribution</div>
-                        <!-- <label class="checkbox" for="checkbox2" style="float:right;margin-right:5px;cursor:pointer" >
-                            <input type="checkbox"value="" id="checkbox2" data-toggle="checkbox" >
-                            Outliers
-                        </label> -->
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                     </div>
                     <div id="length-distribution" class="distribution panel">

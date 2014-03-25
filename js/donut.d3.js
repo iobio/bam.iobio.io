@@ -8,7 +8,7 @@ function donutD3() {
    var formatter = d3.format(",.1f"); 
    var commaFormatter = d3.format(",0f"); 
 
-   function my(selection, c) {
+   function my(selection) {
       // c = c || "rgb(45,143,193)";
       // var calpha = c.replace(")", ",0.2)").replace("rgb", "rgba");
       var g = selection.enter().append("g")

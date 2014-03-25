@@ -27,6 +27,7 @@ function movingLineD3(container) {
       var epislon = parseInt( epsilonRate * (data[data.length-1].pos - data[0].pos) / width );
       var points = data.map(function(d) { return [d.pos,d.depth]; });
       data = properRDP(points, epislon);
+      // data = points;
       
       x.domain(d3.extent(data, function(d){ return d[0]; }));            
       var y = d3.scale.linear().domain([0, d3.max(data, function(d){ return d[1]; })]).range([height,0]);
@@ -65,7 +66,7 @@ function movingLineD3(container) {
        });   
          
       var line = d3.svg.line()
-        .interpolate("step-after")
+        .interpolate("linear")
         .x(function(d,i) { return parseInt(x(d[0])); })
         .y(function(d) { return parseInt(y(d[1])); })
 

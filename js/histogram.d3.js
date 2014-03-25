@@ -26,6 +26,9 @@ function histogramD3(container) {
          var minMax = d3.extent(values, function(d) { return parseInt(d[0]); });
       }
       
+      if (options && options.min) minMax[0] = options.min;
+      if (options && options.max) minMax[1] = options.max;
+      
       // get average
       var totalValue = 0;
       var numValues = 0;
@@ -44,7 +47,7 @@ function histogramD3(container) {
             x.domain([ x.domain()[0] - 10, x.domain()[1] + 10 ]);
 
       var y = d3.scale.linear()
-          .domain([0, d3.max(values, function(d) { return d[1]; })])
+          .domain([0, d3.max(values, function(d) { if (d[0] >= minMax[0] && d[0] <= minMax[1]) return d[1]; })])
           .range([height, 0]);
           
       var yAxis = d3.svg.axis()

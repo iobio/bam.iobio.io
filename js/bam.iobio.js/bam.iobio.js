@@ -99,6 +99,91 @@ var Bam = Class.extend({
       return encodeURI(url);
    },
    
+   _generateExomeBed: function(id) {
+      var bed = "";
+      var readDepth = this.readDepth[id];
+      var start, end;
+      var sum =0;
+      // for (var i=0; i < readDepth.length; i++){
+      //    sum += readDepth[i].depth;
+      // }
+      // console.log("avg = " + parseInt(sum / readDepth.length));
+      // merge contiguous blocks into a single block and convert to bed format
+      for( var i=0; i < readDepth.length; i++){
+         if (readDepth[i].depth < 20) {
+            if (start != undefined)
+               bed += id + "\t" + start + "\t" + end + "\t.\t.\t.\t.\t.\t.\t.\t.\t.\n"
+            start = undefined;
+         }
+         else {         
+            if (start == undefined) start = readDepth[i].pos;
+            end = readDepth[i].pos + 16384;
+         }
+      }
+      // add final record if data stopped on non-zero
+      if (start != undefined)
+         bed += id + "\t" + start + "\t" + end + "\t.\t.\t.\t.\t.\t.\t.\t.\t.\n"
+      return bed;
+   },
+   
+   _mapToBedCoordinates: function(ref, regions, bed){
+      var me = this;
+      var bedRegions = [];
+      var a = this._bedToCoordinateArray(ref, bed);
+      regions.forEach(function(reg) {
+         var start = reg.start
+         var length = reg.end - reg.start;
+         var ci = me._getClosestValueIndex(a, reg.start); // update lo start value
+         var maxci = a.length;
+         while(length > 0 && ci < maxci) {
+            var newStart,newEnd;
+            
+            // determine start position
+            if ( a[ci].start <= start ) newStart = start;
+            else newStart = a[ci].start;
+            
+            // determine end position
+            if ( a[ci].end >=  newStart+length ) newEnd = newStart+length
+            else { newEnd = a[ci].end; ci += 1; }
+            
+            // update length left to sample
+            length -= newEnd - newStart;
+            // push new regions
+            bedRegions.push({ name:reg.name, 'start':newStart, 'end':newEnd});
+         }            
+      })
+      return bedRegions;
+   },
+   
+   _bedToCoordinateArray: function(ref, bed) {
+      var a = [];
+      bed.split("\n").forEach(function(line){
+        if (line[0] == '#' || line == "") return;
+  
+        var fields = line.split("\t");
+       // if (fields[0] == 'chr'+ref && parseInt( parseInt(fields[2]) - parseInt(fields[1])) >= 300)
+        a.push({ chr:fields[0], start:parseInt(fields[1]), end:parseInt(fields[2]) });
+      });
+      return a;
+   },
+   
+   _getClosestValueIndex: function(a, x) {
+       var lo = -1, hi = a.length;
+       while (hi - lo > 1) {
+           var mid = Math.round((lo + hi)/2);
+           if (a[mid].start <= x) {
+               lo = mid;
+           } else {
+               hi = mid;
+           }
+       }
+       if (lo == -1 ) return 0;
+       if ( a[lo].end > x )
+           return lo;
+       else
+           return hi;
+   },
+   
    getReferencesWithReads: function(callback) {
       var refs = [];
       var me = this;
@@ -216,7 +301,7 @@ var Bam = Class.extend({
                                   byteCount += (endBlockAddress.block - startBlockAddress.block);
                                }
                               if ( bin >=  4681 && bin <= 37449) {
-                                 var position = (bin - 4681 + 1) * 16000;
+                                 var position = (bin - 4681) * 16384;
                                  readDepth[ref][bin-4681] = {pos:position, depth:byteCount};
                                  // readDepth[ref].push({pos:position, depth:byteCount});
                                 //bins[bin - 4681] = byteCount;
@@ -358,18 +443,29 @@ var Bam = Class.extend({
             if ( length < options.binSize * options.binNumber) {
                regions.push(SQs[j])
             } else {
-               // get random numbers
-               var randos = [];
-               for (var i=0; i < options.binNumber; i++) {   randos.push( Math.random() ); }
-               randos = randos.sort();
-               for (var k=0; k < randos.length; k++) {
-                  var regionStart = sqStart + parseInt(randos[k] * length)
-                  regions.push({
+               // create random reference coordinates
+               var regions = [];
+               for (var i=0; i < options.binNumber; i++) {   
+                  var s=sqStart + parseInt(Math.random()*length); 
+                  regions.push( {
                      'name' : SQs[j].name,
-                     'start' : regionStart,
-                     'end' : regionStart + options.binSize
-                  });
+                     'start' : s,
+                     'end' : s+options.binSize
+                  }); 
                }
+               // sort by start value
+               regions = regions.sort(function(a,b) {
+                  var x = a.start; var y = b.start;
+                  return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+               });               
+               
+               // intelligently determine exome bed coordinates
+               if (options.exomeSampling)
+                  options.bed = me._generateExomeBed(options.sequenceNames[0]);
+               
+               // map random region coordinates to bed coordinates
+               if (options.bed != undefined)
+                  regions = me._mapToBedCoordinates(SQs[0].name, regions, options.bed)
             }
          }      
          
