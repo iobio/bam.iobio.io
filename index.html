@@ -178,6 +178,10 @@
               shape-rendering: crispEdges;
             }
             
+            .global-panel .x.axis {
+                font-size: 9px;
+            }
+            
             .arc .fill {fill: #2d8fc1}             
             .alpha {fill: rgba(45,143,193,0.2);}
 
@@ -334,7 +338,8 @@
         <script src="js/d3.v3.min.js"></script>
         <script src="js/queue.min.js"></script>
         <script src="js/donut.d3.js"></script>
-        <script src="js/histogram.d3.js"></script>
+        <script src="js/histogram.d3.new.js"></script>
+        <script src="js/histogramViewFinder.d3.js"></script>
         <script src="js/movingLine.d3.js"></script>
         <script src="js/nprogress.js"></script>
         <script src="js/bam.d3.js"></script>
@@ -415,17 +420,43 @@
                 
                 
                 // initialize charts
+                // get height width of histogram charts and set viewboxes
+                var width = $("#read-coverage-distribution-focus").width();
+                var height = $("#read-coverage-distribution-focus").height();
+                var dists = document.getElementsByClassName("focus") // viewboxes need to be set at runtime to get accurate height/width
+                for (var i=0; i < dists.length; i++ ) { dists[i].setAttribute('viewBox', "0 0 " + width + " " + height) }
+                
+                // setup main window read depth chart
                 window.depthChart = movingLineD3("#depth-distribution");
-                window.readCoverageDistChart = histogramD3("#read-coverage-distribution");
-                window.lengthChart = histogramD3("#length-distribution");
-                window.mapQualChart = histogramD3("#mapping-quality-distribution");
+                
+                // setup read coverage histogram chart
+                window.readCoverageChart = histogramViewFinderD3()
+                    .width(width)
+                    .height(height);
+                window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
+                
+                // setup length histrogram chart
+                window.lengthChart = histogramViewFinderD3()
+                    .width(width)
+                    .height(height);
+                window.lengthChart.xAxis().tickFormat(tickFormatter);
+                window.lengthChart.yAxis().tickFormat(tickFormatter);
+                
+                // setup quality histogram chart
+                window.qualityChart = histogramD3()
+                    .width(width)
+                    .height(height);
+                window.qualityChart.xAxis().tickFormat(tickFormatter);
+                window.qualityChart.yAxis().tickFormat(tickFormatter);
+                
+                // setup main panel read chart
                 window.readRegionChart = bamD3("#read-depth", 0.85, '#33A7E4');
+                
+                // setup donut chart
                 window.sampleDonutChart = donutD3().radius(61).klass("sampleArc");
-                // window.regionDonutChart = donutD3().radius(70).klass("regionArc");
                 
                 // hold onto stats
                 window.sampleStats = undefined;
-                window.regionStats = undefined;
                 
                 // default sampling values
                 window.samplingBinSize = 40000;
@@ -648,22 +679,30 @@
                 
                 // update fragment length distribution                
                 if (Object.keys(histograms.coverage_hist).length == 0) histograms.coverage_hist[0] = '1.0';
-                if('checked' == $("#depth-distribution input").attr("checked")) 
-                    window.readCoverageDistChart(hist2array(histograms.coverage_hist), {min : 11});
-                else
-                    window.readCoverageDistChart(hist2array(histograms.coverage_hist));
+                // if('checked' == $("#depth-distribution input").attr("checked")) 
+                //                window.readCoverageDistChart(hist2array(histograms.coverage_hist), {min : 11});
+                //            else {
+                    
+                // update read coverage histogram
+                var d = Object.keys(histograms.coverage_hist).map(function(k) { return  [+k, +histograms.coverage_hist[k]] });
+                var selection = d3.select("#read-coverage-distribution-focus").datum(d);
+                window.readCoverageChart(selection);
 
-                // update read length distribution
-                if ($("#length-distribution .selected").attr("data-id") == "length_hist")
-                    window.lengthChart(hist2array(histograms.length_hist));
+                // update read length distribution                                
+                if ($("#length-distribution .selected").attr("data-id") == "frag_hist")
+                    var d = Object.keys(histograms.frag_hist).map(function(k) { return  [+k, +histograms.frag_hist[k]] });
                 else
-                    window.lengthChart(hist2array(histograms.frag_hist), { noOutliers : true });
-                
+                    var d = Object.keys(histograms.length_hist).map(function(k) { return  [+k, +histograms.length_hist[k]] });
+                var selection = d3.select("#length-distribution-focus").datum(d);
+                window.lengthChart(selection);
+
                 // update map quality distribution
                 if ($("#mapping-quality-distribution .selected").attr("data-id") == "mapq_hist")
-                    window.mapQualChart(hist2array(histograms.mapq_hist));
+                    var d = Object.keys(histograms.mapq_hist).map(function(k) { return  [+k, +histograms.mapq_hist[k]] });
                 else
-                    window.mapQualChart(hist2array(histograms.baseq_hist));
+                    var d = Object.keys(histograms.baseq_hist).map(function(k) { return  [+k, +histograms.baseq_hist[k]] });
+                var selection = d3.select("#mapping-quality-distribution-focus").datum(d);    
+                window.qualityChart(selection);
             }
             
             function toggleChart(elem, chartId) {
@@ -674,8 +713,12 @@
                 
                 // redraw chart
                 var dataId = elem.getAttribute("data-id")                
-                var outlier = elem.getAttribute('data-outlier') === 'true' || elem.getAttribute('data-outlier') == null;
-                window[chartId](hist2array( window.sampleStats[dataId]), { noOutliers : !outlier } );
+                // var outlier = elem.getAttribute('data-outlier') === 'true' || elem.getAttribute('data-outlier') == null;
+                var h = window.sampleStats[dataId];
+                var d = Object.keys(h).map(function(k) { return  [+k, +h[k]] });
+                var selection = d3.select($(elem).parent().parent().parent().find('svg')[0])
+                selection.datum(d);
+                window[chartId](selection);
             }
             
             function shortenNumber(num) {
@@ -709,6 +752,14 @@
                 goBam();
             }
             
+            function tickFormatter (d) {
+              if ((d / 1000000) >= 1)
+                d = d / 1000000 + "M";
+              else if ((d / 1000) >= 1)
+                d = d / 1000 + "K";
+              return d;            
+           }
+            
             
         </script>
     </head>
@@ -736,10 +787,10 @@
                 <div id="depth-distribution" class="panel">
                     <div class="title">Read Coverage</div>
                     <div style="font-size:13px;color:rgb(170,170,170)">(drag to select region)</div>
-                    <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
+                    <!-- <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
                         <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
                         Exome
-                    </label>
+                    </label> -->
                     <input type="file" name="files[]" id="bedfile"  multiple />
                     <!-- <label id="bedfile-button" for="bedfile" >Add Bed</label> -->
                     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
@@ -785,18 +836,21 @@
                 <div id="distributions" >
                     <div id="read-coverage-distribution" class="distribution panel"><div>Read Coverage Distribution</div>
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                        <svg id="read-coverage-distribution-focus" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
                     </div>
                     <div id="length-distribution" class="distribution panel">
                         <div><div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Fragment Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span></div></div>                    
-                        <label class="checkbox" for="checkbox2" style="float:right;margin-right:5px;cursor:pointer" >
-                            <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
-                            Outliers
-                        </label>                        
+                                                <!-- <label class="checkbox" for="checkbox2" style="float:right;margin-right:5px;cursor:pointer" >
+                                                                            <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
+                                                                            Outliers
+                                                                        </label>                         -->
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                        <svg id="length-distribution-focus" class="focus" preserveAspectRatio="none" style="width:98%;height:85%"></svg>
                     </div>
                     <div id="mapping-quality-distribution" class="distribution panel">
-                        <div><div class="chart-chooser"><span onclick="toggleChart(this,'mapQualChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'mapQualChart')">Base Quality</span></div></div>
+                        <div><div class="chart-chooser"><span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span></div></div>
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                        <svg id="mapping-quality-distribution-focus" class="focus" preserveAspectRatio="none" style="width:98%;height:85%"></svg>
                     </div>
                 </div>
             </section>   
