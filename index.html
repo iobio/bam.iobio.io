@@ -54,13 +54,12 @@
               cursor: pointer;
             } 
             
-            #bedfile-button{
+            .bedfile-button{
                 position:absolute;
-                right:90px;
+                right:15px;
                 top:20px;
                 font-size:13px;
                 color: rgb(60,60,60);
-                letter-spacing: 0.06em;
                 cursor: pointer;
                 border-bottom: 1px solid rgb(180,180,180);
             }
@@ -180,6 +179,11 @@
             
             .global-panel .x.axis {
                 font-size: 9px;
+            }
+            
+            .global-panel .instruction {
+                font-size: 10px;
+                rgb(170,170,170);
             }
             
             .arc .fill {fill: #2d8fc1}             
@@ -338,7 +342,7 @@
         <script src="js/d3.v3.min.js"></script>
         <script src="js/queue.min.js"></script>
         <script src="js/donut.d3.js"></script>
-        <script src="js/histogram.d3.new.js"></script>
+        <script src="js/histogram.d3.js"></script>
         <script src="js/histogramViewFinder.d3.js"></script>
         <script src="js/movingLine.d3.js"></script>
         <script src="js/nprogress.js"></script>
@@ -381,25 +385,33 @@
                   };
                 }());
                 
-                $("#read-coverage-distribution input[type='checkbox']").change(function(){
-                    if ($(this).parent().hasClass("checked"))
-                        window.readCoverageDistChart(hist2array(window.sampleStats.coverage_hist), { noOutliers : false })
-                    else
-                        window.readCoverageDistChart(hist2array(window.sampleStats.coverage_hist), { noOutliers : true })
-                });
+                // $("#read-coverage-distribution input[type='checkbox']").change(function(){
+                //     if ($(this).parent().hasClass("checked"))
+                //         window.readCoverageDistChart(hist2array(window.sampleStats.coverage_hist), { noOutliers : false })
+                //     else
+                //         window.readCoverageDistChart(hist2array(window.sampleStats.coverage_hist), { noOutliers : true })
+                // });
                 
                 
                 $("#length-distribution input[type='checkbox']").change(function(){
                     var outliers = $(this).parent().hasClass("checked");
-                    // set data attribute
-                    $("#length-distribution .chart-chooser span").attr("data-outlier", outliers);
-                    var chartId = $("#length-distribution .chart-chooser .selected").attr("data-id")
-                    // redraw charts
-                    window.lengthChart(hist2array(window.sampleStats[chartId]), { noOutliers : !outliers })                        
+
+                    var dataId = $("#length-distribution .chart-chooser .selected").attr("data-id")
+                    var h = window.sampleStats[dataId];
+                    var d = Object.keys(h).map(function(k) { return  [+k, +h[k]] });
+                    var selection = d3.select("#length-distribution svg")
+                    selection.datum(d);
+                    window.lengthChart(selection, {'outliers':outliers});
                 });
                 
                 $("#depth-distribution input[type='checkbox']").change(function(){
                     goSampling({sequenceNames : [ getSelectedSeqId() ]});
+                });
+                
+                $("#url-input").keyup(function(event){
+                    if(event.keyCode == 13){
+                        $("#bam-url-go-button").click();
+                    }
                 });
                 
                 $('#url-input').focus(function() {
@@ -421,8 +433,8 @@
                 
                 // initialize charts
                 // get height width of histogram charts and set viewboxes
-                var width = $("#read-coverage-distribution-focus").width();
-                var height = $("#read-coverage-distribution-focus").height();
+                var width = $("#read-coverage-distribution-chart").width();
+                var height = $("#read-coverage-distribution-chart").height();
                 var dists = document.getElementsByClassName("focus") // viewboxes need to be set at runtime to get accurate height/width
                 for (var i=0; i < dists.length; i++ ) { dists[i].setAttribute('viewBox', "0 0 " + width + " " + height) }
                 
@@ -436,7 +448,7 @@
                 window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
                 
                 // setup length histrogram chart
-                window.lengthChart = histogramViewFinderD3()
+                window.lengthChart = histogramD3()
                     .width(width)
                     .height(height);
                 window.lengthChart.xAxis().tickFormat(tickFormatter);
@@ -468,19 +480,32 @@
                 window.bam = undefined;
             });
             
+            function removeBedFile() {
+                $("#remove-bedfile-button").css('visibility', 'hidden')
+                $("#add-bedfile-button").css('visibility', 'visible');                
+                window.bed = undefined;
+                goSampling({sequenceNames : [ getSelectedSeqId() ]});
+            }
+            
             function openBedFile(event) {
                 
                 if (event.target.files.length != 1) {
-                   alert('must select a bed file');
+                   alert('must select a .bed file');
                    return;
                 }
 
                 // check file extension
                 var fileType = /[^.]+$/.exec(event.target.files[0].name)[0];            
                 if (fileType != 'bed')  {
-            	    alert('must select both a .bed file');
+            	    alert('must select a .bed file');
             	    return;
         	    }
+        	    // clear brush on read coverage chart        	    
+        	    window.readCoverageChart.setBrush([0,0]);
+        	    
+                // hide add bed / show remove bed buttons
+                $("#add-bedfile-button").css('visibility', 'hidden');
+                $("#remove-bedfile-button").css('visibility', 'visible')
             	 
 	            // read bed file and store
 	            var reader = new FileReader();
@@ -677,31 +702,36 @@
             
             function updateHistogramCharts(histograms, otherMinMax, klass) {  
                 
-                // update fragment length distribution                
+                // check if coverage is zero                
                 if (Object.keys(histograms.coverage_hist).length == 0) histograms.coverage_hist[0] = '1.0';
-                // if('checked' == $("#depth-distribution input").attr("checked")) 
-                //                window.readCoverageDistChart(hist2array(histograms.coverage_hist), {min : 11});
-                //            else {
-                    
                 // update read coverage histogram
-                var d = Object.keys(histograms.coverage_hist).map(function(k) { return  [+k, +histograms.coverage_hist[k]] });
-                var selection = d3.select("#read-coverage-distribution-focus").datum(d);
+                var d = Object.keys(histograms.coverage_hist).filter(function(i){return histograms.coverage_hist[i] != "0"}).map(function(k) { return [+k, +histograms.coverage_hist[k]] });
+                var selection = d3.select("#read-coverage-distribution-chart").datum(d);
                 window.readCoverageChart(selection);
+                if (histograms.coverage_hist[0] > 0.65) {
+                    // most likely exome
+                    // exclude <5 values b\c they are not informative dominating the chart
+                    var min = 5;
+                    var max = window.readCoverageChart.globalChart().x().domain()[1];
+                    window.readCoverageChart.setBrush([min, max]);
+                }
 
                 // update read length distribution                                
                 if ($("#length-distribution .selected").attr("data-id") == "frag_hist")
-                    var d = Object.keys(histograms.frag_hist).map(function(k) { return  [+k, +histograms.frag_hist[k]] });
+                    var d = Object.keys(histograms.frag_hist).filter(function(i){return histograms.frag_hist[i] != "0"}).map(function(k) { return  [+k, +histograms.frag_hist[k]] });
                 else
                     var d = Object.keys(histograms.length_hist).map(function(k) { return  [+k, +histograms.length_hist[k]] });
-                var selection = d3.select("#length-distribution-focus").datum(d);
-                window.lengthChart(selection);
+                // remove outliers if outliers checkbox isn't explicity checked
+                var outliers = $("#length-distribution .checkbox").hasClass("checked");
+                var selection = d3.select("#length-distribution-chart").datum(d);
+                window.lengthChart( selection, {'outliers':outliers} );
 
                 // update map quality distribution
                 if ($("#mapping-quality-distribution .selected").attr("data-id") == "mapq_hist")
                     var d = Object.keys(histograms.mapq_hist).map(function(k) { return  [+k, +histograms.mapq_hist[k]] });
                 else
                     var d = Object.keys(histograms.baseq_hist).map(function(k) { return  [+k, +histograms.baseq_hist[k]] });
-                var selection = d3.select("#mapping-quality-distribution-focus").datum(d);    
+                var selection = d3.select("#mapping-quality-distribution-chart").datum(d);    
                 window.qualityChart(selection);
             }
             
@@ -729,18 +759,18 @@
                 else
                     return [Math.round(num/1000000), "million"];
             }
-                        
-            function hist2array(hist) {
-                var a = [];
-                for ( var i in hist) {
-                   a.push([ i,hist[i] ]);
-                    // var position = i;
-                    //                     var instances = hist[i];
-                    // for ( var j=0; j < instances; j++)
-                    //                         a.push( parseInt(position) );
-                }
-                return a;
-            }
+                                    
+            // function hist2array(hist) {
+            //     var a = [];
+            //     for ( var i in hist) {
+            //        a.push([ i,hist[i] ]);
+            //         // var position = i;
+            //         //                     var instances = hist[i];
+            //         // for ( var j=0; j < instances; j++)
+            //         //                         a.push( parseInt(position) );
+            //     }
+            //     return a;
+            // }
                         
             function displayBamUrlBox() {
                 $('#bam-url').css('visibility','visible');
@@ -779,7 +809,7 @@
                 <div style="clear:both"></div>
             </div>
             <div id='bam-url' style="margin-top:24px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
-                <input id="url-input" value="http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam" ></input><button onClick="openBamUrl()">Go</button>
+                <input id="url-input" value="http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam" ></input><button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
             </div>
         </div>
         <div id="showData">
@@ -792,7 +822,9 @@
                         Exome
                     </label> -->
                     <input type="file" name="files[]" id="bedfile"  multiple />
-                    <!-- <label id="bedfile-button" for="bedfile" >Add Bed</label> -->
+                    <div id="remove-bedfile-button" class="bedfile-button" onClick="removeBedFile()" style="visibility:hidden">Remove Bed</div>
+                    <div id="default-bedfile-button" class="bedfile-button" title="1000G human exome targets file " style="right:116px">Default Bed</div>
+                    <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
                     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
                     <!-- <ul id="sequences"></ul> -->
                 </div>
@@ -836,21 +868,21 @@
                 <div id="distributions" >
                     <div id="read-coverage-distribution" class="distribution panel"><div>Read Coverage Distribution</div>
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg id="read-coverage-distribution-focus" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
+                        <svg id="read-coverage-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
                     </div>
                     <div id="length-distribution" class="distribution panel">
                         <div><div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Fragment Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span></div></div>                    
-                                                <!-- <label class="checkbox" for="checkbox2" style="float:right;margin-right:5px;cursor:pointer" >
-                                                                            <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
-                                                                            Outliers
-                                                                        </label>                         -->
+                        <label class="checkbox" for="checkbox2" style="position:absolute;right:10px;top:24px;cursor:pointer" >
+                            <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
+                            Outliers
+                        </label>                        
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg id="length-distribution-focus" class="focus" preserveAspectRatio="none" style="width:98%;height:85%"></svg>
+                        <svg id="length-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:85%"></svg>
                     </div>
                     <div id="mapping-quality-distribution" class="distribution panel">
                         <div><div class="chart-chooser"><span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span></div></div>
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg id="mapping-quality-distribution-focus" class="focus" preserveAspectRatio="none" style="width:98%;height:85%"></svg>
+                        <svg id="mapping-quality-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
                     </div>
                 </div>
             </section>   

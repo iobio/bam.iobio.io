@@ -1,223 +1,218 @@
 function histogramD3() {
-   var margin = {top: 20, right: 0, bottom: 30, left: 50};
-   //        width = $(container).width()*0.98 - margin.left - margin.right,
-   //        height = $(container).height()*0.85 - margin.top - margin.bottom;
-   var width = 200,
-       height = 100,
-       numBins = 20;
-
-   
-   var x = d3.scale.linear();
-   var y = d3.scale.linear();
-   // var svg = d3.select(container).append("svg")
-   //    .attr("width", '98%')
-   //    .attr("height", '85%')
-   //    .attr('viewBox',"0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
-   //    .attr("preserveAspectRatio", "none")
-   //    .append("g")
-   //       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  
-   function my(selection, options) {
-         var svg = d3.select(selection[0].parentNode).append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-         var barEnter = selection.enter().append("svg:g");
-         // if (options && options.noOutliers) {
-         //    var q1 = quantile(values,0.25); 
-         //    var q3 = quantile(values,0.75);
-         //    var iqr = (q3-q1) * 1.5; //
-         //    var minMax = [ Math.max(q1-iqr,0), q3+iqr ];
-         // } else {
-         //    var minMax = d3.extent(values, function(d) { return parseInt(d[0]); });
-         // }
-         //       
-         // if (options && options.min) minMax[0] = options.min;
-         // if (options && options.max) minMax[1] = options.max;
-         //       
-         // // get average
-         // var totalValue = 0;
-         // var numValues = 0;
-         // for (var i=0, len = values.length; i < len; i++) {
-         //    var value = parseInt(values[i][0]);
-         //    if (  value >= minMax[0] && value <= minMax[1] ) {
-         //       totalValue += value * parseFloat(values[i][1]);
-         //       numValues += parseFloat(values[i][1]);
-         //    }
-         // }
-         // var avg = totalValue / numValues;
+  var margin = {top: 20, right: 20, bottom: 20, left: 50},
+      width = 200,
+      height = 100,
+      defaults = {outliers:true},
+      xValue = function(d) { return d[0]; },
+      yValue = function(d) { return d[1]; },
+      x = d3.scale.linear(),
+      y = d3.scale.linear(),
+      xAxis = d3.svg.axis().scale(x).orient("bottom"),
+      yAxis = d3.svg.axis().scale(y).orient("left").ticks(6),
+      brush = d3.svg.brush().x(x);
       
-         x
-            .domain( d3.extent(selection.data(), function(d) { return +d.bin}) )
-            .range([0,width]);
-         // check for single value histogram
-         if(x.domain()[0] == x.domain()[1])
-               x.domain([ x.domain()[0] - 10, x.domain()[1] + 10 ]);
+  function chart(selection, options) {
+    // merge options and defaults
+    options = $.extend(defaults,options);
+    var innerHeight = height - margin.top - margin.bottom;
+    selection.each(function(data) {
+       // set svg element
+       var svg = d3.select(this);
 
-         y 
-          .domain([0, d3.max(selection.data(), function(d) {return +d.depth; })])
-          .range([height, 0]);
-          
-         var yAxis = d3.svg.axis()
-           .scale(y)
-           .tickFormat(function (d) {
-              if ((d / 1000000) >= 1)
-                d = d / 1000000 + "M";
-              else if ((d / 1000) >= 1)
-                d = d / 1000 + "K";
-              return d;            
-           })
-           .ticks(6)
-           .orient("left");      
-
-         var xAxis = d3.svg.axis()
-             .scale(x)
-             .tickFormat(function (d) {
-                if ((d / 1000000) >= 1)
-                  d = d / 1000000 + "M";
-                else if ((d / 1000) >= 1)
-                  d = d / 1000 + "K";
-                return d;            
-             })
-             .orient("bottom");
-
-         // var bar = svg.selectAll(".bar")
-         //          .data(values);
-         // var bar = selection;
-          
-         barEnter
-             .style("z-index", 5)
-             .attr("class", "bar")
-             .attr("transform", function(d) { return "translate(" + x(d.bin) + "," + height + ")"; });
-
-         barEnter.append("rect")
-             .attr("x", 1)
-             .style("z-index", 5)
-             .attr("width", Math.max(x(x.domain()[0]+1),1))
-             .attr("height", 0)
-             .on("mouseover", function(d) {  
-                      div.transition()        
-                          .duration(200)      
-                          .style("opacity", .9);      
-                      div .html(d.bin + ", " + d.depth)                                 
-                          .style("left", (d3.event.pageX) + "px") 
-                          .style("text-align", 'left')    
-                          .style("top", (d3.event.pageY - 24) + "px");    
-                      })                  
-                  .on("mouseout", function(d) {       
-                      div.transition()        
-                          .duration(500)      
-                          .style("opacity", 0);   
-                });
-         // remove
-         selection.exit().remove();
+      // Convert data to standard representation greedily;
+      // this is needed for nondeterministic accessors.
+      data = data.map(function(d, i) {return [xValue.call(data, d, i), yValue.call(data, d, i)];});
       
-         // update
-         // bar = svg.selectAll('.bar');
-         selection.transition()
-            .duration(200)
-            .attr("transform", function(d) { 
-               return "translate(" + x(d.bin) + "," + Math.floor(y(d.depth)) + ")"; 
-            });
+      // remove outliers if wanted
+      if ( !options.outliers )
+         data = removeOutliers(data);
+
+      // Update the x-scale.
+      x  .domain(d3.extent(data, function(d) { return d[0]; }));
+      x  .range([0, width - margin.left - margin.right]);
+      
+      // Check for single value x axis.
+      if (x.domain()[0] == x.domain()[1]) { var v = x.domain()[0]; x.domain([v-5,v+5]);}
+
+      // Update the y-scale.
+      y  .domain([0, d3.max(data, function(d) { return d[1]; })])
+      y  .range([innerHeight , 0]);
+
+      // Select the g element, if it exists.
+      var g = svg.selectAll("g").data([0]);
+
+      // Otherwise, create the skeletal chart.
+      var gEnter = g.enter().append("g");
+      gEnter.append("g").attr("class", "x axis").attr("transform", "translate(0," + y.range()[0] + ")");
+      gEnter.append("g").attr("class", "y axis");
+      gEnter.append("g").attr("class", "x brush")      
+
+      // Update the outer dimensions.
+      svg .attr("width", width)
+          .attr("height", height);
+
+      // Update the inner dimensions.
+      g.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Add new bars groups.
+      var bar = g.selectAll(".bar").data(data)
+      var barEnter = bar.enter().append("g")
+            .attr("class", "bar")
+            .attr("transform", function(d) { return "translate(" + x(d[0]) + "," + innerHeight + ")"; });
+      
+      //  Add new bars.
+      barEnter.append("rect")
+         .attr("x", 1)
+         .style("z-index", 5)
+         .attr("width", Math.max(x(x.domain()[0]+1),1))
+         .attr("height", 0)
+         .on("mouseover", function(d) {  
+            div.transition()        
+               .duration(200)      
+               .style("opacity", .9);      
+            div.html(d[0] + ", " + d[1])                                 
+         .style("left", (d3.event.pageX) + "px") 
+         .style("text-align", 'left')    
+         .style("top", (d3.event.pageY - 24) + "px");    
+         })                  
+         .on("mouseout", function(d) {       
+            div.transition()        
+               .duration(500)      
+               .style("opacity", 0);   
+         });
          
-         selection.select("rect").transition()
-            .duration(200)
-            .attr("width", Math.max(x(x.domain()[0]+1),1))
-            .attr("height", function(d) { 
-               return parseInt(d.bin) >= x.domain()[0] ? Math.ceil(height - y(d.depth)) : 0; 
-            });
-         
-         // set avg
-         // var half = x(x.domain()[0]+1) / 2;
-         // var avgLineG =  svg.selectAll(".avg")
-         //       .data([avg])
-         //    .enter().append("g")
-         //       .attr("class", "avg")
-         //       .style("z-index", 10)
-         //       .attr("transform", function(d) { return "translate(" + parseInt(x(d)+half) + "," + 0 + ")"; });
-         //       
-         // var avgLine = avgLineG.append("line")
-         //    .attr("x1", 0)
-         //    .attr("x2", 0)
-         //    .attr("y1", height)
-         //    .attr("y2", -8)
-         //    .style("z-index", 10)
-         //    .style("stroke", "rgb(60,60,60)")
-         //    .style('stroke-dasharray', "5, 5")
-         //    .style("stroke-width", "1px")
-         //       
-         // var avgText = avgLineG.append("text")
-         //       .text("avg")
-         //       .style("fill", "rgb(180,180,180)")
-         //       .attr("y", "-10");         
-         // 
-         // svg.selectAll(".avg").transition()
-         //    .duration(200)
-         //    .attr("transform", function(d) { return "translate(" + parseInt(x(d)+half) + "," + 0 + ")"; });
+      // Remove extra bar groups.
+      bar.exit().remove();
+               
+      // Update bars groups.
+      bar.transition()
+         .duration(200)
+         .attr("transform", function(d) { 
+            return "translate(" + parseInt(x(d[0])) + "," + Math.floor(y(d[1])) + ")"; 
+         });
 
-      
-         // update x axis
-         if (svg.select(".x.axis").empty()) {
-            svg.append("g")
-               .attr("class", "x axis")
-               .attr("transform", "translate(0," + height + ")")
-               .call(xAxis);
-         } else {
-            svg.select(".x.axis").transition()
-               .duration(200)
-               .call(xAxis);
-         }  
-      
-         // update y axis
-         if (svg.select(".y.axis").empty()) {
-            svg.append("g")
-               .attr("class", "y axis")
-               // .attr("transform", "translate(0," + height + ")")
-               .call(yAxis);
-         } else {
-            svg.select(".y.axis").transition()
-               .duration(200)
-               .call(yAxis);
-         }
-      
-         function quantile(arr, p) {
-            var length = arr.reduce(function(previousValue, currentValue, index, array){
-              return previousValue + currentValue[1];
-            }, 0) - 1;
-            var H = length * p + 1, 
-             h = Math.floor(H);
+      // Update bars.
+      bar.select("rect").transition()
+         .duration(200)
+         .attr("width", Math.max(x(x.domain()[0]+1),1))
+         .attr("height", function(d) { 
+            return parseInt(d[0]) >= x.domain()[0] ? Math.ceil(innerHeight - parseInt(y(d[1]))) : 0; 
+         });
+
+      // Update the x-axis.
+      g.select(".x.axis").transition()
+          .duration(200)
+          .call(xAxis);
           
-            var hValue, hMinus1Value, currValue = 0;
-            for (var i=0; i < arr.length; i++) {
-               currValue += arr[i][1];
-               if (hMinus1Value == undefined && currValue >= (h-1))
-                  hMinus1Value = arr[i][0];
-               if (hValue == undefined && currValue >= h) {
-                  hValue = arr[i][0];
-                  break;
-               }
-            } 
-             var v = +hMinus1Value, e = H - h;
-             return e ? v + e * (hValue - v) : v;
-         } 
+      // Update the y-axis.
+      g.select(".y.axis").transition()
+         .duration(200)
+         .call(yAxis);
+         
+      // Update brush if event has been set.
+      if( brush.on("brushend") || brush.on("brushstart") || brush.on("brush")) {
+         g.select(".x.brush").call(brush).call(moveToFront)
+             .selectAll("rect")
+               .attr("y", -6)
+               .attr("height", innerHeight + 6);      
+      }
+    });
+    // moves selection to front of svg
+    function moveToFront(selection) {
+      return selection.each(function(){
+         this.parentNode.appendChild(this);
+      });
+    }
+    
+   function removeOutliers(data) {
+      var q1 = quantile(data, 0.25); 
+      var q3 = quantile(data, 0.75);
+      var iqr = (q3-q1) * 1.5; //
+      return data.filter(function(d) { return (d[0]>=(Math.max(q1-iqr,0)) && d[0]<=(q3+iqr)) });
    }
-   
-   my.width = function(value) {
-      if (!arguments.length) return width;
-      width = value - margin.left - margin.right;
-      return my;
-   };
-   
-   my.height = function(value) {
-      if (!arguments.length) return height;
-      height = value - margin.top - margin.bottom;
-      return my;
-   };
-   
-   my.numBins = function(value) {
-      if (!arguments.length) return numBins;
-      numBins = value;
-      return my;
-   }  
-      
-   return my;
-   
+    
+   function quantile(arr, p) {
+      var length = arr.reduce(function(previousValue, currentValue, index, array){
+         return previousValue + currentValue[1];
+      }, 0) - 1;
+      var H = length * p + 1, 
+      h = Math.floor(H);
+
+      var hValue, hMinus1Value, currValue = 0;
+      for (var i=0; i < arr.length; i++) {
+         currValue += arr[i][1];
+         if (hMinus1Value == undefined && currValue >= (h-1))
+            hMinus1Value = arr[i][0];
+         if (hValue == undefined && currValue >= h) {
+            hValue = arr[i][0];
+            break;
+         }
+      } 
+      var v = +hMinus1Value, e = H - h;
+      return e ? v + e * (hValue - v) : v;
+   } 
+    
+  }
+
+  chart.margin = function(_) {
+    if (!arguments.length) return margin;
+    margin = _;
+    return chart;
+  };
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  };
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
+    return chart;
+  };
+
+  chart.xValue = function(_) {
+    if (!arguments.length) return xValue;
+    xValue = _;
+    return chart;
+  };
+
+  chart.yValue = function(_) {
+    if (!arguments.length) return yValue;
+    yValue = _;
+    return chart;
+  };
+  
+  chart.x = function(_) {
+    if (!arguments.length) return x;
+    x = _;
+    return chart;
+  };
+
+  chart.y = function(_) {
+    if (!arguments.length) return y;
+    y = _;
+    return chart;
+  };
+    
+  chart.xAxis = function(_) {
+    if (!arguments.length) return xAxis;
+    xAxis = _;
+    return chart; 
+  };
+
+  chart.yAxis = function(_) {
+    if (!arguments.length) return yAxis;
+    yAxis = _;
+    return chart; 
+  };  
+  
+  chart.brush = function(_) {
+    if (!arguments.length) return brush;
+    brush = _;
+    return chart; 
+  };
+
+  return chart;
 }

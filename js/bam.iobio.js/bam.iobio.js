@@ -126,7 +126,7 @@ var Bam = Class.extend({
       return bed;
    },
    
-   _mapToBedCoordinates: function(ref, regions, bed){
+   _tmp: function(ref, regions, bed){
       var me = this;
       var bedRegions = [];
       var a = this._bedToCoordinateArray(ref, bed);
@@ -155,14 +155,34 @@ var Bam = Class.extend({
       return bedRegions;
    },
    
+   _mapToBedCoordinates: function(ref, regions, bed) {
+      var a = this._bedToCoordinateArray(ref, bed);
+      var a_i = 0;
+      var bedRegions = [];
+      if (a.length == 0) {
+         alert("Bed file doesn't have coordinates for reference: " + regions[0].name + ". Sampling normally");
+         return null;
+      }
+      regions.forEach(function(reg){
+         for (a_i; a_i < a.length; a_i++) {
+            if (a[a_i].end > reg.end)
+               break;
+            
+            if (a[a_i].start >= reg.start)
+               bedRegions.push( {name:reg.name, start:a[a_i].start, end:a[a_i].end})
+         }
+      }) 
+      return bedRegions
+   },
+   
    _bedToCoordinateArray: function(ref, bed) {
       var a = [];
       bed.split("\n").forEach(function(line){
         if (line[0] == '#' || line == "") return;
   
         var fields = line.split("\t");
-       // if (fields[0] == 'chr'+ref && parseInt( parseInt(fields[2]) - parseInt(fields[1])) >= 300)
-        a.push({ chr:fields[0], start:parseInt(fields[1]), end:parseInt(fields[2]) });
+        if (fields[0] == ref)
+           a.push({ chr:fields[0], start:parseInt(fields[1]), end:parseInt(fields[2]) });
       });
       return a;
    },
@@ -248,7 +268,7 @@ var Bam = Class.extend({
                      var readDepth = {};
                      var currentSequence;
                      stream.on('data', function(data, options) {
-                        data = data.split("\n")
+                        data = data.split("\n");
                         for (var i=0; i < data.length; i++)  {
                            if ( data[i][0] == '#' ) {
                               currentSequence = data[i].substr(1);
@@ -263,7 +283,7 @@ var Bam = Class.extend({
                         }
                      });
                      stream.on('end', function() {
-                        callback (null, readDepth);
+                        callback(null, readDepth);
                      });
                   });
                } else if (me.sourceType == 'file') {
@@ -437,6 +457,7 @@ var Bam = Class.extend({
       
       function goSampling(SQs) {      
          var regions = [];
+         var bedRegions;
          for (var j=0; j < SQs.length; j++) {
             var sqStart = options.start;
             var length = SQs[j].end - sqStart;
@@ -465,12 +486,12 @@ var Bam = Class.extend({
                
                // map random region coordinates to bed coordinates
                if (options.bed != undefined)
-                  regions = me._mapToBedCoordinates(SQs[0].name, regions, options.bed)
+                  bedRegions = me._mapToBedCoordinates(SQs[0].name, regions, options.bed)
             }
          }      
          
          var client = BinaryClient(me.iobio.bamstatsAlive);
-         var regStr = JSON.stringify(regions.map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));
+         var regStr = JSON.stringify((bedRegions || regions).map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));
          // var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 30000 -f 2000 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
          var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 3000 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
          var buffer = "";
