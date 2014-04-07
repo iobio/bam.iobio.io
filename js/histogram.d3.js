@@ -1,8 +1,8 @@
 function histogramD3() {
-  var margin = {top: 20, right: 20, bottom: 20, left: 50},
+  var margin = {top: 30, right: 20, bottom: 20, left: 50},
       width = 200,
       height = 100,
-      defaults = {outliers:true},
+      defaults = {outliers:true,averageLine:true},
       xValue = function(d) { return d[0]; },
       yValue = function(d) { return d[1]; },
       x = d3.scale.linear(),
@@ -23,9 +23,17 @@ function histogramD3() {
       // this is needed for nondeterministic accessors.
       data = data.map(function(d, i) {return [xValue.call(data, d, i), yValue.call(data, d, i)];});
       
-      // remove outliers if wanted
+      // Remove outliers if wanted.
       if ( !options.outliers )
          data = removeOutliers(data);
+         
+      // Calculate average.
+      var avg = [];
+      if (options.averageLine) {
+         var totalValue = 0, numValues = 0;
+         for (var i=0, len = data.length; i < len; i++) { totalValue += data[i][0]*data[i][1]; numValues += data[i][1]; }
+         avg = [totalValue / numValues];
+      }
 
       // Update the x-scale.
       x  .domain(d3.extent(data, function(d) { return d[0]; }));
@@ -53,12 +61,32 @@ function histogramD3() {
 
       // Update the inner dimensions.
       g.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      
+      // Add avg line and text
+      var half = x(x.domain()[0]+1) / 2;
+      var avgLineG = gEnter.selectAll(".avg")
+            .data(avg)
+         .enter().append("g")
+            .attr("class", "avg")
+            .style("z-index", 100)
+            .attr("transform", function(d) { return "translate(" + parseInt(x(d)+half) + "," + 0 + ")"; });
+
+      avgLineG.append("line")
+         .attr("x1", 0)
+         .attr("x2", 0)
+         .attr("y1", innerHeight)
+         .attr("y2", -8);
+
+      avgLineG.append("text")
+            .text("avg")
+            .attr("y", "-10");         
+      
 
       // Add new bars groups.
       var bar = g.selectAll(".bar").data(data)
       var barEnter = bar.enter().append("g")
             .attr("class", "bar")
-            .attr("transform", function(d) { return "translate(" + x(d[0]) + "," + innerHeight + ")"; });
+            .attr("transform", function(d) { return "translate(" + x(d[0]) + "," + innerHeight + ")"; });            
       
       //  Add new bars.
       barEnter.append("rect")
@@ -109,6 +137,12 @@ function histogramD3() {
          .duration(200)
          .call(yAxis);
          
+      // Update avg line and text
+      svg.selectAll(".avg").transition()
+         .duration(200)
+         .attr("transform", function(d) { return "translate(" + parseInt(x(d)+half) + "," + 0 + ")"; })
+         .call(moveToFront);
+            
       // Update brush if event has been set.
       if( brush.on("brushend") || brush.on("brushstart") || brush.on("brush")) {
          g.select(".x.brush").call(brush).call(moveToFront)
@@ -116,6 +150,7 @@ function histogramD3() {
                .attr("y", -6)
                .attr("height", innerHeight + 6);      
       }
+      
     });
     // moves selection to front of svg
     function moveToFront(selection) {

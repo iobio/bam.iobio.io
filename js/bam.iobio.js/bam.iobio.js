@@ -253,104 +253,108 @@ var Bam = Class.extend({
       // Filters BAM file(s) by user-specified criteria
    },
    
-   estimateBaiReadDepth: function(cb) {
-      var me = this;
-      queue()
-          .defer(function(callback) { me.getHeader(function(header) { callback(null, header); }) })
-          .defer(function(callback) {
-               if (me.readDepth)
-                  callback(null, me.readDepth)
-               else if (me.sourceType == 'url') {
-                  var client = BinaryClient(me.iobio.bamReadDepther);
-                  var url = encodeURI( me.iobio.bamReadDepther + '?cmd=-i ' + me.bamUri + ".bai")
-                  client.on('open', function(stream){
-                     var stream = client.createStream({event:'run', params : {'url':url}});
-                     var readDepth = {};
-                     var currentSequence;
-                     stream.on('data', function(data, options) {
-                        data = data.split("\n");
-                        for (var i=0; i < data.length; i++)  {
-                           if ( data[i][0] == '#' ) {
-                              currentSequence = data[i].substr(1);
-                              readDepth[currentSequence] = [];
-                           }
-                           else {
-                              if (data[i] != "") {
-                                 var d = data[i].split("\t");
-                                 readDepth[currentSequence].push({ pos:parseInt(d[0]), depth:parseInt(d[1]) });
-                              }
-                           }                  
-                        }
-                     });
-                     stream.on('end', function() {
-                        callback(null, readDepth);
-                     });
-                  });
-               } else if (me.sourceType == 'file') {
-                   me.baiBlob.fetch(function(header){
-                      if (!header) {
-                           return dlog("Couldn't access BAI");
-                       }
-                   
-                       var uncba = new Uint8Array(header);
-                       var baiMagic = readInt(uncba, 0);
-                       if (baiMagic != BAI_MAGIC) {
-                           return dlog('Not a BAI file');
-                       }
-                       var nref = readInt(uncba, 4);
-                   
-                       bam.indices = [];
-                       var readDepth = {};
-                       var p = 8;
-                       
-                       for (var ref = 0; ref < nref; ++ref) {
-                           var bins = [];
-                           var blockStart = p;
-                           var nbin = readInt(uncba, p); p += 4;
-                           if (nbin > 0) readDepth[ref] = [];
-                           for (var b = 0; b < nbin; ++b) {
-                               var bin = readInt(uncba, p);
-                               var nchnk = readInt(uncba, p+4);
-                               p += 8;
-                               // p += 8 + (nchnk * 16);
-                               var byteCount = 0;
-                               for (var c=0; c < nchnk; ++c) {
-                                  var startBlockAddress = readVob(uncba, p);
-                                  var endBlockAddress = readVob(uncba, p+8);
-                                  p += 16;
-                                  byteCount += (endBlockAddress.block - startBlockAddress.block);
-                               }
-                              if ( bin >=  4681 && bin <= 37449) {
-                                 var position = (bin - 4681) * 16384;
-                                 readDepth[ref][bin-4681] = {pos:position, depth:byteCount};
-                                 // readDepth[ref].push({pos:position, depth:byteCount});
-                                //bins[bin - 4681] = byteCount;
-                              }
-                           }
-                           var nintv = readInt(uncba, p); p += 4;
-                           p += (nintv * 8);
-                           
-                           if (nbin > 0) {
-                              for (var i=0 ; i < readDepth[ref].length; i++) {
-                                 if(readDepth[ref][i] == undefined)
-                                    readDepth[ref][i] = {pos : (i+1)*16000, depth:0};
-                              }
-                           }
-                       }                       
-                       callback(null, readDepth);
-                   });
+   estimateBaiReadDepth: function(callback) {      
+      var me = this, readDepth = {};
+      me.readDepth = {};
+      
+      function cb() {
+         if (me.header) {
+            for (var id in readDepth) {
+              if (readDepth.hasOwnProperty(id))
+              var name = me.header.sq[parseInt(id)].name;
+               if ( me.readDepth[ name ] == undefined){
+                  me.readDepth[ name ] = readDepth[id];
+                  callback( name, readDepth[id] );
+               }                
+            }  
+         }
+      }
+            
+      me.getHeader(function(header) { 
+         if (Object.keys(me.readDepth).length > 0)
+            cb();
+      });
+      if ( Object.keys(me.readDepth).length > 0 )
+         callback(me.readDepth)
+      else if (me.sourceType == 'url') {
+         var client = BinaryClient(me.iobio.bamReadDepther);
+         var url = encodeURI( me.iobio.bamReadDepther + '?cmd=-i ' + me.bamUri + ".bai")
+         client.on('open', function(stream){
+            var stream = client.createStream({event:'run', params : {'url':url}});
+            var currentSequence;
+            stream.on('data', function(data, options) {
+               data = data.split("\n");
+               for (var i=0; i < data.length; i++)  {
+                  if ( data[i][0] == '#' ) {
+                     if ( Object.keys(readDepth).length > 0 ) { cb() };
+                     currentSequence = data[i].substr(1);
+                     readDepth[currentSequence] = [];
+                  }
+                  else {
+                     if (data[i] != "") {
+                        var d = data[i].split("\t");
+                        readDepth[currentSequence].push({ pos:parseInt(d[0]), depth:parseInt(d[1]) });
+                     }
+                  }                  
                }
-            })
-            .awaitAll(function(error, results) {
-               me.readDepth = {};
-               var readDepth = results[1]
-               for (var id in readDepth) {
-                 if (readDepth.hasOwnProperty(id))
-                   me.readDepth[ me.header.sq[parseInt(id)].name ] = readDepth[id];
-               }
-               if (cb != undefined)
-                  cb(me.readDepth);               
-            })
+            });
+            stream.on('end', function() {
+               cb();
+            });
+         });
+      } else if (me.sourceType == 'file') {
+          me.baiBlob.fetch(function(header){
+             if (!header) {
+                  return dlog("Couldn't access BAI");
+              }
+          
+              var uncba = new Uint8Array(header);
+              var baiMagic = readInt(uncba, 0);
+              if (baiMagic != BAI_MAGIC) {
+                  return dlog('Not a BAI file');
+              }
+              var nref = readInt(uncba, 4);
+          
+              bam.indices = [];
+              var p = 8;
+              
+              for (var ref = 0; ref < nref; ++ref) {
+                  var bins = [];
+                  var blockStart = p;
+                  var nbin = readInt(uncba, p); p += 4;
+                  if (nbin > 0) readDepth[ref] = [];
+                  for (var b = 0; b < nbin; ++b) {
+                      var bin = readInt(uncba, p);
+                      var nchnk = readInt(uncba, p+4);
+                      p += 8;
+                      // p += 8 + (nchnk * 16);
+                      var byteCount = 0;
+                      for (var c=0; c < nchnk; ++c) {
+                         var startBlockAddress = readVob(uncba, p);
+                         var endBlockAddress = readVob(uncba, p+8);
+                         p += 16;
+                         byteCount += (endBlockAddress.block - startBlockAddress.block);
+                      }
+                     if ( bin >=  4681 && bin <= 37449) {
+                        var position = (bin - 4681) * 16384;
+                        readDepth[ref][bin-4681] = {pos:position, depth:byteCount};
+                        // readDepth[ref].push({pos:position, depth:byteCount});
+                       //bins[bin - 4681] = byteCount;
+                     }
+                  }
+                  var nintv = readInt(uncba, p); p += 4;
+                  p += (nintv * 8);
+                  
+                  if (nbin > 0) {
+                     for (var i=0 ; i < readDepth[ref].length; i++) {
+                        if(readDepth[ref][i] == undefined)
+                           readDepth[ref][i] = {pos : (i+1)*16000, depth:0};
+                     }
+                  }
+              }                       
+              cb();
+          });
+      }
          
    },
    

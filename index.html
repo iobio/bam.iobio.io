@@ -186,6 +186,17 @@
                 rgb(170,170,170);
             }
             
+            .avg line {
+                z-index: 10;
+                stroke: rgb(60,60,60);
+                stroke-dasharray: 5, 5;
+                stroke-width : 1px;
+            }
+            
+            .avg text {
+                fill: rgb(180,180,180);
+            }
+            
             .arc .fill {fill: #2d8fc1}             
             .alpha {fill: rgba(45,143,193,0.2);}
 
@@ -478,13 +489,50 @@
                 window.sampleMultiplierLimit = 4;
                 
                 window.bam = undefined;
+                
+                // check if url to bam file is supplied in url and sample it
+                if (window.location.search != "") {
+                    var bamUrl = window.location.search.split(/\?[bB][aA][mM]=/)[1];
+                    window.bam = new Bam( bamUrl );
+                    goBam();
+                }
             });
             
             function removeBedFile() {
-                $("#remove-bedfile-button").css('visibility', 'hidden')
+                $("#remove-bedfile-button").css('visibility', 'hidden');
+                $("#default-bedfile-button").css('visibility', 'visible');
                 $("#add-bedfile-button").css('visibility', 'visible');                
                 window.bed = undefined;
                 goSampling({sequenceNames : [ getSelectedSeqId() ]});
+            }
+            
+            function addDefaultBedFile() {
+                var bedurl = 'http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/exome_pull_down_targets/20130108.exome.targets.bed';
+                
+                // clear brush on read coverage chart        	    
+        	    window.readCoverageChart.setBrush([0,0]);
+        	    
+                // hide add bed / show remove bed buttons
+                $("#add-bedfile-button").css('visibility', 'hidden');
+                $("#default-bedfile-button").css('visibility', 'hidden');
+                $("#remove-bedfile-button").css('visibility', 'visible');
+                
+                // turn on sampling message and off svg 
+                // turn it on here b\c the bed file is so big it takes a while to download
+                $("section#middle svg").css("display", "none");
+                $(".samplingLoader").css("display", "block");                      
+
+                // grab bed from url
+                $.ajax({
+                    // XDomainRequest protocol (IE 8 & 9) must be the same scheme as the calling page
+                    url: bedurl,
+                    dataType: 'text'
+                }).done(function (data) {
+                    data = data.replace(/chr/g, '');
+                    window.bed = data;
+                    goSampling({sequenceNames : [ getSelectedSeqId() ]});
+                });
+
             }
             
             function openBedFile(event) {
@@ -505,6 +553,7 @@
         	    
                 // hide add bed / show remove bed buttons
                 $("#add-bedfile-button").css('visibility', 'hidden');
+                $("#default-bedfile-button").css('visibility', 'hidden');
                 $("#remove-bedfile-button").css('visibility', 'visible')
             	 
 	            // read bed file and store
@@ -542,41 +591,43 @@
               
              function goBam() {
                  $("#selectData").css("display", "none");
-                 $("#showData").css("visibility", "visible")
+                 $("#showData").css("visibility", "visible");
                  
                  // get read depth
-                 window.bam.estimateBaiReadDepth(function(readDepth) {   
-                     // turn off read depth loading msg
-                     $("#readDepthLoadingMsg").css("display", "none");
-                     // turn on sampling message
-                     $(".samplingLoader").css("display", "block");
-                     var dID = undefined;
-                     // find biggest read depth
-                     $.each(readDepth, function(name,points) { if (dID == undefined || readDepth[dID].length < points.length) dID=name; });
-                     // update depth distribution    
-                     window.depthChart.on("brushend", function(x,brush) {
-                        var options = { sequenceNames:[getSelectedSeqId()] };
-                        if (!brush.empty()) {
-                            options.start = parseInt(brush.extent()[0]);
-                            options.end = parseInt(brush.extent()[1]);
-                        }
-                        goSampling(options);
-                     });
-
-                     // create seq buttons
-                     var htmlstr = "";
-                     
-                     $.each(Object.keys(readDepth), function(i,d) {
-                         htmlstr += "<li onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + d + "'>" + d + "</li>"
-                     })
-                     $('#depth-distribution').append("<ul id='seq-list'>" + htmlstr + "</ul>");
-                     // handle reference label getting pushed down if scrollbar appears
-                     if( $("#seq-list")[0].offsetWidth < $("#seq-list")[0].scrollWidth) var marginTop = "-12px";
-                     else marginTop = "2px";
-                     $('#depth-distribution').append("<div style='font-size:13px;color:rgb(80,80,80);font-weight:400;margin-top:"+marginTop+"; width:100px;margin-left:auto;margin-right:auto'>Reference(s)</div>");
-                     
-                     setSelectedSeq( $(".seq-buttons[data-id='"+ dID + "']")[0]);
-                     
+                 window.bam.estimateBaiReadDepth(function(id,points){
+                     // setup first time and sample
+                     if ($('.seq-buttons').length == 0) {
+                         // turn off read depth loading msg
+                         $("#readDepthLoadingMsg").css("display", "none");
+                         // turn on sampling message
+                         $(".samplingLoader").css("display", "block");
+                        
+                         // update depth distribution    
+                         window.depthChart.on("brushend", function(x,brush) {
+                            var options = { sequenceNames:[getSelectedSeqId()] };
+                            if (!brush.empty()) {
+                                options.start = parseInt(brush.extent()[0]);
+                                options.end = parseInt(brush.extent()[1]);
+                            }
+                            goSampling(options);
+                         });
+                         
+                         // create seq buttons
+                         $('#depth-distribution').append("<ul id='seq-list'></ul>");                
+                         var htmlstr = "<li onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</li>";
+                         $('#seq-list').append(htmlstr);
+                         $('#depth-distribution').append("<div id='ref-label' style='font-size:13px;color:rgb(80,80,80);font-weight:400;margin-top:2px; width:100px;margin-left:auto;margin-right:auto'>Reference(s)</div>");
+                         
+                         // set selected seq and sample it
+                         setSelectedSeq( $(".seq-buttons[data-id='"+ id + "']")[0]);
+                         
+                     } else {
+                         // create seq buttons
+                         var htmlstr = "<li onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</li>";
+                         $('#seq-list').append(htmlstr);
+                         // handle reference label getting pushed down if scrollbar appears
+                         if( $("#seq-list")[0].offsetWidth < $("#seq-list")[0].scrollWidth) $("#ref-label").css("marginTop", '-12px');
+                     }
                  });  
                                 
              }                               
@@ -778,7 +829,9 @@
             }
             
             function openBamUrl() {
-                window.bam = new Bam( $("#url-input").val() );
+                var url = $("#url-input").val();
+                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + url);
+                window.bam = new Bam( url );
                 goBam();
             }
             
@@ -809,7 +862,7 @@
                 <div style="clear:both"></div>
             </div>
             <div id='bam-url' style="margin-top:24px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
-                <input id="url-input" value="http://s3.amazonaws.com/1000genomes/data/NA06984/alignment/NA06984.chrom11.ILLUMINA.bwa.CEU.low_coverage.20111114.bam" ></input><button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
+                <input id="url-input" value="http://s3.amazonaws.com/1000genomes/data/HG04141/alignment/HG04141.mapped.ILLUMINA.bwa.BEB.low_coverage.20130415.bam" ></input><button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
             </div>
         </div>
         <div id="showData">
@@ -823,7 +876,7 @@
                     </label> -->
                     <input type="file" name="files[]" id="bedfile"  multiple />
                     <div id="remove-bedfile-button" class="bedfile-button" onClick="removeBedFile()" style="visibility:hidden">Remove Bed</div>
-                    <div id="default-bedfile-button" class="bedfile-button" title="1000G human exome targets file " style="right:116px">Default Bed</div>
+                    <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">Default Bed</div>
                     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
                     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
                     <!-- <ul id="sequences"></ul> -->
