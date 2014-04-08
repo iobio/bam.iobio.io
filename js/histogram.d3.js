@@ -65,21 +65,21 @@ function histogramD3() {
       // Add avg line and text
       var half = x(x.domain()[0]+1) / 2;
       var avgLineG = gEnter.selectAll(".avg")
-            .data(avg)
-         .enter().append("g")
-            .attr("class", "avg")
-            .style("z-index", 100)
-            .attr("transform", function(d) { return "translate(" + parseInt(x(d)+half) + "," + 0 + ")"; });
-
-      avgLineG.append("line")
-         .attr("x1", 0)
-         .attr("x2", 0)
-         .attr("y1", innerHeight)
-         .attr("y2", -8);
-
-      avgLineG.append("text")
-            .text("avg")
-            .attr("y", "-10");         
+                .data(avg)
+             .enter().append("g")
+                .attr("class", "avg")
+                .style("z-index", 100)
+                .attr("transform", function(d) { return "translate(" + parseInt(x(d)+half) + "," + 0 + ")"; });
+      
+          avgLineG.append("line")
+             .attr("x1", 0)
+             .attr("x2", 0)
+             .attr("y1", innerHeight)
+             .attr("y2", -8);
+      
+          avgLineG.append("text")
+                .text("avg")
+                .attr("y", "-10");         
       
 
       // Add new bars groups.
@@ -122,9 +122,9 @@ function histogramD3() {
       // Update bars.
       bar.select("rect").transition()
          .duration(200)
-         .attr("width", Math.max(x(x.domain()[0]+1),1))
+         .attr("width", Math.max(Math.ceil(x(x.domain()[0]+1)),1))
          .attr("height", function(d) { 
-            return parseInt(d[0]) >= x.domain()[0] ? Math.ceil(innerHeight - parseInt(y(d[1]))) : 0; 
+            return parseInt(d[0]) >= x.domain()[0] ? innerHeight - parseInt(y(d[1])) : 0; 
          });
 
       // Update the x-axis.
