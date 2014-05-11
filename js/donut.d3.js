@@ -13,7 +13,7 @@ function donutD3() {
       // var calpha = c.replace(")", ",0.2)").replace("rgb", "rgba");
       var g = selection.enter().append("g")
          .attr("class", "arc")
-         .attr("transform", "translate(100,80)");
+         .attr("transform", "translate(145,80)");
 
       if ( g.data()[0] != undefined )
          var total = g.data()[0].data + g.data()[1].data
