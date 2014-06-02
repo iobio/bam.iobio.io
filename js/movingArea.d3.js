@@ -1,4 +1,4 @@
-function movingLineD3(container) {
+function movingAreaD3(container) {
    var margin = {top: 0, right: 30, bottom: 30, left: 30},
           width = $(container).width()*0.98 - margin.left - margin.right,
           height = $(container).height()*0.60 - margin.top - margin.bottom;
@@ -12,39 +12,41 @@ function movingLineD3(container) {
        
    var brush = d3.svg.brush()
       .x(x);
-          
-   var svg = d3.select(container).append("svg")
-      .attr("width", '98%')
-      .attr("height", '66%')
-      .attr('viewBox',"0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
-      .attr("preserveAspectRatio", "none")
-      .append("g")
-         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+   var svg = d3.select(container).select('svg g');    
   
-   function my(depths, options) {
-      // handle options
-      options = $.extend({
-        class : "",
-        selectorClass: 'read-depth-path',
-        animation: true
-      }, options);
-      
-      // reduce number of points using RDP function
-      depths.forEach(function(depth) {
-        var data = depth.data;
-        var epsilonRate = 0.15;
-        var epislon = parseInt( epsilonRate * (data[data.length-1].pos - data[0].pos) / width );        
-        var points = data.map(function(d) { return [d.pos,d.depth]; });
-        // depth.data = points;
-        depth.data = properRDP(points, epislon);
-      });
+   function my(data, options) {
+   	  
+	  var epsilonRate = 0.15;
+	  var length = data[0].data[data[0].data.length-1][0] - data[0].data[0][0];
+	  var epislon = parseInt( epsilonRate * length / width );        
+	  var pointsLower = data[0].data.map(function(d) { return [d[0],d[1] ]; });
+	  var pointsHigher = data[0].data.map(function(d) { return [d[0],d[2] ]; });
+	  // reduce points for lower stroke of area
+	  pointsLower = properRDP(pointsLower, epislon);
+	  // reduce points for higher stroke of area
+	  pointsHigher = properRDP(pointsHigher, epislon);
+	  // combine reduction
+	  var newData = [], iLower = 0, iHigher = 0;
+	  for ( var i=0,l=data[0].data.length; i < l; i++) {
+	  	var pos = data[0].data[i][0];
+	  	var add = false
+	  	if (pos == pointsLower[iLower][0]) {
+	  		add = true;
+	  		iLower++;
+	  	}	  		
+	  	if (pos == pointsHigher[iHigher][0]) {
+	  		add = true;
+	  		++iHigher
+	  	}	  		
+	  	if (add)
+	  		newData.push(data[0].data[i])
+	  }
+	  data[0].data = newData;
 
-      // determine x and y domain
-      var allData = [];
-      depths.forEach(function(d) { allData = allData.concat(d.data )})     
-      var xDomain = options && options.xDomain ||  d3.extent(allData, function(d){ return d[0]; })
-      x.domain(xDomain);            
-      var yDomain = options && options.yDomain || [1, d3.max(allData, function(d){ return d[1]; })];
+      
+      var xDomain = options && options.xDomain || d3.extent(data[0].data, function(d){ return d[0]; });  
+      x.domain(xDomain);           
+      var yDomain = options && options.yDomain || [1, d3.max(data[0].data, function(d){ return d[2]; })];
       y.domain(yDomain);
       y.range([height,0]);
       
@@ -81,35 +83,44 @@ function movingLineD3(container) {
                  .style("opacity", 0);   
        });         
          
-      var line = d3.svg.line()
+      var area = d3.svg.area()
         .interpolate("linear")
-        .x(function(d,i) { return parseInt(x(d[0])); })
-        .y(function(d) { return parseInt(y(d[1])); })
+        .x(function(d,i) { 
+        	return parseInt(x(d[0])); 
+        })
+        .y0(function(d) { 
+        	return parseInt(y(d[1])); })
+        .y1(function(d) { return parseInt(y(d[2])); })
 
-      var path = svg.selectAll('.'+ options.selectorClass).data(depths, function(d) { return d.name; });   
+      var path = svg.selectAll(".read-depth-path").data(data, function(d) { return d.name });   
       path.exit().remove();
       path.transition()
         .duration(2000)
-        .attr("d", function(d) { return line(d.data) })   
-      var pathEmpty = path.empty(); 
+        .attr("d", function(d) { return area(d.data)})
 
       var pathEnter = path.enter().append("path")
-        .attr('class', options.selectorClass + ' ' + options.class)
-        .attr("d", function(d) { return line(d.data) })
-        .attr("stroke", function(d) { return color(d.name);})
+        .attr('class', "read-depth-path")
+        .attr("d", function(d){
+        	return area(d.data);
+        })
+        .attr("stroke", '#2d8fc1')
         .attr("stroke-width", "1")
-        .attr("fill", "none");      
+        .attr("fill", "white");
+      
+         // var path = svg.append("path")
+         //   .attr('class', "read-depth-path")
+         //   .attr("d", line(data))
+         //   .attr("stroke", "steelblue")
+         //   .attr("stroke-width", "2")
+         //   .attr("fill", "none");
 
       var totalLength = path.node().getTotalLength();
-      if ( options.animation ) {
-        pathEnter
-          .attr("stroke-dasharray", totalLength + " " + totalLength)
-          .attr("stroke-dashoffset", totalLength)
-          .transition()
-            .duration(2000)
-            .ease("linear")
-            .attr("stroke-dashoffset", 0);      
-      }
+
+      pathEnter
+        .transition()
+          .delay(1000)
+          .duration(2000)
+          .attr("fill", '#2d8fc1')
 
          // path
          //   .attr("stroke-dasharray", totalLength + " " + totalLength)
@@ -140,8 +151,7 @@ function movingLineD3(container) {
             .attr("height", height + 6);
       
    }
-
-  my.x = function(_) {
+   my.x = function(_) {
     if (!arguments.length) return x;
     x = _;
     return my;
@@ -151,8 +161,8 @@ function movingLineD3(container) {
     if (!arguments.length) return y;
     y = _;
     return my;
-  };   
-   
+  };
+
    my.on = function(ev, listener) { 
       if (ev == "brush" || ev == "brushstart" || ev == "brushend")
          brush.on(ev, function() { listener(x,brush); } );
