@@ -300,10 +300,10 @@ var Bam = Class.extend({
                       p += 8;
                       // p += 8 + (nchnk * 16);
                       var byteCount = 0;
-                      for (var c=0; c < nchnk; ++c) {
+                      for (var c=0; c < nchnk; ++c) {                         
                          var startBlockAddress = readVob(uncba, p);
                          var endBlockAddress = readVob(uncba, p+8);
-                         p += 16;
+                         p += 16; 
                          byteCount += (endBlockAddress.block - startBlockAddress.block);
                       }
                      if ( bin >=  4681 && bin <= 37449) {
