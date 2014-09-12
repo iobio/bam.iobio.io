@@ -147,15 +147,28 @@ var Bam = Class.extend({
    },
    
    _bedToCoordinateArray: function(ref, bed) {
+      var me = this;
       var a = [];
       bed.split("\n").forEach(function(line){
         if (line[0] == '#' || line == "") return;
   
         var fields = line.split("\t");
-        if (fields[0] == ref)
-           a.push({ chr:fields[0], start:parseInt(fields[1]), end:parseInt(fields[2]) });
+        if (me._referenceMatchesBed(ref, fields[0])) {
+           a.push({ chr:ref, start:parseInt(fields[1]), end:parseInt(fields[2]) });
+        }
       });
       return a;
+   },
+
+   _referenceMatchesBed: function(ref, bedRef) {
+      if (ref == bedRef) {
+        return true;
+      } 
+      // Try stripping chr from reference names and then comparing
+      ref1 = ref.replace(/^chr?/,'');
+      bedRef1 = bedRef.replace(/^chr?/,'');
+
+      return (ref1 == bedRef1);
    },
    
    _getClosestValueIndex: function(a, x) {
@@ -334,6 +347,8 @@ var Bam = Class.extend({
                    });  
 
               }                       
+
+              // Invoke Callback function                    
               cb();
           });
       }
