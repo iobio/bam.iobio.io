@@ -322,6 +322,17 @@ var Bam = Class.extend({
                            readDepth[ref][i] = {pos : (i+1)*16000, depth:0};
                      }
                   }
+                  // Sort by position of read; otherwise, we get a wonky
+                  // line chart for read depth.  (When a URL is provided,
+                  // bamtools returns a sorted array.  We need this same
+                  // behavior when the BAM file is loaded from a file
+                  // on the client.
+                  readDepth[ref] = readDepth[ref].sort(function(a,b) {
+                      var x = a.pos; 
+                      var y = b.pos;
+                      return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+                   });  
+
               }                       
               cb();
           });
