@@ -105,7 +105,7 @@
                    flex: 3 1 80%;
                 -webkit-order: 1;
                    order: 1;
-                height: 225px;
+                height: 250px;
                 position:relative;
             }
 
@@ -152,6 +152,11 @@
                 height: 13px;
                 line-height: 13px;
                 font-size: 13px;
+            }
+
+            .hint {
+                font-size:13px;
+                color:rgb(170,170,170);
             }
             
             
@@ -335,8 +340,10 @@
             @media all and (max-width: 640px) {
 
                 #top, #page {
-                    -webkit-flex-flow: column;
-                        flex-flow: column;
+                    -webkit-flex-flow: row;
+                        flex-flow: row;
+                    -webkit-flex-wrap: wrap;
+                            flex-wrap: wrap;
                 }
 
                 #depth-distribution, #total-reads {
@@ -346,9 +353,47 @@
                 }
 
                 #total-reads {
-                    min-height: 50px;
-                    max-height: 50px;
+                    min-height: 90px;
+                    max-height: 90px;
                 }
+
+
+                #depth-distribution.panel .title {
+                    padding-top: 10px;
+                }
+
+                #depth-distribution.panel .hint {
+                    margin-top: -7px;
+                    margin-bottom: 10px; 
+                    font-size:  11px;
+                }
+
+                .bedfile-button {
+                    top: 4px;
+                    font-size: 11px;
+                }
+
+                .axis {
+                    font-size: 11px;
+                }
+
+
+                section#middle {
+                    margin-top: 15px;
+                    min-height: 1000px;
+                    -webkit-flex-flow: column;
+                            flex-flow: column;
+                    -webkit-flex-wrap: wrap;
+                            flex-wrap  wrap;
+
+                }
+
+                #percents .percent svg {
+                    width: 100%;
+                    height: 80px;
+                }
+
+                
             }
 
         </style>
@@ -1014,6 +1059,11 @@
                 <div id="depth-distribution" class="panel">
                     <div class="title">Read Coverage</div>
                     <div style="font-size:13px;color:rgb(170,170,170)">(drag to select region)</div>                    
+                    <div class="hint">(drag to select region)</div>
+                    <!-- <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
+                        <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
+                        Exome
+                    </label> -->
                     <input type="file" name="files[]" id="bedfile"  multiple />
                     <div id="remove-bedfile-button" class="bedfile-button" onClick="removeBedFile()" style="visibility:hidden">Remove Bed</div>
                     <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">Default Bed</div>
@@ -1022,8 +1072,8 @@
                 </div>
                 <div id="total-reads" class="panel">
                     <div class="title">Reads Sampled</div>
-                    <div id="value" style="font-size:7vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
-                    <div id="base" style="font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;margin-top:-17px">
+                    <div id="value" style="padding-top:25%;font-size:7vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
+                    <div id="base" style="margin-top:5px !important;font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;">
                         <span id="number"></span>
                         <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-7px;cursor:pointer" onClick="sampleMore()"  src="images/more_sampling.png"></img>
                     </div>
@@ -1034,27 +1084,27 @@
                 <div id="percents">
                     <div id="mapped_reads" class="percent panel">Mapped Reads                        
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
                     </div>
                     <div id="forward_strands" class="percent panel">Forward Strand
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
                     </div>
                     <div id="proper_pairs" class="percent panel">Proper Pairs
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
                     </div>
                     <div id="singletons" class="percent panel">Singletons
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
                     </div>
                     <div id="both_mates_mapped" class="percent panel">Both Pairs Mapped
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
                     </div>
                     <div id="duplicates" class="percent panel">Duplicates
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMinYMin"></svg>
+                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
                     </div>
                 </div>
                 <div id="distributions" >
