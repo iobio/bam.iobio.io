@@ -336,8 +336,8 @@
               pointer-events: none;         
             }
 
-            /* Too narrow to support three columns */
-            @media all and (max-width: 640px) {
+            /* For mobile phones in portrait view */
+            @media screen and (max-device-width:640px), screen and (max-width:640px) {
 
                 #top, #page {
                     -webkit-flex-flow: row;
@@ -353,8 +353,8 @@
                 }
 
                 #total-reads {
-                    min-height: 90px;
-                    max-height: 90px;
+                    min-height: 110px;
+                    max-height: 110px;
                 }
 
 
@@ -1072,8 +1072,8 @@
                 </div>
                 <div id="total-reads" class="panel">
                     <div class="title">Reads Sampled</div>
-                    <div id="value" style="padding-top:25%;font-size:7vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
-                    <div id="base" style="margin-top:5px !important;font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;">
+                    <div id="value" style="font-size:7vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
+                    <div id="base" style="font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;">
                         <span id="number"></span>
                         <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-7px;cursor:pointer" onClick="sampleMore()"  src="images/more_sampling.png"></img>
                     </div>
