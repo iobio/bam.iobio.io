@@ -34,11 +34,11 @@ BlobFetchable.prototype.fetch = function(callback, options) {
     var reader = new FileReader();
     reader.onloadend = function(ev) {
         if (options && options.raw)
-           callback(reader.result);
+            callback(byteArrayToBuffer(reader.result));
         else
-           callback(bstringToBuffer(reader.result));
+            callback(reader.result);
     };
-    reader.readAsBinaryString(this.blob);
+    reader.readAsArrayBuffer(this.blob);
 }
 
 function URLFetchable(url, start, end, opts) {
@@ -146,4 +146,6 @@ function bstringToBuffer(result) {
 //    dlog('bb took ' + (after - before) + 'ms');
     return ba.buffer;
 }
+
+
 
