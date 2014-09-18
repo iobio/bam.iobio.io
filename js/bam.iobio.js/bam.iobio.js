@@ -28,6 +28,7 @@ var Bam = Class.extend({
       this.iobio.bamReadDepther = "ws://bamReadDepther.iobio.io";
       this.iobio.bamMerger = "ws://bammerger.iobio.io";
       this.iobio.bamstatsAlive = "ws://bamstatsalive.iobio.io"
+      // this.iobio.bamstatsAlive = "ws://0.0.0.0:7100"
       return this;
    },
    
@@ -347,7 +348,7 @@ var Bam = Class.extend({
                          var endBlockAddress = readVob(uncba, p+8);
                          p += 16; 
                          byteCount += (endBlockAddress.block - startBlockAddress.block);
-                      }
+                      }                      
                      if ( bin >=  4681 && bin <= 37449) {
                         var position = (bin - 4681) * 16384;
                         readDepth[ref][bin-4681] = {pos:position, depth:byteCount};
@@ -369,12 +370,13 @@ var Bam = Class.extend({
                   // bamtools returns a sorted array.  We need this same
                   // behavior when the BAM file is loaded from a file
                   // on the client.
+                  if (readDepth[ref] != undefined) {
                   readDepth[ref] = readDepth[ref].sort(function(a,b) {
                       var x = a.pos; 
                       var y = b.pos;
                       return ((x < y) ? -1 : ((x > y) ? 1 : 0));
                    });  
-
+                }
               }   
 
               // Invoke Callback function                    
@@ -492,6 +494,7 @@ var Bam = Class.extend({
             var sqStart = options.start;
             var length = SQs[j].end - sqStart;
             if ( length < options.binSize * options.binNumber) {
+               SQs[j].start = sqStart;
                regions.push(SQs[j])
             } else {
                // create random reference coordinates
