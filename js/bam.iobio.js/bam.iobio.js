@@ -423,9 +423,12 @@ var Bam = Class.extend({
       for ( var i=0; i<lines.length > 0; i++) {
          var fields = lines[i].split("\t");
          if (fields[0] == "@SQ") {
-            var name = fields[1].split("SN:")[1];
-            var length = parseInt(fields[2].split("LN:")[1]);            
-            header.sq.push({name:name, end:1+length});
+            var fHash = {};
+            fields.forEach(function(field) {
+              var values = field.split(':');
+              fHash[ values[0] ] = values[1]
+            })
+            header.sq.push({name:fHash["SN"], end:1+parseInt(fHash["LN"])});
          }
       }               
       this.header = header;
