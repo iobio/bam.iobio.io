@@ -23,12 +23,16 @@ var Bam = Class.extend({
       
       // set iobio servers
       this.iobio = {}
-      this.iobio.bamtools = "ws://bamtools.iobio.io";
-      this.iobio.samtools = "ws://samtools.iobio.io";
-      this.iobio.bamReadDepther = "ws://bamReadDepther.iobio.io";
-      this.iobio.bamMerger = "ws://bammerger.iobio.io";
-      this.iobio.bamstatsAlive = "ws://bamstatsalive.iobio.io"
-      // this.iobio.bamstatsAlive = "ws://0.0.0.0:7100"
+      // this.iobio.bamtools = "ws://bamtools.iobio.io";
+      this.iobio.bamtools = "ws://0.0.0.0:7030";
+      // this.iobio.samtools = "ws://samtools.iobio.io";
+      this.iobio.samtools = "ws://0.0.0.0:8060"
+      // this.iobio.bamReadDepther = "ws://bamReadDepther.iobio.io";
+      this.iobio.bamReadDepther = "ws://0.0.0.0:8021";
+      // this.iobio.bamMerger = "ws://bammerger.iobio.io";
+      this.iobio.bamMerger = "ws://0.0.0.0:8030";
+      // this.iobio.bamstatsAlive = "ws://bamstatsalive.iobio.io"
+      this.iobio.bamstatsAlive = "ws://0.0.0.0:7100"
       return this;
    },
    
@@ -85,16 +89,17 @@ var Bam = Class.extend({
          var url = this.iobio.samtools + "?protocol=websocket&encoding=binary&cmd=view -S -b " + encodeURIComponent("http://client?&id="+connectionID);
          var ended = 0;
          var me = this;
-         // send data to samtools when it asks for it
+         // send data to samtools when it asks for it         
          client.on('stream', function(stream, options) {
-            stream.write(me.header.toStr);
-            regions.forEach(function(region){
+            stream.write(me.header.toStr);            
+            for (var i=0; i < regions.length; i++) {
+              var region = regions[i];
                me.convert('sam', region.name, region.start, region.end, function(data,e) {   
-                  stream.write(data);
-                  ended += 1;
+                  stream.write(data);                   
+                  ended += 1;                  
                   if ( regions.length == ended) stream.end();
                }, {noHeader:true});               
-            })
+            }
          })
       }
       return encodeURI(url);
@@ -524,7 +529,8 @@ var Bam = Class.extend({
          }      
          
          var client = BinaryClient(me.iobio.bamstatsAlive);
-         var regStr = JSON.stringify((bedRegions || regions).map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));
+         var regStr = JSON.stringify((bedRegions || regions).map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));                 
+         // var samtoolsCmd = JSON.stringify((bedRegions || regions).map(function(d) { return {d.start,end:d.end,chr:d.name};}));
          // var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 30000 -f 2000 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
          var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 3000 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
          var buffer = "";

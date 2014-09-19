@@ -279,7 +279,7 @@ BamRecord.prototype.convertTo = function(format) {
  if (format == "sam") {
     for (var i=0; i < keys.length; i++)
       record += this[keys[i]] + '\t'
-    record = record.slice(0, record.length-1) + "\n";
+    record = record.slice(0, record.length-1).trim() + "\n";
  }  
  
  return record;
