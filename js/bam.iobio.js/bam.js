@@ -278,8 +278,12 @@ BamRecord.prototype.convertTo = function(format) {
  
  if (format == "sam") {
     for (var i=0; i < keys.length; i++)
-      record += this[keys[i]] + '\t'
-    record = record.slice(0, record.length-1).trim() + "\n";
+        record += this[keys[i]] + '\t'
+      // if (keys[i] == 'rnext')
+      //   record += this.indexToChr[ keys['rnext']-1 ] + '\t';
+      // else
+      //   record += this[keys[i]] + '\t'
+    record = record.slice(0, record.length-1).trim() + "\n";    
  }  
  
  return record;
@@ -314,7 +318,7 @@ BamFile.prototype.readBamRecords = function(ba, offset, sink, min, max, chrId) {
         var nextRef  = readInt(ba, offset + 24);
         var nextPos = readInt(ba, offset + 28);
         
-        record.rnext = nextRef + 1;
+        record.rnext = this.indexToChr[ nextRef ];
         record.pnext = nextPos;
         
         var tlen = readInt(ba, offset + 32);
