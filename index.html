@@ -13,398 +13,7 @@
           ga('send', 'pageview');
           
         </script>
-        <style>
-            body {
-                font-family: Quicksand;
-                font-weight: 300;  
-                width: 100% ; 
-            }            
-            header {
-               font-size: 46px;
-               color:#2d8fc1;
-               text-align: left;               
-            }
-            header a:visited {color:none;}
-            header a {text-decoration:none; color:#2d8fc1;}
-                        
-            .file {
-              width: 250px;
-              text-align:center;
-            }
-            .file-button{
-                border-radius: 4px;
-                width: 250px;
-                float:right;
-                background: #2d8fc1;
-                padding: 22px 30px;
-                color: #fff;
-                font-size:24px;
-                cursor: pointer;
-            }
-            .file label {
-              float:left;
-            }
-            .file input {
-              position: absolute;
-              display: inline-block;
-              left: 0;
-              top: 0;
-              opacity: 0.01;
-              visibility:hidden;
-              cursor: pointer;
-            } 
-            
-            .bedfile-button{
-                position:absolute;
-                right:15px;
-                top:20px;
-                font-size:13px;
-                color: rgb(60,60,60);
-                cursor: pointer;
-                border-bottom: 1px solid rgb(180,180,180);
-            }
-            #bedfile {
-              visibility:hidden;
-              display:none;
-            }       
-            #showData {
-                visibility: hidden;
-            }            
-            
-            section {
-                margin: 0px;
-                padding: 0px;
-                display: -webkit-flex;
-                display:         flex;
-                display: -ms-flexbox;
-                -webkit-flex-flow: row;
-                flex-flow: row;
-            }
-
-            section#top {
-                min-height: 225px;
-            }
-            
-            section#middle {
-                margin-top: 15px;
-                min-height: 600px;
-            }
-            
-            .panel {
-                margin: 20px;
-                padding: 5px;
-                border: 1px solid rgb(230,230,230);
-                border-radius: 2pt;
-                text-align: center;
-            }
-            
-            .panel > .title { font-size: 30px}
-
-            .panel#depth-distribution {
-                -webkit-flex: 3 1 80%;
-                   flex: 3 1 80%;
-                -webkit-order: 1;
-                   order: 1;
-                height: 250px;
-                position:relative;
-            }
-
-            .panel#total-reads {
-                -webkit-flex: 1 5 20%;
-                   flex: 1 5 20%;
-                -webkit-order: 2;
-                   order: 2;
-            }
-            
-            #percents {
-                margin-right: 20px;
-                -webkit-flex: 1 4 40%;
-                   flex: 1 4 40%;
-                -webkit-order: 1;
-                   order: 1;
-                display: -webkit-flex;
-                display: flex;
-                -webkit-flex-direction: row;
-                flex-direction: row;
-                -webkit-flex-wrap: wrap;
-                flex-wrap: wrap;
-                flex-flow: row wrap;
-            }
-            
-            
-            #distributions {
-                -webkit-flex: 1 2 60%;
-                   flex: 1 2 60%;
-                -webkit-order: 2;
-                   order: 2;
-                display: -webkit-flex;
-/*                display: flex;*/
-                -webkit-flex-direction: row;
-                flex-direction: row;
-                -webkit-flex-wrap: wrap;
-                flex-wrap: wrap;
-            }
-            
-
-            .checkbox.checked, .checkbox.checked .icons{ color: #267FAD;}
-            .checkbox {padding-left: 18px;}
-            .checkbox, .checkbox .icons{ 
-                height: 13px;
-                line-height: 13px;
-                font-size: 13px;
-            }
-
-            .hint {
-                font-size:13px;
-                color:rgb(170,170,170);
-            }
-            
-            
-            #percents .percent {-webkit-flex: 1 1 30%; flex: 1 1 30%; position:relative}
-            #percents .percent svg { width: 100%; height:180px }            
-            #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:200px; position:relative; /*padding: 0px 15px 0px 15px*/}
-            
-            .bar rect {
-              fill: #2d8fc1;
-              shape-rendering: crispEdges;
-            }  
-            
-            .bar rect.unselected {
-                fill: #9C9E9F;
-            }          
-
-            .bar text {
-              fill: 'black';
-            }
-
-            .axis path, .axis line {
-              fill: none;
-              stroke: #000;
-              shape-rendering: crispEdges;
-            }
-            
-            .global-panel .x.axis {
-                font-size: 9px;
-            }
-            
-            .global-panel .instruction {
-                font-size: 10px;
-                rgb(170,170,170);
-            }
-            
-            .avg line {
-                z-index: 10;
-                stroke: rgb(60,60,60);
-                stroke-dasharray: 5, 5;
-                stroke-width : 1px;
-            }
-            
-            .avg text {
-                fill: rgb(180,180,180);
-            }
-            
-            .arc .fill {fill: #2d8fc1}             
-            .alpha {fill: rgba(45,143,193,0.2);}
-
-            .arc .percent {
-                fill : rgb(100,100,100);
-                color: rgb(100,100,100);
-                font-size: 23px;
-            }
-            
-            .arc .total {
-                font-size: 10px;
-                letter-spacing: 3px;
-                font-weight: 400;
-                fill : rgb(200,200,200);
-                color: rgb(200,200,200);
-            }
-            
-            .arrow_box {
-            	position: relative;
-            	background: #ffffff;
-            	border: 2px solid #2d8fc1;
-            	border-radius: 4px;
-            }
-            .arrow_box:after, .arrow_box:before {
-            	bottom: 100%;
-            	border: solid transparent;
-            	content: " ";
-            	height: 0;
-            	width: 0;
-            	position: absolute;
-            	pointer-events: none;
-            }
-            .arrow_box:after {
-                border-color: rgba(255, 255, 255, 0);
-                border-bottom-color: #ffffff;
-                border-width: 20px;
-                left: 78%;
-                margin-left: -20px;
-            }
-            .arrow_box:before {
-                border-color: rgba(45, 143, 193, 0);
-                border-bottom-color: #2d8fc1;
-                border-width: 23px;
-                left: 78%;
-                margin-left: -23px;
-            }                          
-            .arrow_box input {
-                border: none;
-                outline: none;
-                width:610px;
-                margin: 8px;
-                color: #2d8fc1;
-                font:300 30px quicksand;
-            }
-            .arrow_box button { font:300 28px quicksand;}
-            
-            .brush .extent {
-              stroke: #000;
-              fill-opacity: .125;
-              shape-rendering: crispEdges;
-            }
-            
-            .resize path {
-                fill: #eee;
-                stroke: #666;
-            } 
-            
-            .chart-chooser {
-/*                font-size: 16px;*/
-                color: rgb(180,180,180);                
-                font-weight: 400;
-/*                text-align: right;*/
-            }
-            
-            .chart-chooser .selected {color:#2d8fc1; border-bottom: 1px solid #2d8fc1}
-            .chart-chooser span { margin: 0px 5px 0px 5px; padding-bottom: 3px; cursor:pointer;}
-            
-            #seq-list {
-                overflow-x: auto;
-                list-style-type:none;
-                margin:0;
-                padding:0;                
-            }
-            
-            
-            .seq-buttons {
-                display: inline;
-                margin-right: 6px;
-                padding: 0px 20px 0px 20px;
-                border-radius: 3px;
-                color: #2d8fc1;
-                font-family: helvetica;
-                font-size: 0.6em;
-                border: 1px solid #2d8fc1;
-                cursor:pointer;
-                cursor: hand;
-            }   
-            
-            .seq-buttons.selected {
-                background: #2d8fc1;
-                color: white;
-            }
-            
-            .samplingLoader {
-                font-size:14px;
-                color:#2687BE;
-                position:absolute;
-                width:100%;
-                margin-top: 70px;
-                margin-left:-6px;
-                display:none;
-            }
-            .samplingLoader img {
-                height:9px;
-            }
-            
-            div.tooltip {   
-              position: absolute;           
-              text-align: center;           
-              z-index:20;
-              color:white;
-              padding: 4px 6px 4px 6px;             
-              font: 11px arial;        
-              background: rgb(80,80,80);   
-              border: 0px;      
-              border-radius: 4px;           
-              pointer-events: none;         
-            }
-            #footer {
-                   margin-top: 200px;
-                   width: 170px;                   
-                   margin-left: auto;
-                   margin-right: auto;
-                   font-size: 18px;
-            }
-            #footer a {
-                color: rgb(110,110,110);
-            }
-            #license { float:left;}
-            #browser-compatability { float:right;}
-
-            /* For mobile phones in portrait view */
-            @media screen and (max-device-width:640px), screen and (max-width:640px) {
-
-                #top, #page {
-                    -webkit-flex-flow: row;
-                        flex-flow: row;
-                    -webkit-flex-wrap: wrap;
-                            flex-wrap: wrap;
-                }
-
-                #depth-distribution, #total-reads {
-                    /* Return them to document order */
-                    -webkit-order: 0;
-                        order: 0;
-                }
-
-                #total-reads {
-                    min-height: 130px;
-                    max-height: 130px;
-                }
-
-
-                #depth-distribution.panel .title {
-                    padding-top: 10px;
-                }
-
-                #depth-distribution.panel .hint {
-                    margin-top: -7px;
-                    margin-bottom: 10px; 
-                    font-size:  11px;
-                }
-
-                .bedfile-button {
-                    top: 4px;
-                    font-size: 11px;
-                }
-
-                .axis {
-                    font-size: 11px;
-                }
-
-
-                section#middle {
-                    margin-top: 15px;
-                    min-height: 1000px;
-                    -webkit-flex-flow: column;
-                            flex-flow: column;
-                    -webkit-flex-wrap: wrap;
-                            flex-wrap  wrap;
-
-                }
-
-                #percents .percent svg {
-                    width: 100%;
-                    height: 80px;
-                }
-
-                
-            }
-
-        </style>
+        
         <script src="js/jquery.min.js"></script>
         <script src="js/class.js"></script>
         <script src="js/rdp.js"></script>
@@ -422,7 +31,9 @@
         <script src="js/bam.iobio.js/inflate.js"></script>
         <script src="js/binary.js"></script>
         <link href='css/quicksand.css' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=Overlock+SC' rel='stylesheet' type='text/css'>
         <link href='css/nprogress.css' rel='stylesheet' type='text/css'>
+        <link href='css/site.css' rel='stylesheet' type='text/css'>
         <!-- <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'> -->
         
         <script>
@@ -883,6 +494,7 @@
                         
             function displayBamUrlBox() {
                 $('#bam-url').css('visibility','visible');
+                $('#info').css('visibility', 'hidden');
                 $("#bam-url").children("input").focus();
             }
             
@@ -905,11 +517,16 @@
         </script>
     </head>
     <body>
-        <header><a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span></a></header>
+        <header>
+            <a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span></a>
+            <div style="float:right" class="iobio-project" style="padding-top:20px">
+                <a href="http://iobio.io" style="margin: 0px 5px 0px 5px;">an iobio project</a>                     
+            </div>
+        </header>
         <div id="selectData">
             <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
                 <div style="margin-left:auto;margin-right:auto;font-size: 33px; color: rgb(110,110,110); margin-bottom:70px">                
-                    bam.iobio.io uses realtime sampling to generate global statistics of your bam file in a few seconds.
+                    bam.iobio.io uses realtime sampling to generate global statistics of your bam file in a few seconds. <a href="#">Read the publication</a>
                 </div>
                 
                 <div class="file" onClick="$('#bam-url').css('visibility', 'hidden')">
@@ -918,14 +535,27 @@
                 </div>
                 <div class="file-button" style="text-align:center" onClick="displayBamUrlBox()">Choose Bam Url</div>
                 <div style="clear:both"></div>
+                <div id="info">                                
+                    <ul>
+                            <li><a href="help.html">File Requirements</a></li>
+                            <li><a href="license.html">License</a></li>
+                            <li><a href="images/browserCompatability.png">Browser Support</a></li>
+                    </ul>           
+                </div>
             </div>
-            <div id='bam-url' style="margin-top:24px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
+            <div id='bam-url' style="margin-top:0px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
                 <input id="url-input" value="http://s3.amazonaws.com/1000genomes/data/HG04141/alignment/HG04141.mapped.ILLUMINA.bwa.BEB.low_coverage.20130415.bam" ></input><button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
+            </div>            
+            <div style="margin: 50px auto 0px auto; font-size: 23px; width: 600px; text-align:center;  color: rgb(110,110,110)">
+                <div>For vcf files checkout <a href="http://vcf.iobio.io">vcf.iobio</a></div>                
             </div>
-            <div id="footer">            
-                <div id="license"><a href="license.html">License</a></div>
-                <div id="browser-compatability"><a href="images/browserCompatability.png">Browsers</a></div>
-                <div style="clear:both"></div>
+            
+            <div id="footer">                        
+                <div class="logos">     
+                    <div style="position:absolute; left: 100px; top:4px; font-size:50px;font-family:'Overlock SC', cursive;">Marthlab</div>     
+                    <img src="images/ustar-ucgd-logo.jpg" style="height:60px;"/>            
+                    <a href="http://www.genetics.utah.edu/"><img src="images/genetics_mainlogo3_lrg.png" style="height:50px;position:absolute;right:0px;top:7px"/></a>          
+                </div>                      
             </div>
         </div>
         <div id="showData">
