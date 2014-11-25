@@ -525,29 +525,30 @@
         </header>
         <div id="selectData">
             <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
-                <div style="margin-left:auto;margin-right:auto;font-size: 33px; color: rgb(110,110,110); margin-bottom:70px">                
-                    bam.iobio.io uses realtime sampling to generate global statistics of your bam file in a few seconds. <a href="#">Read the publication</a>
+                <div style="margin-left:auto;margin-right:auto;font-size: 28px; color: rgb(110,110,110); margin-bottom:70px">                
+                    examine your sequence alignment file in seconds 
                 </div>
                 
                 <div class="file" onClick="$('#bam-url').css('visibility', 'hidden')">
                     <input type="file" name="files[]" id="file"  multiple />
-                    <label class="file-button" for="file" >Choose Bam File</label>
+                    <label class="file-button" for="file" >choose bam file</label>
                 </div>
-                <div class="file-button" style="text-align:center" onClick="displayBamUrlBox()">Choose Bam Url</div>
+                <div class="file-button" style="text-align:center" onClick="displayBamUrlBox()">choose bam url</div>
                 <div style="clear:both"></div>
                 <div id="info">                                
                     <ul>
+                            <li><a href="#">Publication</a></li>
                             <li><a href="help.html">File Requirements</a></li>
                             <li><a href="license.html">License</a></li>
-                            <li><a href="images/browserCompatability.png">Browser Support</a></li>
+                            <li><a href="images/browserCompatability.png">Compatible Browsers</a></li>
                     </ul>           
                 </div>
             </div>
-            <div id='bam-url' style="margin-top:0px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
+            <div id='bam-url' style="margin-top:-21px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
                 <input id="url-input" value="http://s3.amazonaws.com/1000genomes/data/HG04141/alignment/HG04141.mapped.ILLUMINA.bwa.BEB.low_coverage.20130415.bam" ></input><button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
             </div>            
             <div style="margin: 50px auto 0px auto; font-size: 23px; width: 600px; text-align:center;  color: rgb(110,110,110)">
-                <div>For vcf files checkout <a href="http://vcf.iobio.io">vcf.iobio</a></div>                
+                <div>for variant files check out <a href="http://vcf.iobio.io">vcf.iobio</a></div>                
             </div>
             
             <div id="footer">                        

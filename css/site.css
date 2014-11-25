@@ -319,9 +319,9 @@ div.tooltip {
   border-radius: 4px;           
   pointer-events: none;         
 }
-#info { margin: 3px auto 0px auto; width:100%;text-align: center;}
+#info { margin: 23px auto 0px auto; width:100%;text-align: center;}
 #info ul{margin: 0px; padding: 0px; list-style-type: none; }
-#info li {display:inline; margin: 0px 35px 0px 35px;}      
+#info li {display:inline; margin: 0px 0px 0px 50px;}      
 
 #footer {
    position: relative;
