@@ -161,11 +161,37 @@
                 
                 // check if url to bam file is supplied in url and sample it
                 if (window.location.search != "") {
-                    var bamUrl = window.location.search.split(/\?[bB][aA][mM]=/)[1];
+                    var bamUrl = getUrlParameter('bam');
                     window.bam = new Bam( bamUrl );
-                    goBam();
+                    var r = getUrlParameter('region');
+                    var region = undefined;
+                    if (r != undefined) {
+                      if (r.split(":").length == 1)
+                        region = { chr: r.split(":")[0]}
+                      else 
+                        region = { 
+                          chr: r.split(":")[0], 
+                          start: parseInt(r.split(":")[1].split('-')[0]),
+                          end: parseInt(r.split(":")[1].split('-')[1])
+                        };
+                    }
+                    
+                    goBam(region);
                 }
             });
+
+            function getUrlParameter(sParam) {
+                var sPageURL = window.location.search.substring(1);
+                var sURLVariables = sPageURL.split('&');
+                for (var i = 0; i < sURLVariables.length; i++) 
+                {
+                    var sParameterName = sURLVariables[i].split('=');
+                    if (sParameterName[0] == sParam) 
+                    {
+                        return sParameterName[1];
+                    }
+                }
+            }
             
             function removeBedFile() {
                 $("#remove-bedfile-button").css('visibility', 'hidden');
@@ -258,14 +284,14 @@
                  goBam();            	             	
               } 
               
-             function goBam() {
+             function goBam(region) {
                  $("#selectData").css("display", "none");
                  $("#showData").css("visibility", "visible");
                  
                  // get read depth
                  window.bam.estimateBaiReadDepth(function(id,points){
-                     // setup first time and sample
-                     if ($('.seq-buttons').length == 0) {
+                     // setup first time and sample                     
+                     if ( $('.seq-buttons').length == 0) {
                          // turn off read depth loading msg
                          $("#readDepthLoadingMsg").css("display", "none");
                          // turn on sampling message
@@ -277,7 +303,14 @@
                             if (!brush.empty()) {
                                 options.start = parseInt(brush.extent()[0]);
                                 options.end = parseInt(brush.extent()[1]);
-                            }
+                                var region = {chr:getSelectedSeqId(), 'start':options.start, 'end':options.end};
+                                setUrlRegion(region);
+                                // if (window.bam.sourceType == 'url') {
+                                  
+                                //   window.history.pushState({'index.html' : 'bar'},null,"?bam=" + window.bam.bamUri + "&region=" + region);
+                                // }
+                            } else if(window.bam.sourceType == 'url') setUrlRegion({chr:getSelectedSeqId()});                              
+
                             goSampling(options);
                          });
                          
@@ -286,17 +319,18 @@
                          var htmlstr = "<li onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</li>";
                          $('#seq-list').append(htmlstr);
                          $('#depth-distribution').append("<div id='ref-label' style='font-size:13px;color:rgb(80,80,80);font-weight:400;margin-top:2px; width:100px;margin-left:auto;margin-right:auto'>Reference(s)</div>");
-                         
-                         // set selected seq and sample it
-                         setSelectedSeq( $(".seq-buttons[data-id='"+ id + "']")[0]);
-                         
+
+                         if (region == undefined )                           
+                           setSelectedSeq( $(".seq-buttons[data-id='"+ id + "']")[0]);
+                                                                           
                      } else {
                          // create seq buttons
                          var htmlstr = "<li onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</li>";
-                         $('#seq-list').append(htmlstr);
-                         // handle reference label getting pushed down if scrollbar appears
-                         //if( $("#seq-list")[0].offsetWidth < $("#seq-list")[0].scrollWidth) $("#ref-label").css("marginTop", '-12px');
+                         $('#seq-list').append(htmlstr);                         
                      }
+
+                     if (region && region.chr == id)
+                           setSelectedSeq( $(".seq-buttons[data-id='"+ region.chr + "']")[0], region.start, region.end);
                  });  
                                 
              }                               
@@ -310,25 +344,12 @@
                 var g = d3.selectAll("#depth-distribution .brush")
                 brush.clear();
                 brush(g);
+                // remove brush region from url
+                setUrlRegion({chr:getSelectedSeqId()});                
                 // no need to trigger event? since setSelected sq will do it
                 //brush.event(g);
-            }
-                                    
-            function getChr() {
-                return 11;
-            }
-            
-            function getMin() {
-                return 10108473;
-            }
-            
-            function getMax() {
-                return 10198473;
-            }
-            
-            function getReference() {
-                return window.references[11];
-            }
+            }                                                
+                        
                                     
             function updateTotalReads(totalReads) {
                 // update total reads
@@ -337,15 +358,34 @@
                 $("#total-reads>#base>#number").html( reads[1] || "" );
             }
             
-            function setSelectedSeq(selected) {
+            function setSelectedSeq(selected, start, end) {
                 var dataId = selected.getAttribute("data-id");
                 $(".seq-buttons.selected").removeClass("selected");
                 $(selected).addClass("selected");  
                 window.depthChart( window.bam.readDepth[dataId] );  
                 // reset brush
                 resetBrush();
+                setUrlRegion({chr:dataId, 'start':start, 'end':end });
                // start sampling
-               goSampling({ sequenceNames:[dataId] }); 
+               if(start!= undefined && end!=undefined) {
+                 goSampling({ sequenceNames:[dataId], 'start':start, 'end':end }); 
+                 var brush = window.depthChart.brush();
+                 // set brush region
+                 d3.select("#depth-distribution .brush").call(brush.extent([start,end]));
+               } else {
+                 goSampling({ sequenceNames:[dataId]});
+               }
+            }
+
+            function setUrlRegion(region) {
+              if (window.bam.sourceType == 'url' && region != undefined) {
+                if (region.start != undefined && region.end != undefined) {
+                  var regionStr = region.chr + ':' + region.start + '-' + region.end;
+                } else {
+                  var regionStr = region.chr;
+                }
+                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + window.bam.bamUri + "&region=" + regionStr);
+              }
             }
             
             function goSampling(options) {
