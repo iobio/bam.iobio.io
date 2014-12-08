@@ -128,7 +128,8 @@
                 window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
                 
                 // setup length histrogram chart
-                window.lengthChart = histogramD3()
+                // window.lengthChart = histogramD3()
+                window.lengthChart = histogramViewFinderD3()
                     .width(width)
                     .height(height);
                 window.lengthChart.xAxis().tickFormat(tickFormatter);

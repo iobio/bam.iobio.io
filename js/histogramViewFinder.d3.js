@@ -12,14 +12,16 @@ function histogramViewFinderD3() {
       yAxis = d3.svg.axis().scale(y).orient("left"),
       focalChart = histogramD3().margin({top:0, right:0, bottom:20, left:0}),
       globalChart = histogramD3().margin({top:5, right:0, bottom:5, left:0}).yAxis(function(){}); // empty function to remove y axis
+      var globalChartOptions = {averageLine:false};
       
       yAxis = focalChart.yAxis();
       xAxis = focalChart.xAxis();
       globalChart.xAxis(xAxis);
       
-  function chart(selection) {
+  function chart(selection, options) {
      var innerHeight = height - margin.top - margin.bottom;
      var innerWidth = width - margin.left - margin.right;
+     $.extend(globalChartOptions, options);
      selection.each(function(data) {      
         // Select the g element, if it exists.
         var g = selection.selectAll("g").data([0]);
@@ -29,6 +31,10 @@ function histogramViewFinderD3() {
         
         // Update the margin dimensions
         g.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // // Remove outliers
+        // if ( !options.outliers )
+        //  data = removeOutliers(data);
         
         // Select the focal panel if it exits
         var gFocus = g.selectAll("g.focal-panel").data([data])
@@ -40,7 +46,7 @@ function histogramViewFinderD3() {
         focalChart.height(innerHeight*focalHeightRatio).width(innerWidth)
         
         // Call focal panel chart
-        focalChart(gFocus);
+        focalChart(gFocus, options);
         
         // Select the global panel if it exits
         var gGlobal = g.selectAll("g.global-panel").data([data])
@@ -59,7 +65,7 @@ function histogramViewFinderD3() {
         globalChart.height(innerHeight*globalHeightRatio).width(innerWidth)
         
         // Call global panel chart
-        globalChart(gGlobal,{averageLine:false});
+        globalChart(gGlobal,globalChartOptions);
         
         // Setup brush for globalChart
         globalChart.brush().on("brush", function() { 
