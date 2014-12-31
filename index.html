@@ -316,8 +316,8 @@
                          });
                          
                          // create seq buttons
-                         $('#depth-distribution').append("<ul id='seq-list'></ul>");                
-                         var htmlstr = "<li onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</li>";
+                         $('#depth-distribution').append("<div style='width: 100%; overflow-x: scroll;' id='seq-list'></div>");                
+                         var htmlstr = "<span onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</span>";
                          $('#seq-list').append(htmlstr);
                          $('#depth-distribution').append("<div id='ref-label' style='font-size:13px;color:rgb(80,80,80);font-weight:400;margin-top:2px; width:100px;margin-left:auto;margin-right:auto'>Reference(s)</div>");
 
@@ -326,7 +326,7 @@
                                                                            
                      } else {
                          // create seq buttons
-                         var htmlstr = "<li onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</li>";
+                         var htmlstr = "<span onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</span>";
                          $('#seq-list').append(htmlstr);                         
                      }
 
