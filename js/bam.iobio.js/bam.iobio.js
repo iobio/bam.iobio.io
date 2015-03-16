@@ -29,10 +29,11 @@ var Bam = Class.extend({
       this.iobio.bamMerger = "ws://bammerger.iobio.io";      
       this.iobio.bamstatsAlive = "ws://bamstatsalive.iobio.io"
 //      this.iobio.bamtools = "ws://localhost:8061";
-//      this.iobio.samtools = "ws://localhost:8060";
+     // this.iobio.samtools = "ws://localhost:8060";
       // this.iobio.bamReadDepther = "ws://localhost:8021";
 //      this.iobio.bamMerger = "ws://localhost:8030";      
-//      this.iobio.bamstatsAlive = "ws://localhost:7100"
+     // this.iobio.bamstatsAlive = "ws://localhost:7100"
+          // this.iobio.bamstatsAlive = "ws://localhost:7101"
       return this;
    },
    
@@ -535,7 +536,7 @@ var Bam = Class.extend({
          var regStr = JSON.stringify((bedRegions || regions).map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));                 
          // var samtoolsCmd = JSON.stringify((bedRegions || regions).map(function(d) { return {d.start,end:d.end,chr:d.name};}));
          // var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 30000 -f 2000 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
-         var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 3000 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
+         var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 1000 -k 1 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
          var buffer = "";
          client.on('open', function(stream){
             var stream = client.createStream({event:'run', params : {'url':url}});
