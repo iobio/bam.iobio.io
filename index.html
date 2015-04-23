@@ -162,7 +162,10 @@
                 
                 // check if url to bam file is supplied in url and sample it
                 if (window.location.search != "") {
-                    var bamUrl = getUrlParameter('bam');
+                    var bamUrl = getUrlParameter('bam');                    
+                    // remove https if present
+                    if (bamUrl.slice(0,5) == 'https')
+                      bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
                     window.bam = new Bam( bamUrl );
                     var r = getUrlParameter('region');
                     var region = undefined;
@@ -541,6 +544,9 @@
             
             function openBamUrl() {
                 var url = $("#url-input").val();
+                // remove https if present
+                if (url.slice(0,5) == 'https')
+                  url = 'http' + url.slice(5,url.length);
                 window.history.pushState({'index.html' : 'bar'},null,"?bam=" + url);
                 window.bam = new Bam( url );
                 goBam();
