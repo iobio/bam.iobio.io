@@ -133,35 +133,6 @@ var Bam = Class.extend({
       return bed;
    },
    
-   _tmp: function(ref, regions, bed){
-      var me = this;
-      var bedRegions = [];
-      var a = this._bedToCoordinateArray(ref, bed);
-      regions.forEach(function(reg) {
-         var start = reg.start
-         var length = reg.end - reg.start;
-         var ci = me._getClosestValueIndex(a, reg.start); // update lo start value
-         var maxci = a.length;
-         while(length > 0 && ci < maxci) {
-            var newStart,newEnd;
-            
-            // determine start position
-            if ( a[ci].start <= start ) newStart = start;
-            else newStart = a[ci].start;
-            
-            // determine end position
-            if ( a[ci].end >=  newStart+length ) newEnd = newStart+length
-            else { newEnd = a[ci].end; ci += 1; }
-            
-            // update length left to sample
-            length -= newEnd - newStart;
-            // push new regions
-            bedRegions.push({ name:reg.name, 'start':newStart, 'end':newEnd});
-         }            
-      })
-      return bedRegions;
-   },
-   
    _mapToBedCoordinates: function(ref, regions, bed) {
       var a = this._bedToCoordinateArray(ref, bed);
       var a_i = 0;
@@ -382,8 +353,10 @@ var Bam = Class.extend({
                       var y = b.pos;
                       return ((x < y) ? -1 : ((x > y) ? 1 : 0));
                    });  
+
                 }
               }   
+
 
               // Invoke Callback function                    
               cb();
@@ -490,8 +463,8 @@ var Bam = Class.extend({
    sampleStats: function(callback, options) {
       // Prints some basic statistics from sampled input BAM file(s)      
       options = $.extend({
-         binSize : 40000, // defaults
-         binNumber : 20,
+         binSize : 60000, // defaults
+         binNumber : 30,
          start : 1,
       },options);
       var me = this;
@@ -499,6 +472,7 @@ var Bam = Class.extend({
       function goSampling(SQs) {      
          var regions = [];
          var bedRegions;
+
          for (var j=0; j < SQs.length; j++) {
             var sqStart = options.start;
             var length = SQs[j].end - sqStart;
@@ -531,6 +505,7 @@ var Bam = Class.extend({
                   bedRegions = me._mapToBedCoordinates(SQs[0].name, regions, options.bed)
             }
          }      
+
          
          var client = BinaryClient(me.iobio.bamstatsAlive);
          var regStr = JSON.stringify((bedRegions || regions).map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));                 
@@ -565,20 +540,24 @@ var Bam = Class.extend({
          });
       }
       
-      if ( options.sequenceNames != undefined && options.sequenceNames.length == 1 && options.end != undefined) {
-         goSampling([{name:options.sequenceNames[0], end:options.end}]);
-      } else  if (options.sequenceNames != undefined && options.sequenceNames.length == 1){
+      if ( options.sequenceNames != undefined && options.end != undefined) {
+         var sqs = options.sequenceNames.map(function(d) { return {name:d, end:options.end}});
+         goSampling(sqs);
+      } else  if (options.sequenceNames != undefined){
          this.getHeader(function(header){
-            var sq;
+            var sq = [];
             $(header.sq).each( function(i,d) { 
-               if(d.name == options.sequenceNames[0]) 
-               sq = d; 
+               if(options.sequenceNames.indexOf(d.name) != -1) 
+               sq.push( d ); 
             })
-            goSampling([sq]);
+            goSampling(sq);
          });
       } else {
          this.getHeader(function(header){
-            goSampling(header.sq); 
+            var sqs = header.sq;
+            if (options.end != undefined)
+              var sqs = options.sequenceNames.map(function(d) { return {name:d, end:options.end}});
+            goSampling(sqs); 
          });
          // this.getReferencesWithReads(function(refs) {            
          //    goSampling(refs);

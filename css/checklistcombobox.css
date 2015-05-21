@@ -1,0 +1,32 @@
+  .custom-combobox {
+    position: relative;
+    display: inline-block;
+  }
+  .custom-combobox-toggle {
+    border: 2px solid #2d8fc1;    
+    background: #2d8fc1;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-left: -1px;
+    padding: 0;
+    font-size: 11px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    /* support: IE7 */
+    *height: 1.7em;
+    *top: 0.1em;
+  }
+  .custom-combobox-input {
+    border: 2px solid #2d8fc1;
+    border-right: none;
+    background: white;
+    margin: 0;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+  }
+
+  .ui-icon
+  {
+      background-image: url('ui-icons_fff_256x240.png');
+  }
