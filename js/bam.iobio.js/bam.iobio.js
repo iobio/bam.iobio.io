@@ -490,7 +490,7 @@ var Bam = Class.extend({
    sampleStats: function(callback, options) {
       // Prints some basic statistics from sampled input BAM file(s)      
       options = $.extend({
-         binSize : 40000, // defaults
+         binSize : 20000, // defaults
          binNumber : 20,
          start : 1,
       },options);
