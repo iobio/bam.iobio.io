@@ -159,11 +159,11 @@
                 window.sampleMultiplierLimit = 4;
                 
                 window.bam = undefined;
-                
+                window.sampling = getUrlParameter('sampling')
+                var bamUrl = getUrlParameter('bam')
                 // check if url to bam file is supplied in url and sample it
-                if (window.location.search != "") {
-                    var bamUrl = getUrlParameter('bam');                    
-                    // remove https if present
+                if (bamUrl != undefined) {                    
+                    // remove https if present                
                     if (bamUrl.slice(0,5) == 'https')
                       bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
                     window.bam = new Bam( bamUrl );
@@ -179,6 +179,7 @@
                           end: parseInt(r.split(":")[1].split('-')[1])
                         };
                     }
+                
                     
                     goBam(region);
                 }

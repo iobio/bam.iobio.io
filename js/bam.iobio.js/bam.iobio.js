@@ -22,24 +22,21 @@ var Bam = Class.extend({
       }
       
       // set iobio servers
-      this.iobio = {}
-     //  this.iobio.bamtools = "ws://bamtools.iobio.io";
+      this.iobio = {}     
       this.iobio.samtools = "wss://samtools.iobio.io";
-     this.iobio.bamReadDepther = "wss://bamReadDepther.iobio.io";
-     // //  this.iobio.bamMerger = "ws://bammerger.iobio.io";      
-      this.iobio.bamstatsAlive = "wss://bamstatsalive.iobio.io"
+      this.iobio.bamReadDepther = "wss://bamReadDepther.iobio.io";    
+      this.iobio.bamstatsAlive = "wss://bamstatsalive.iobio.io";
 
-      // this.iobio.bamtools = "wss://srv.iobio.io/bamtools/";
-      // this.iobio.samtools = "wss://srv.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "wss://srv.iobio.io/bamreaddepther/";
-      // // // this.iobio.bamMerger = "wss://srv.iobio.io/bammerger/";      
-      // this.iobio.bamstatsAlive = "wss://srv.iobio.io/bamstatsalive/"
-//      this.iobio.bamtools = "ws://localhost:8061";
-     // this.iobio.samtools = "ws://localhost:8060";
+
+      // this.iobio.samtools = "ws://54.208.92.65/";
+      // // this.iobio.samtools = "wss://nv-blue.iobio.io/samtools/";
+      // this.iobio.bamReadDepther = "wss://nv-blue.iobio.io/bamreaddepther/";    
+      // this.iobio.bamstatsAlive = "wss://nv-blue.iobio.io/bamstatsalive/";    
+      
+      // this.iobio.samtools = "ws://localhost:8060";
       // this.iobio.bamReadDepther = "ws://localhost:8021";
-//      this.iobio.bamMerger = "ws://localhost:8030";      
-     // this.iobio.bamstatsAlive = "ws://localhost:7100"
-          // this.iobio.bamstatsAlive = "ws://localhost:7101"
+      // this.iobio.bamstatsAlive = "ws://localhost:7100";
+          
       return this;
    },
    
@@ -494,10 +491,16 @@ var Bam = Class.extend({
    }, 
    
    sampleStats: function(callback, options) {
+      var binSize = 20000;
+      var binNumber = 20;
+      if (window.sampling == 'low') {
+        binSize = 5000;
+        binNumber = 20;
+      }
       // Prints some basic statistics from sampled input BAM file(s)      
       options = $.extend({
-         binSize : 20000, // defaults
-         binNumber : 20,
+         'binSize' : binSize, // defaults
+         'binNumber' : binNumber,
          start : 1,
       },options);
       var me = this;
