@@ -23,15 +23,10 @@ var Bam = Class.extend({
       
       // set iobio servers
       this.iobio = {}     
-      this.iobio.samtools = "wss://samtools.iobio.io";
-      this.iobio.bamReadDepther = "wss://bamReadDepther.iobio.io";    
-      this.iobio.bamstatsAlive = "wss://bamstatsalive.iobio.io";
-
-
-      // this.iobio.samtools = "ws://54.208.92.65/";
-      // // this.iobio.samtools = "wss://nv-blue.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "wss://nv-blue.iobio.io/bamreaddepther/";    
-      // this.iobio.bamstatsAlive = "wss://nv-blue.iobio.io/bamstatsalive/";    
+      
+      this.iobio.samtools = "wss://nv-green.iobio.io/samtools/";
+      this.iobio.bamReadDepther = "wss://nv-green.iobio.io/bamreaddepther/";    
+      this.iobio.bamstatsAlive = "wss://nv-green.iobio.io/bamstatsalive/"; 
       
       // this.iobio.samtools = "ws://localhost:8060";
       // this.iobio.bamReadDepther = "ws://localhost:8021";
@@ -79,32 +74,8 @@ var Bam = Class.extend({
          var regionStr = "";
          regions.forEach(function(region) { regionStr += " " + region.name + ":" + region.start + "-" + region.end });
          var url = this.iobio.samtools + "?cmd= view -b " + this.bamUri + regionStr + "&encoding=binary";
-      } else {
-         // creates a url for a new bam that is sliced from an old bam
-         // open connection to iobio webservice that will request this data, since connections can only be opened from browser
-         var me = this;
-         var connectionID = this._makeid();
-         var client = BinaryClient(this.iobio.samtools + '?id=', {'connectionID' : connectionID} );
-         client.on('open', function(stream){
-            var stream = client.createStream({event:'setID', 'connectionID':connectionID});
-            stream.end();
-         })
-      
-         var url = this.iobio.samtools + "?protocol=websocket&encoding=binary&cmd=view -S -b " + encodeURIComponent("http://client?&id="+connectionID);
-         var ended = 0;
-         var me = this;
-         // send data to samtools when it asks for it         
-         client.on('stream', function(stream, options) {
-            stream.write(me.header.toStr);            
-            for (var i=0; i < regions.length; i++) {
-              var region = regions[i];
-               me.convert('sam', region.name, region.start, region.end, function(data,e) {   
-                  stream.write(data);                   
-                  ended += 1;                  
-                  if ( regions.length == ended) stream.end();
-               }, {noHeader:true});               
-            }
-         })
+      } else {               
+         var url = this.iobio.samtools + "?protocol=websocket&encoding=binary&cmd=view -S -b " + encodeURIComponent("http://client");         
       }
       return encodeURI(url);
    },
@@ -545,10 +516,34 @@ var Bam = Class.extend({
          var regStr = JSON.stringify((bedRegions || regions).map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));                 
          // var samtoolsCmd = JSON.stringify((bedRegions || regions).map(function(d) { return {d.start,end:d.end,chr:d.name};}));
          // var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 30000 -f 2000 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
-         var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 500 -k 1 -r \'' + regStr + '\' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
+         var url = encodeURI( me.iobio.bamstatsAlive + '?cmd=-u 500 -k 1 -r ' + regStr + ' ' + encodeURIComponent(me._getBamRegionsUrl(regions)));
          var buffer = "";
          client.on('open', function(stream){
             var stream = client.createStream({event:'run', params : {'url':url}});
+            stream.on('error', function(err) {
+              console.log(err);
+            })
+
+            stream.on('createClientConnection', function(connection) {
+              console.log('got create client request');
+              var ended = 0;
+              var serverAddress = connection.serverAddress || me.iobio.samtools.split('//')[1];
+              var dataClient = BinaryClient('ws://' + serverAddress);
+              dataClient.on('open', function() {
+                var dataStream = dataClient.createStream({event:'clientConnected', 'connectionID' : connection.id});
+                dataStream.write(me.header.toStr);            
+                for (var i=0; i < regions.length; i++) {
+                  var region = regions[i];
+                   me.convert('sam', region.name, region.start, region.end, function(data,e) {   
+                      dataStream.write(data);                   
+                      ended += 1;                  
+                      if ( regions.length == ended) dataStream.end();
+                   }, {noHeader:true});               
+                }                
+              })
+            })
+
+
             stream.on('data', function(datas, options) {               
                datas.split(';').forEach(function(data) {
                  if (data == undefined || data == "\n") return;

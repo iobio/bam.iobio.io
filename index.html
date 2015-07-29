@@ -159,7 +159,7 @@
                 window.sampleMultiplierLimit = 4;
                 
                 window.bam = undefined;
-                window.sampling = getUrlParameter('sampling')
+                window.sampling = getUrlParameter('sampling')                
                 var bamUrl = getUrlParameter('bam')
                 // check if url to bam file is supplied in url and sample it
                 if (bamUrl != undefined) {                    
@@ -389,7 +389,9 @@
                 } else {
                   var regionStr = region.chr;
                 }
-                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + window.bam.bamUri + "&region=" + regionStr);
+                var extraParams = '';
+                if (window.sampling) extraParams += '&sampling=' + window.sampling                
+                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + window.bam.bamUri + "&region=" + regionStr + extraParams);
               }
             }
             
