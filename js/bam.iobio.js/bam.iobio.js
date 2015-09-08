@@ -462,7 +462,7 @@ var Bam = Class.extend({
    }, 
    
    sampleStats: function(callback, options) {
-      var binSize = 20000;
+      var binSize = 10000;
       var binNumber = 20;
       if (window.sampling == 'low') {
         binSize = 5000;

@@ -30,10 +30,12 @@
         <script src="js/bam.iobio.js/bin.js"></script>
         <script src="js/bam.iobio.js/inflate.js"></script>
         <script src="js/binary.js"></script>
+        <script src="js/iobio.viz.js"></script>
         <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
         <link href='http://fonts.googleapis.com/css?family=Overlock+SC' rel='stylesheet' type='text/css'>
         <link href='css/nprogress.css' rel='stylesheet' type='text/css'>
         <link href='css/site.css' rel='stylesheet' type='text/css'>
+        <link href='css/iobio.viz.min.css' rel='stylesheet' type='text/css'>
         <!-- <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'> -->
         
         <script>
@@ -119,7 +121,39 @@
                 for (var i=0; i < dists.length; i++ ) { dists[i].setAttribute('viewBox', "0 0 " + width + " " + height) }
                 
                 // setup main window read depth chart
-                window.depthChart = movingLineD3("#depth-distribution");
+                // window.depthChart = movingLineD3("#depth-distribution");
+                window.depthChart = iobio.viz.line()
+                  .xValue(function(d) { return d.pos; })
+                  .yValue(function(d) { return d.depth; })
+                  .height('100%')
+                  // .height('60%')
+                  .width('100%')
+                  .yAxis(null)
+                  .preserveAspectRatio('none')
+                  .margin({ top: 5, left: 5, right: 5, bottom: 23})
+                  .tooltipChart(function(svg, pos) {
+                    // var x = this.x();                    
+                    var left = pos.x;
+                    if (left < 0) left = null;
+                    else left = d3.format(',')(left);
+                    return left;
+                  })
+                  .brush('brushend', function() {
+                    var options = { sequenceNames:[getSelectedSeqId()] };
+                    var brush = this.brush();
+                    if (!brush.empty()) {
+                    options.start = parseInt(brush.extent()[0]);
+                    options.end = parseInt(brush.extent()[1]);
+                    var region = {chr:getSelectedSeqId(), 'start':options.start, 'end':options.end};
+                    setUrlRegion(region);
+                    // if (window.bam.sourceType == 'url') {
+                      
+                    //   window.history.pushState({'index.html' : 'bar'},null,"?bam=" + window.bam.bamUri + "&region=" + region);
+                    // }
+                    } else if(window.bam.sourceType == 'url') setUrlRegion({chr:getSelectedSeqId()});                              
+
+                    goSampling(options);
+                  })  
                 
                 // setup read coverage histogram chart
                 window.readCoverageChart = histogramViewFinderD3()
@@ -301,23 +335,6 @@
                          $("#readDepthLoadingMsg").css("display", "none");
                          // turn on sampling message
                          $(".samplingLoader").css("display", "block");
-                        
-                         // update depth distribution    
-                         window.depthChart.on("brushend", function(x,brush) {
-                            var options = { sequenceNames:[getSelectedSeqId()] };
-                            if (!brush.empty()) {
-                                options.start = parseInt(brush.extent()[0]);
-                                options.end = parseInt(brush.extent()[1]);
-                                var region = {chr:getSelectedSeqId(), 'start':options.start, 'end':options.end};
-                                setUrlRegion(region);
-                                // if (window.bam.sourceType == 'url') {
-                                  
-                                //   window.history.pushState({'index.html' : 'bar'},null,"?bam=" + window.bam.bamUri + "&region=" + region);
-                                // }
-                            } else if(window.bam.sourceType == 'url') setUrlRegion({chr:getSelectedSeqId()});                              
-
-                            goSampling(options);
-                         });
                          
                          // create seq buttons
                          $('#depth-distribution').append("<div style='width: 100%; overflow-x: scroll;' id='seq-list'></div>");                
@@ -346,7 +363,7 @@
             
             function resetBrush() {
                 var brush = window.depthChart.brush();
-                var g = d3.selectAll("#depth-distribution .brush")
+                var g = d3.selectAll("#depth-distribution .iobio-brush")
                 brush.clear();
                 brush(g);
                 // remove brush region from url
@@ -367,7 +384,11 @@
                 var dataId = selected.getAttribute("data-id");
                 $(".seq-buttons.selected").removeClass("selected");
                 $(selected).addClass("selected");  
-                window.depthChart( window.bam.readDepth[dataId] );  
+                var smooth = iobio.viz.layout.pointSmooth().size($('#depth-distribution .chart').width());
+                var selection = d3.select('#depth-distribution .chart').datum( smooth(window.bam.readDepth[dataId]) );
+                
+                window.depthChart(selection);
+                // window.depthChart( window.bam.readDepth[dataId] );  
                 // reset brush
                 resetBrush();
                 setUrlRegion({chr:dataId, 'start':start, 'end':end });
@@ -376,7 +397,7 @@
                  goSampling({ sequenceNames:[dataId], 'start':start, 'end':end }); 
                  var brush = window.depthChart.brush();
                  // set brush region
-                 d3.select("#depth-distribution .brush").call(brush.extent([start,end]));
+                 d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
                } else {
                  goSampling({ sequenceNames:[dataId]});
                }
@@ -612,6 +633,7 @@
         <div id="showData">
             <section id="top">
                 <div id="depth-distribution" class="panel">
+
                     <div class="title">Read Coverage</div>
                     <div class="hint">(drag to select region)</div>
                     <!-- <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
@@ -623,6 +645,8 @@
                     <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">Default Bed</div>
                     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
                     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
+                    <!-- <div id="test-chart" style="width:100%"></div> -->
+                    <div class='chart' style="width:98%; height:60%"></div>
                     <!-- <ul id="sequences"></ul> -->
                 </div>
                 <div id="total-reads" class="panel">
@@ -689,6 +713,6 @@
             var div = d3.select("body").append("div")   
                 .attr("class", "tooltip")               
                 .style("opacity", 1);
-        </script>             
+        </script>      
     </body>
 </html>

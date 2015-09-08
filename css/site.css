@@ -96,7 +96,15 @@ section#middle {
     height: 250px;
     position:relative;
     width: 80%;
+}
 
+.panel#depth-distribution .chart {
+  -webkit-flex: 1 1 auto;
+       flex: 1 1 auto;
+    -webkit-order: 1;
+       order: 1;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .panel#total-reads {
