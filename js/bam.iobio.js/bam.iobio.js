@@ -265,7 +265,7 @@ var Bam = Class.extend({
       }
             
       me.getHeader(function(header) { 
-         if (Object.keys(me.readDepth).length > 0)
+         if (Object.keys(me.readDepth).length > 0 || Object.keys(readDepth).length > 0)
             cb();
       });
       if ( Object.keys(me.readDepth).length > 0 )
