@@ -1255,6 +1255,10 @@ BinaryStream.prototype._onError = function(error){
   this.emit('error', error);
 };
 
+BinaryStream.prototype._onMessage = function(event, msg){    
+  this.emit(event, msg);
+};
+
 BinaryStream.prototype._onCreateClientConnection = function(connection){
   this.emit('createClientConnection', connection);
 };
@@ -1307,6 +1311,10 @@ BinaryStream.prototype.error = function(error) {
 
 BinaryStream.prototype.createClientConnection = function(connection) {
   this._write(8, connection, this.id);
+};
+
+BinaryStream.prototype.message = function(event, msg) {    
+  this._write(9, [event, msg], this.id);
 };
 
 BinaryStream.prototype.destroy = BinaryStream.prototype.destroySoon = function() {
@@ -1506,7 +1514,18 @@ function BinaryClient(socket, options) {
           } else {
             self.emit('error', new Error('Received `error` message for unknown stream: ' + streamId));
           }
-          break;          
+          break; 
+        case 9:          
+          var event = data[1][0];
+          var msg = data[1][1];
+          var streamId = data[2];          
+          var binaryStream = self.streams[streamId];          
+          if(binaryStream) {            
+            binaryStream._onMessage(event, msg);
+          } else {
+            self.emit('error', new Error('Received `error` message for unknown stream: ' + streamId));
+          }
+          break;                   
         default:
           self.emit('error', new Error('Unrecognized message type received: ' + data[0]));
       }
