@@ -198,8 +198,8 @@
                 // check if url to bam file is supplied in url and sample it
                 if (bamUrl != undefined) {                    
                     // remove https if present                
-                    if (bamUrl.slice(0,5) == 'https')
-                      bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
+                    // if (bamUrl.slice(0,5) == 'https')
+                    //   bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
                     window.bam = new Bam( bamUrl );
                     var r = getUrlParameter('region');
                     var region = undefined;
@@ -241,7 +241,7 @@
             }
             
             function addDefaultBedFile() {
-                var bedurl = 'http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/exome_pull_down_targets/20130108.exome.targets.bed';
+                var bedurl = '/20130108.exome.targets.bed';
                 
                 // clear brush on read coverage chart        	    
         	    window.readCoverageChart.setBrush([0,0]);
@@ -569,8 +569,8 @@
             function openBamUrl() {
                 var url = $("#url-input").val();
                 // remove https if present
-                if (url.slice(0,5) == 'https')
-                  url = 'http' + url.slice(5,url.length);
+                // if (url.slice(0,5) == 'https')
+                //   url = 'http' + url.slice(5,url.length);
                 window.history.pushState({'index.html' : 'bar'},null,"?bam=" + url);
                 window.bam = new Bam( url );
                 goBam();

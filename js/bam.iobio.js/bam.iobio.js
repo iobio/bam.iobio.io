@@ -24,9 +24,9 @@ var Bam = Class.extend({
       // set iobio servers
       this.iobio = {}     
       
-      this.iobio.samtools = "wss://nv-green.iobio.io/samtools/";
-      this.iobio.bamReadDepther = "wss://nv-green.iobio.io/bamreaddepther/";    
-      this.iobio.bamstatsAlive = "wss://nv-green.iobio.io/bamstatsalive/"; 
+      this.iobio.samtools = "wss://services.iobio.io/samtools/";
+      this.iobio.bamReadDepther = "wss://services.iobio.io/bamreaddepther/";    
+      this.iobio.bamstatsAlive = "wss://services.iobio.io/bamstatsalive/"; 
       
       // this.iobio.samtools = "ws://localhost:8060";
       // this.iobio.bamReadDepther = "ws://localhost:8021";
