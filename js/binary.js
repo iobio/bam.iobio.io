@@ -1375,7 +1375,7 @@ function BinaryClient(socket, options) {
   this._socket.binaryType = 'arraybuffer';
   
   this._socket.addEventListener('open', function(){
-    self.emit('open');
+    self.emit('open');    
   });
   this._socket.addEventListener('error', function(error){
     var ids = Object.keys(self.streams);

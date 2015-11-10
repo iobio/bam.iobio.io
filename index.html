@@ -31,6 +31,7 @@
         <script src="js/bam.iobio.js/inflate.js"></script>
         <script src="js/binary.js"></script>
         <script src="js/iobio.viz.js"></script>
+        <script src="js/iobio.js"></script>
         <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
         <link href='http://fonts.googleapis.com/css?family=Overlock+SC' rel='stylesheet' type='text/css'>
         <link href='css/nprogress.css' rel='stylesheet' type='text/css'>
@@ -156,10 +157,18 @@
                   })  
                 
                 // setup read coverage histogram chart
-                window.readCoverageChart = histogramViewFinderD3()
-                    .width(width)
-                    .height(height);
-                window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
+                // window.readCoverageChart = histogramViewFinderD3()
+                //     .width(width)
+                //     .height(height);
+                // window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
+                window.readCoverageChart = iobio.viz.barViewer()
+                  .xValue(function(d) { return d[0]; })
+                  .yValue(function(d) { return d[1]; })
+                  .wValue(function() { return 1; })
+                  .height(height)
+                  .width(width)
+                  .margin({top: 25, right: 20, bottom: 20, left: 50})
+                  .sizeRatio(0.7)                
                 
                 // setup length histrogram chart
                 // window.lengthChart = histogramD3()
@@ -689,7 +698,7 @@
                 <div id="distributions" >
                     <div id="read-coverage-distribution" class="distribution panel"><div>Read Coverage Distribution</div>
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg id="read-coverage-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
+                        <div id="read-coverage-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
                     </div>
                     <div id="length-distribution" class="distribution panel">
                         <div><div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Insert Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span></div></div>                    
