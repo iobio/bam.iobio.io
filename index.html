@@ -367,7 +367,11 @@
                 var dataId = selected.getAttribute("data-id");
                 $(".seq-buttons.selected").removeClass("selected");
                 $(selected).addClass("selected");  
-                window.depthChart( window.bam.readDepth[dataId] );  
+                var refLength;
+                window.bam.header.sq.forEach(function(ref) { 
+                    if (ref.name == dataId) refLength = ref.end;
+                })
+                window.depthChart( window.bam.readDepth[dataId], { start:0, end: refLength });                  
                 // reset brush
                 resetBrush();
                 setUrlRegion({chr:dataId, 'start':start, 'end':end });
