@@ -1,3 +1,12 @@
+// send disconnect event to server instantly when browser tab is closed
+window.onbeforeunload = function() {
+    window.binwsClients.forEach(function(client) {
+      try {
+        client.createStream({event:'close'});          
+      } catch() {} // use try catch in case client is already closed
+    })    
+};
+
 /*! binary.js build:0.2.1, development. Copyright(c) 2012 Eric Zhang <eric@ericzhang.com> MIT Licensed */
 (function(exports){
 var binaryFeatures = {};
@@ -1351,7 +1360,7 @@ BinaryStream.prototype.resume = function() {
 
 
 function BinaryClient(socket, options) {
-  if (!(this instanceof BinaryClient)) return new BinaryClient(socket, options);
+  if (!(this instanceof BinaryClient)) return new BinaryClient(socket, options);  
   
   EventEmitter.call(this);
   

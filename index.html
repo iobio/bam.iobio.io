@@ -29,7 +29,7 @@
         <script src="js/bam.iobio.js/bam.js"></script>
         <script src="js/bam.iobio.js/bin.js"></script>
         <script src="js/bam.iobio.js/inflate.js"></script>
-        <script src="js/binary.js"></script>
+        
         <script src="js/iobio.viz.js"></script>
         <script src="js/iobio.js"></script>
         <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
@@ -82,7 +82,8 @@
                     var dataId = $("#length-distribution .chart-chooser .selected").attr("data-id")
                     var h = window.sampleStats[dataId];
                     var d = Object.keys(h).map(function(k) { return  [+k, +h[k]] });
-                    var selection = d3.select("#length-distribution svg")
+                    var selection = d3.select("#length-distribution-chart")
+                    if (!outliers) d = iobio.viz.layout.outlier()(d);
                     selection.datum(d);
                     window.lengthChart(selection, {'outliers':outliers});
                 });
@@ -157,31 +158,41 @@
                   })  
                 
                 // setup read coverage histogram chart
-                // window.readCoverageChart = histogramViewFinderD3()
-                //     .width(width)
-                //     .height(height);
-                // window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
                 window.readCoverageChart = iobio.viz.barViewer()
                   .xValue(function(d) { return d[0]; })
                   .yValue(function(d) { return d[1]; })
                   .wValue(function() { return 1; })
                   .height(height)
                   .width(width)
-                  .margin({top: 25, right: 20, bottom: 20, left: 50})
-                  .sizeRatio(0.7)                
+                  .margin({top: 5, right: 20, bottom: 20, left: 50})
+                  .sizeRatio(0.8);
+                window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
                 
                 // setup length histrogram chart
                 // window.lengthChart = histogramD3()
-                window.lengthChart = histogramViewFinderD3()
-                    .width(width)
-                    .height(height);
+                // window.lengthChart = histogramViewFinderD3()
+                //     .width(width)
+                //     .height(height);
+                window.lengthChart = iobio.viz.barViewer()
+                  .xValue(function(d) { return d[0]; })
+                  .yValue(function(d) { return d[1]; })
+                  .wValue(function() { return 1; })
+                  .height(height)
+                  .width(width)
+                  .margin({top: 5, right: 20, bottom: 20, left: 50})
+                  .sizeRatio(0.8);
                 window.lengthChart.xAxis().tickFormat(tickFormatter);
                 window.lengthChart.yAxis().tickFormat(tickFormatter);
                 
                 // setup quality histogram chart
-                window.qualityChart = histogramD3()
+                window.qualityChart = iobio.viz.barViewer()
+                    .xValue(function(d) { return d[0]; })
+                    .yValue(function(d) { return d[1]; })
+                    .wValue(function() { return 1; })
+                    .height(height)
                     .width(width)
-                    .height(height);
+                    .margin({top: 5, right: 20, bottom: 20, left: 50})
+                    .sizeRatio(0.8);
                 window.qualityChart.xAxis().tickFormat(tickFormatter);
                 window.qualityChart.yAxis().tickFormat(tickFormatter);
                 
@@ -189,7 +200,11 @@
                 window.readRegionChart = bamD3("#read-depth", 0.85, '#33A7E4');
                 
                 // setup donut chart
-                window.sampleDonutChart = donutD3().radius(61).klass("sampleArc");
+                // window.sampleDonutChart = donutD3().radius(61).klass("sampleArc");
+                window.sampleDonutChart = iobio.viz.pie()
+                    .radius(61)
+                    .innerRadius(50)
+                    .color( function(d,i) { if (i==0) return '#2d8fc1'; else return 'rgba(45,143,193,0.2)'; });
                 
                 // hold onto stats
                 window.sampleStats = undefined;
@@ -490,9 +505,11 @@
                 keys.forEach( function(key,i) {
                     var stat = stats[key];                    
                     var data = [ stat, stats['total_reads'] - stat ];
-                    var arc = d3.select('#'+key + " svg").selectAll(".arc")
-                        .data(pie(data));
-                    donutChart(arc);                  
+                    var p = pie(data);
+                    console.log('before d = ' + p[0].data);
+                    var selection = d3.select('#'+key  + ' .chart').datum(pie(data));
+                    console.log('before selection.datum() = ' + selection.datum()[0].data )
+                    donutChart(selection);                  
                 });
                 
             }
@@ -519,9 +536,11 @@
                 else
                     var d = Object.keys(histograms.length_hist).map(function(k) { return  [+k, +histograms.length_hist[k]] });
                 // remove outliers if outliers checkbox isn't explicity checked
-                var outliers = $("#length-distribution .checkbox").hasClass("checked");
+                var outliers = $("#length-distribution .checkbox").hasClass("checked");                
+                if (!outliers) d = iobio.viz.layout.outlier()(d);                
                 var selection = d3.select("#length-distribution-chart").datum(d);
-                window.lengthChart( selection, {'outliers':outliers} );
+                window.lengthChart( selection );
+                // window.lengthChart( selection, {'outliers':outliers} );
 
                 // update map quality distribution
                 if ($("#mapping-quality-distribution .selected").attr("data-id") == "mapq_hist")
@@ -543,7 +562,12 @@
                 // var outlier = elem.getAttribute('data-outlier') === 'true' || elem.getAttribute('data-outlier') == null;
                 var h = window.sampleStats[dataId];
                 var d = Object.keys(h).map(function(k) { return  [+k, +h[k]] });
-                var selection = d3.select($(elem).parent().parent().parent().find('svg')[0])
+                var chartDiv = $(elem).parent().parent().parent();
+                var selection = d3.select(chartDiv.find('.chart')[0])
+                if ( chartDiv.find(".selected").attr("data-id") == "frag_hist" ) {
+                    var outlier = chartDiv.find('.checkbox').hasClass('checked')
+                    if (!outlier) d = iobio.viz.layout.outlier()(d);
+                }
                 selection.datum(d);
                 window[chartId](selection);
             }
@@ -672,33 +696,33 @@
                 <div id="percents">
                     <div id="mapped_reads" class="percent panel">Mapped Reads                        
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+                        <div class='chart'></div>                        
                     </div>
                     <div id="forward_strands" class="percent panel">Forward Strand
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+                        <div class='chart'></div>
                     </div>
                     <div id="proper_pairs" class="percent panel">Proper Pairs
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+                        <div class='chart'></div>
                     </div>
                     <div id="singletons" class="percent panel">Singletons
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+                        <div class='chart'></div>
                     </div>
                     <div id="both_mates_mapped" class="percent panel">Both Pairs Mapped
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+                        <div class='chart'></div>
                     </div>
                     <div id="duplicates" class="percent panel">Duplicates
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+                        <div class='chart'></div>
                     </div>
                 </div>
                 <div id="distributions" >
                     <div id="read-coverage-distribution" class="distribution panel"><div>Read Coverage Distribution</div>
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div id="read-coverage-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
+                        <div id="read-coverage-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
                     </div>
                     <div id="length-distribution" class="distribution panel">
                         <div><div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Insert Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span></div></div>                    
@@ -707,12 +731,12 @@
                             Outliers
                         </label>                        
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg id="length-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:85%"></svg>
+                        <div id="length-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:85%"></div>
                     </div>
                     <div id="mapping-quality-distribution" class="distribution panel">
                         <div><div class="chart-chooser"><span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span></div></div>
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <svg id="mapping-quality-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
+                        <div id="mapping-quality-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
                     </div>
                 </div>
             </section>   

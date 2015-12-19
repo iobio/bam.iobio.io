@@ -24,13 +24,17 @@ var Bam = Class.extend({
       // set iobio servers
       this.iobio = {}     
       
-      this.iobio.samtools = "wss://services.iobio.io/samtools/";
-      this.iobio.bamReadDepther = "wss://services.iobio.io/bamreaddepther/";    
-      this.iobio.bamstatsAlive = "wss://services.iobio.io/bamstatsalive/"; 
+      // this.iobio.samtools = "wss://services.iobio.io/samtools/";
+      // this.iobio.bamReadDepther = "wss://services.iobio.io/bamreaddepther/";    
+      // this.iobio.bamstatsAlive = "wss://services.iobio.io/bamstatsalive/"; 
       
-      // this.iobio.samtools = "wss://localhost:8060";
-      // this.iobio.bamReadDepther = "wss://localhost:8021";
-      // this.iobio.bamstatsAlive = "wss://localhost:7100";
+      this.iobio.samtools = "services.iobio.io/samtools/";
+      this.iobio.bamReadDepther = "services.iobio.io/bamreaddepther/";    
+      this.iobio.bamstatsAlive = "services.iobio.io/bamstatsalive/";       
+      
+      // this.iobio.samtools = "localhost:8060";
+      // this.iobio.bamReadDepther = "localhost:8021";
+      // this.iobio.bamstatsAlive = "localhost:7100";
           
       return this;
    },
@@ -64,20 +68,48 @@ var Bam = Class.extend({
 
        return text;
    },
-   
-   _getBamUrl: function(name, start, end) {
-      return this._getBamRegionsUrl([ {'name':name,'start':start,'end':end} ]);
-   },
-   
-   _getBamRegionsUrl: function(regions) {
-      if ( this.sourceType == "url") {
-         var regionStr = "";
-         regions.forEach(function(region) { regionStr += " " + region.name + ":" + region.start + "-" + region.end });
-         var url = this.iobio.samtools + "?cmd= view -b " + this.bamUri + regionStr + "&encoding=binary";
-      } else {               
-         var url = this.iobio.samtools + "?protocol=websocket&encoding=binary&cmd=view -S -b " + encodeURIComponent("http://client");         
+
+   _getBamCmd: function(regions) {
+      var me = this;
+      var regArr = regions.map(function(d) { return d.name+ ":"+ d.start + '-' + d.end;});         
+      var regStr = JSON.stringify(regions.map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));                 
+      
+      if ( this.sourceType == "url") {              
+        var cmd = new iobio.cmd(
+            this.iobio.samtools,
+            ['view', '-b', this.bamUri, regArr.join(' ')],
+            { 'urlparams': {'encoding':'binary'} }
+          )
+      } else {                         
+          var cmd = new iobio.cmd(
+            this.iobio.samtools,
+            ['view', '-S', '-b', me.bamUri],
+            { 
+              'urlparams': {'encoding':'binary'},
+              writeStream: function(stream) {                
+                var ended = 0;              
+                stream.write(me.header.toStr);            
+                for (var i=0; i < regions.length; i++) {
+                  var region = regions[i];
+                   me.convert('sam', region.name, region.start, region.end, function(data,e) {   
+                      stream.write(data);                   
+                      ended += 1;                  
+                      if ( regions.length == ended) stream.end();
+                   }, {noHeader:true});                             
+                }
+              }             
+          })        
       }
-      return encodeURI(url);
+
+      cmd = cmd.pipe(
+              this.iobio.bamstatsAlive,
+              ['-u', '500', '-k', '1', '-r', regStr]
+            );         
+      
+
+      if (window.lastCmd) window.lastCmd.end();
+      window.lastCmd = cmd;
+      return cmd;
    },
    
    _generateExomeBed: function(id) {
@@ -264,15 +296,15 @@ var Bam = Class.extend({
          }
       }
             
-      me.getHeader(function(header) { 
-         if (Object.keys(me.readDepth).length > 0)
+      me.getHeader(function(header) {                   
+         // if (Object.keys(me.readDepth).length > 0)
             cb();
       });
       if ( Object.keys(me.readDepth).length > 0 )
          callback(me.readDepth)
       else if (me.sourceType == 'url') {         
           var currentSequence;
-          var cmd = new iobio.cmd('localhost:8021', [ '-i', me.bamUri + ".bai"] )
+          var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', me.bamUri + ".bai"] )
           cmd.on('error', function(e){ console.log(e); });
           cmd.on('data', function(data, options) {
              data = data.split("\n");
@@ -373,7 +405,7 @@ var Bam = Class.extend({
          me.promise(function() { me.getHeader(callback); })
       else {
           var rawHeader = ""
-          var cmd = new iobio.cmd('localhost:8060',['view', '-H', this.bamUri])
+          var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', this.bamUri])
           cmd.on('error', function(error) {
             console.log(error);
           })
@@ -462,16 +494,8 @@ var Bam = Class.extend({
             }
          } 
 
-         var regArr = (bedRegions || regions).map(function(d) { return d.name+ ":"+ d.start + '-' + d.end;});
-         var regStr = JSON.stringify((bedRegions || regions).map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));                 
-         var cmd = new iobio.cmd(
-                    'localhost:8060',
-                    ['view', '-b', me.bamUri, regArr.join(' ')],
-                    { 'urlparams': {'encoding':'binary'} }
-                  ).pipe(
-                    'localhost:7100',
-                    ['-u', '500', '-k', '1', '-r', regStr]
-                  );
+         var r = bedRegions || regions;
+         var cmd = me._getBamCmd( r )         
          
          var buffer = "";
          
@@ -482,26 +506,6 @@ var Bam = Class.extend({
         cmd.on('queue', function(q) {
           console.log('queue = ' + q);
         })
-
-        cmd.on('createClientConnection', function(connection) {
-          console.log('got create client request');
-          var ended = 0;
-          var serverAddress = connection.serverAddress || me.iobio.samtools.split('//')[1];
-          var dataClient = BinaryClient('ws://' + serverAddress);
-          dataClient.on('open', function() {
-            var dataStream = dataClient.createStream({event:'clientConnected', 'connectionID' : connection.id});
-            dataStream.write(me.header.toStr);            
-            for (var i=0; i < regions.length; i++) {
-              var region = regions[i];
-               me.convert('sam', region.name, region.start, region.end, function(data,e) {   
-                  dataStream.write(data);                   
-                  ended += 1;                  
-                  if ( regions.length == ended) dataStream.end();
-               }, {noHeader:true});               
-            }                
-          })
-        })
-
 
         cmd.on('data', function(datas, options) {               
            datas.split(';').forEach(function(data) {
