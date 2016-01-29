@@ -28,13 +28,13 @@ var Bam = Class.extend({
       // this.iobio.bamReadDepther = "wss://services.iobio.io/bamreaddepther/";    
       // this.iobio.bamstatsAlive = "wss://services.iobio.io/bamstatsalive/"; 
       
-      this.iobio.samtools = "services.iobio.io/samtools/";
-      this.iobio.bamReadDepther = "services.iobio.io/bamreaddepther/";    
-      this.iobio.bamstatsAlive = "services.iobio.io/bamstatsalive/";       
+      // this.iobio.samtools = "services.iobio.io/samtools/";
+      // this.iobio.bamReadDepther = "services.iobio.io/bamreaddepther/";    
+      // this.iobio.bamstatsAlive = "services.iobio.io/bamstatsalive/";       
       
-      // this.iobio.samtools = "localhost:8060";
-      // this.iobio.bamReadDepther = "localhost:8021";
-      // this.iobio.bamstatsAlive = "localhost:7100";
+      this.iobio.samtools = "localhost:8060";
+      this.iobio.bamReadDepther = "localhost:8021";
+      this.iobio.bamstatsAlive = "localhost:7100";
           
       return this;
    },
@@ -103,7 +103,8 @@ var Bam = Class.extend({
 
       cmd = cmd.pipe(
               this.iobio.bamstatsAlive,
-              ['-u', '500', '-k', '1', '-r', regStr]
+              ['-u', '500', '-k', '1', '-r', regStr],
+              { urlparams: {cache:'stats.json'}}
             );         
       
 
@@ -498,6 +499,8 @@ var Bam = Class.extend({
          var cmd = me._getBamCmd( r )         
          
          var buffer = "";
+
+         console.log('http = ' + cmd.http() );
          
         cmd.on('error', function(err) {
           console.log(err);
@@ -528,7 +531,13 @@ var Bam = Class.extend({
         cmd.on('end', function() {
            if (options.onEnd != undefined)
               options.onEnd();
+
+            console.log('command ending')
         });
+
+        cmd.on('exit', function(code) {
+          console.log('command exits with code: ' + code);
+        })
 
         cmd.run();
          
