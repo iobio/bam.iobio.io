@@ -408,11 +408,12 @@
                 var dataId = selected.getAttribute("data-id");
                 $(".seq-buttons.selected").removeClass("selected");
                 $(selected).addClass("selected");  
+
                 var smooth = iobio.viz.layout.pointSmooth().size($('#depth-distribution .chart').width());
                 var selection = d3.select('#depth-distribution .chart').datum( smooth(window.bam.readDepth[dataId]) );
                 
                 window.depthChart(selection);
-                // window.depthChart( window.bam.readDepth[dataId] );  
+                
                 // reset brush
                 resetBrush();
                 setUrlRegion({chr:dataId, 'start':start, 'end':end });

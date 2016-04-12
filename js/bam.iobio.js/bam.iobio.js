@@ -28,13 +28,13 @@ var Bam = Class.extend({
       // this.iobio.bamReadDepther = "wss://services.iobio.io/bamreaddepther/";    
       // this.iobio.bamstatsAlive = "wss://services.iobio.io/bamstatsalive/"; 
       
-      // this.iobio.samtools = "services.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "services.iobio.io/bamreaddepther/";    
-      // this.iobio.bamstatsAlive = "services.iobio.io/bamstatsalive/";       
+      this.iobio.samtools = "services.iobio.io/samtools/";
+      this.iobio.bamReadDepther = "services.iobio.io/bamreaddepther/";    
+      this.iobio.bamstatsAlive = "services.iobio.io/bamstatsalive/";       
       
-      this.iobio.samtools = "localhost:8060";
-      this.iobio.bamReadDepther = "localhost:8021";
-      this.iobio.bamstatsAlive = "localhost:7100";
+      // this.iobio.samtools = "localhost:8060";
+      // this.iobio.bamReadDepther = "localhost:8021";
+      // this.iobio.bamstatsAlive = "localhost:7100";
           
       return this;
    },
@@ -297,8 +297,8 @@ var Bam = Class.extend({
          }
       }
             
-      me.getHeader(function(header) {                   
-         // if (Object.keys(me.readDepth).length > 0)
+
+      me.getHeader(function(header) {          
             cb();
       });
       if ( Object.keys(me.readDepth).length > 0 )
@@ -450,6 +450,10 @@ var Bam = Class.extend({
       if (window.sampling == 'low') {
         binSize = 5000;
         binNumber = 20;
+      }
+      if (window.sampling == 'verylow') {
+        binSize = 2500;
+        binNumber = 10;
       }
       // Prints some basic statistics from sampled input BAM file(s)      
       options = $.extend({

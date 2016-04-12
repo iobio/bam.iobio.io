@@ -29,7 +29,15 @@ function movingLineD3(container) {
       data = properRDP(points, epislon);
       // data = points;
       
-      x.domain(d3.extent(data, function(d){ return d[0]; }));            
+      // var xMax = options.xMax;
+      // x.domain([d3.min(data, function(d){ return d[0]; }), options.xMax])
+      if (options && options.start != undefined) xMin = options.start;
+      else xMin = d3.min(data, function(d){ return d[0]; });
+
+      if (options && options.end != undefined) xMax = options.end;
+      else xMax = d3.max(data, function(d){ return d[0]; });
+      
+      x.domain([xMin, xMax]);
       var y = d3.scale.linear().domain([0, d3.max(data, function(d){ return d[1]; })]).range([height,0]);
       
       var xAxis = d3.svg.axis()
