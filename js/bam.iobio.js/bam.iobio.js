@@ -467,6 +467,10 @@ var Bam = Class.extend({
         binSize = 5000;
         binNumber = 20;
       }
+      if (window.sampling == 'verylow') {
+        binSize = 2500;
+        binNumber = 20;
+      }
       // Prints some basic statistics from sampled input BAM file(s)      
       options = $.extend({
          'binSize' : binSize, // defaults
