@@ -11,9 +11,9 @@
 
           ga('create', 'UA-47481907-2', 'iobio.io');
           ga('send', 'pageview');
-          
+
         </script>
-        
+
         <script src="js/jquery.min.js"></script>
         <script src="js/class.js"></script>
         <script src="js/rdp.js"></script>
@@ -29,7 +29,7 @@
         <script src="js/bam.iobio.js/bam.js"></script>
         <script src="js/bam.iobio.js/bin.js"></script>
         <script src="js/bam.iobio.js/inflate.js"></script>
-        
+
         <script src="js/iobio.viz.js"></script>
         <script src="js/iobio.js"></script>
         <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
@@ -38,7 +38,7 @@
         <link href='css/site.css' rel='stylesheet' type='text/css'>
         <link href='css/iobio.viz.min.css' rel='stylesheet' type='text/css'>
         <!-- <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'> -->
-        
+
         <script>
             $(document).ready( function(){
                 // var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
@@ -67,15 +67,15 @@
                       clearTimeout(id);
                   };
                 }());
-                
+
                 // $("#read-coverage-distribution input[type='checkbox']").change(function(){
                 //     if ($(this).parent().hasClass("checked"))
                 //         window.readCoverageDistChart(hist2array(window.sampleStats.coverage_hist), { noOutliers : false })
                 //     else
                 //         window.readCoverageDistChart(hist2array(window.sampleStats.coverage_hist), { noOutliers : true })
                 // });
-                
-                
+
+
                 $("#length-distribution input[type='checkbox']").change(function(){
                     var outliers = $(this).parent().hasClass("checked");
 
@@ -87,17 +87,17 @@
                     selection.datum(d);
                     window.lengthChart(selection, {'outliers':outliers});
                 });
-                
+
                 $("#depth-distribution input[type='checkbox']").change(function(){
                     goSampling({sequenceNames : [ getSelectedSeqId() ]});
                 });
-                
+
                 $("#url-input").keyup(function(event){
                     if(event.keyCode == 13){
                         $("#bam-url-go-button").click();
                     }
                 });
-                
+
                 $('#url-input').focus(function() {
                     if (this.setSelectionRange) {
                         this.setSelectionRange(7, 7);
@@ -110,53 +110,19 @@
                         range.select();
                     }
                 });
-                
+
                 document.getElementById('file').addEventListener('change', openBamFile, false);
                 document.getElementById('bedfile').addEventListener('change', openBedFile, false);
-                
-                
+
+
                 // initialize charts
                 // get height width of histogram charts and set viewboxes
                 var width = $("#read-coverage-distribution-chart").width();
                 var height = $("#read-coverage-distribution-chart").height();
                 var dists = document.getElementsByClassName("focus") // viewboxes need to be set at runtime to get accurate height/width
                 for (var i=0; i < dists.length; i++ ) { dists[i].setAttribute('viewBox', "0 0 " + width + " " + height) }
-                
-                // setup main window read depth chart
-                // window.depthChart = movingLineD3("#depth-distribution");
-                window.depthChart = iobio.viz.line()
-                  .xValue(function(d) { return d.pos; })
-                  .yValue(function(d) { return d.depth; })
-                  .height('100%')
-                  // .height('60%')
-                  .width('100%')
-                  .yAxis(null)
-                  .preserveAspectRatio('none')
-                  .margin({ top: 5, left: 5, right: 5, bottom: 23})
-                  .tooltipChart(function(svg, pos) {
-                    // var x = this.x();                    
-                    var left = pos.x;
-                    if (left < 0) left = null;
-                    else left = d3.format(',')(left);
-                    return left;
-                  })
-                  .brush('brushend', function() {
-                    var options = { sequenceNames:[getSelectedSeqId()] };
-                    var brush = this.brush();
-                    if (!brush.empty()) {
-                    options.start = parseInt(brush.extent()[0]);
-                    options.end = parseInt(brush.extent()[1]);
-                    var region = {chr:getSelectedSeqId(), 'start':options.start, 'end':options.end};
-                    setUrlRegion(region);
-                    // if (window.bam.sourceType == 'url') {
-                      
-                    //   window.history.pushState({'index.html' : 'bar'},null,"?bam=" + window.bam.bamUri + "&region=" + region);
-                    // }
-                    } else if(window.bam.sourceType == 'url') setUrlRegion({chr:getSelectedSeqId()});                              
 
-                    goSampling(options);
-                  })  
-                
+
                 // setup read coverage histogram chart
                 window.readCoverageChart = iobio.viz.barViewer()
                   .xValue(function(d) { return d[0]; })
@@ -167,12 +133,7 @@
                   .margin({top: 5, right: 20, bottom: 20, left: 50})
                   .sizeRatio(0.8);
                 window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
-                
-                // setup length histrogram chart
-                // window.lengthChart = histogramD3()
-                // window.lengthChart = histogramViewFinderD3()
-                //     .width(width)
-                //     .height(height);
+
                 window.lengthChart = iobio.viz.barViewer()
                   .xValue(function(d) { return d[0]; })
                   .yValue(function(d) { return d[1]; })
@@ -183,7 +144,7 @@
                   .sizeRatio(0.8);
                 window.lengthChart.xAxis().tickFormat(tickFormatter);
                 window.lengthChart.yAxis().tickFormat(tickFormatter);
-                
+
                 // setup quality histogram chart
                 window.qualityChart = iobio.viz.barViewer()
                     .xValue(function(d) { return d[0]; })
@@ -195,33 +156,53 @@
                     .sizeRatio(0.8);
                 window.qualityChart.xAxis().tickFormat(tickFormatter);
                 window.qualityChart.yAxis().tickFormat(tickFormatter);
-                
+
                 // setup main panel read chart
-                window.readRegionChart = bamD3("#read-depth", 0.85, '#33A7E4');
-                
+                window.readDepthChart = iobio.viz.multiLine()
+                  .nameValue(function(d) { return d.name; })
+                  .dataValue(function(d) { return d.data; })
+                  .xValue(function(d,i) { return d.pos; })
+                  .yValue(function(d,i) { return d.depth; })
+                  .wValue(function() { return 1; })
+                  .transitionDuration(400)
+                  .margin({top: 10, right: 0, bottom: 30, left:0})
+                  .height(150)
+                  .width(1024)
+                  .on('click', function(d) {
+                    var name = d ? d.name : 'all';
+                    setSelectedSeq(name);
+                  })
+                  .brush('brushend', function(b) {
+                    var start = parseInt(b.extent()[0]), end = parseInt(b.extent()[1]);
+                    if (start != end)
+                      setSelectedSeq( window.readDepthChart.getSelected(), start, end );
+                    else
+                      setSelectedSeq( window.readDepthChart.getSelected() );
+                  });
+
                 // setup donut chart
                 // window.sampleDonutChart = donutD3().radius(61).klass("sampleArc");
                 window.sampleDonutChart = iobio.viz.pie()
                     .radius(61)
                     .innerRadius(50)
                     .color( function(d,i) { if (i==0) return '#2d8fc1'; else return 'rgba(45,143,193,0.2)'; });
-                
+
                 // hold onto stats
                 window.sampleStats = undefined;
-                
+
                 // default sampling values
                 window.samplingBinSize = 40000;
                 window.binNumber = 20;
                 window.binSize = 40000;
                 window.sampleMultiplier = 1;
                 window.sampleMultiplierLimit = 4;
-                
+
                 window.bam = undefined;
-                window.sampling = getUrlParameter('sampling')                
+                window.sampling = getUrlParameter('sampling')
                 var bamUrl = getUrlParameter('bam')
                 // check if url to bam file is supplied in url and sample it
-                if (bamUrl != undefined) {                    
-                    // remove https if present                
+                if (bamUrl != undefined) {
+                    // remove https if present
                     // if (bamUrl.slice(0,5) == 'https')
                     //   bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
                     window.bam = new Bam( bamUrl );
@@ -230,15 +211,15 @@
                     if (r != undefined) {
                       if (r.split(":").length == 1)
                         region = { chr: r.split(":")[0]}
-                      else 
-                        region = { 
-                          chr: r.split(":")[0], 
+                      else
+                        region = {
+                          chr: r.split(":")[0],
                           start: parseInt(r.split(":")[1].split('-')[0]),
                           end: parseInt(r.split(":")[1].split('-')[1])
                         };
                     }
-                
-                    
+
+
                     goBam(region);
                 }
             });
@@ -246,39 +227,39 @@
             function getUrlParameter(sParam) {
                 var sPageURL = window.location.search.substring(1);
                 var sURLVariables = sPageURL.split('&');
-                for (var i = 0; i < sURLVariables.length; i++) 
+                for (var i = 0; i < sURLVariables.length; i++)
                 {
                     var sParameterName = sURLVariables[i].split('=');
-                    if (sParameterName[0] == sParam) 
+                    if (sParameterName[0] == sParam)
                     {
                         return sParameterName[1];
                     }
                 }
             }
-            
+
             function removeBedFile() {
                 $("#remove-bedfile-button").css('visibility', 'hidden');
                 $("#default-bedfile-button").css('visibility', 'visible');
-                $("#add-bedfile-button").css('visibility', 'visible');                
+                $("#add-bedfile-button").css('visibility', 'visible');
                 window.bed = undefined;
                 goSampling({sequenceNames : [ getSelectedSeqId() ]});
             }
-            
+
             function addDefaultBedFile() {
                 var bedurl = '/20130108.exome.targets.bed';
-                
-                // clear brush on read coverage chart        	    
+
+                // clear brush on read coverage chart
         	    window.readCoverageChart.setBrush([0,0]);
-        	    
+
                 // hide add bed / show remove bed buttons
                 $("#add-bedfile-button").css('visibility', 'hidden');
                 $("#default-bedfile-button").css('visibility', 'hidden');
                 $("#remove-bedfile-button").css('visibility', 'visible');
-                
-                // turn on sampling message and off svg 
+
+                // turn on sampling message and off svg
                 // turn it on here b\c the bed file is so big it takes a while to download
                 $("section#middle svg").css("display", "none");
-                $(".samplingLoader").css("display", "block");                      
+                $(".samplingLoader").css("display", "block");
 
                 // grab bed from url
                 $.ajax({
@@ -292,28 +273,28 @@
                 });
 
             }
-            
+
             function openBedFile(event) {
-                
+
                 if (event.target.files.length != 1) {
                    alert('must select a .bed file');
                    return;
                 }
 
                 // check file extension
-                var fileType = /[^.]+$/.exec(event.target.files[0].name)[0];            
+                var fileType = /[^.]+$/.exec(event.target.files[0].name)[0];
                 if (fileType != 'bed')  {
             	    alert('must select a .bed file');
             	    return;
         	    }
-        	    // clear brush on read coverage chart        	    
+        	    // clear brush on read coverage chart
         	    window.readCoverageChart.setBrush([0,0]);
-        	    
+
                 // hide add bed / show remove bed buttons
                 $("#add-bedfile-button").css('visibility', 'hidden');
                 $("#default-bedfile-button").css('visibility', 'hidden');
                 $("#remove-bedfile-button").css('visibility', 'visible')
-            	 
+
 	            // read bed file and store
 	            var reader = new FileReader();
                 reader.onload = function(theFile) {
@@ -321,10 +302,10 @@
                     goSampling({sequenceNames : [ getSelectedSeqId() ]});
                 }
                 reader.readAsText(event.target.files[0])
-              }             
-            
+              }
+
             function openBamFile(event) {
-                
+
                 if (event.target.files.length != 2) {
                    alert('must select both a .bam and .bai file');
                    return;
@@ -342,91 +323,109 @@
             	 } else {
             	    alert('must select both a .bam and .bai file');
             	 }
-            	 
+
                  window.bam = new Bam( bamFile, { bai: baiFile });
-                 goBam();            	             	
-              } 
-              
+                 goBam();
+              }
+
              function goBam(region) {
                  $("#selectData").css("display", "none");
                  $("#showData").css("visibility", "visible");
-                 
+
                  // get read depth
-                 window.bam.estimateBaiReadDepth(function(id,points){
-                     // setup first time and sample                     
-                     if ( $('.seq-buttons').length == 0) {
+                 window.bam.estimateBaiReadDepth(function(id,points, done){
+                     // setup first time and sample
+
+                     if ( Object.keys(window.bam.readDepth).length == 1) {
                          // turn off read depth loading msg
                          $("#readDepthLoadingMsg").css("display", "none");
                          // turn on sampling message
                          $(".samplingLoader").css("display", "block");
-                         
-                         // create seq buttons
-                         $('#depth-distribution').append("<div style='width: 100%; overflow-x: scroll;' id='seq-list'></div>");                
-                         var htmlstr = "<span onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</span>";
-                         $('#seq-list').append(htmlstr);
-                         $('#depth-distribution').append("<div id='ref-label' style='font-size:13px;color:rgb(80,80,80);font-weight:400;margin-top:2px; width:100px;margin-left:auto;margin-right:auto'>Reference(s)</div>");
 
-                         if (region == undefined )                           
-                           setSelectedSeq( $(".seq-buttons[data-id='"+ id + "']")[0]);
-                                                                           
-                     } else {
-                         // create seq buttons
-                         var htmlstr = "<span onclick='setSelectedSeq(this)' class='seq-buttons' data-id='" + id + "'>" + id + "</span>";
-                         $('#seq-list').append(htmlstr);                         
                      }
 
-                     if (region && region.chr == id)
-                           setSelectedSeq( $(".seq-buttons[data-id='"+ region.chr + "']")[0], region.start, region.end);
-                 });  
-                                
-             }                               
-            
+                     var allPoints = Object.keys(window.bam.readDepth)
+                      .filter(function(key) {
+                        if (key.substr(0,4) == 'GL00')
+                          return false
+                        if (window.bam.readDepth[key].length > 0)
+                          return  true
+                      })
+                      .map(function(key) {
+                        return {"name" : key, "data" : window.bam.readDepth[key] }
+                     })
+
+                     var selection = d3.select('#depth-distribution .chart').datum(allPoints);
+
+                    if (region)
+                      window.readDepthChart(selection, {selected:region.chr, noLine:!done});
+                    else
+                      window.readDepthChart(selection, {noLine:!done});
+
+
+                     var start = region ? region.start : undefined;
+                     var end = region ? region.end : undefined;
+                     if (region && region.chr == id ) {
+                         setSelectedSeq( id, start, end);
+                         //window.readDepthChart(selection, {selected:id});
+                     }
+
+                     if ( (done && !region) || (done && region && region.chr == 'all') ) {
+                        setSelectedSeq( 'all' , start, end );
+                     }
+                 });
+
+             }
+
             function resetRegionStats() {
                 window.regionStats = {'Total reads' : {number : 0}};
             }
-            
+
             function resetBrush() {
                 var brush = window.depthChart.brush();
                 var g = d3.selectAll("#depth-distribution .iobio-brush")
                 brush.clear();
                 brush(g);
                 // remove brush region from url
-                setUrlRegion({chr:getSelectedSeqId()});                
+                setUrlRegion({chr:getSelectedSeqId()});
                 // no need to trigger event? since setSelected sq will do it
                 //brush.event(g);
-            }                                                
-                        
-                                    
+            }
+
+
             function updateTotalReads(totalReads) {
                 // update total reads
                 var reads = shortenNumber( totalReads );
                 $("#total-reads>#value").html( reads[0] );
                 $("#total-reads>#base>#number").html( reads[1] || "" );
             }
-            
-            function setSelectedSeq(selected, start, end) {
-                var dataId = selected.getAttribute("data-id");
-                $(".seq-buttons.selected").removeClass("selected");
-                $(selected).addClass("selected");  
 
-                var smooth = iobio.viz.layout.pointSmooth().size($('#depth-distribution .chart').width());
-                var selection = d3.select('#depth-distribution .chart').datum( smooth(window.bam.readDepth[dataId]) );
-                
-                window.depthChart(selection);
-                
+            function setSelectedSeq(selected, start, end) {
+                if (selected == 'all')
+                  var seqDataIds = Object.keys(window.bam.readDepth);
+                else
+                  var seqDataIds = [selected];
+
                 // reset brush
                 resetBrush();
-                setUrlRegion({chr:dataId, 'start':start, 'end':end });
+                setUrlRegion({chr:selected, 'start':start, 'end':end });
                // start sampling
                if(start!= undefined && end!=undefined) {
-                 goSampling({ sequenceNames:[dataId], 'start':start, 'end':end }); 
-                 var brush = window.depthChart.brush();
-                 // set brush region
-                 d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
+                 goSampling({ sequenceNames:seqDataIds, 'start':start, 'end':end });
+                 setTimeout(function() { setBrush(start,end)}, 200);
                } else {
-                 goSampling({ sequenceNames:[dataId]});
+                 goSampling({ sequenceNames:seqDataIds});
                }
             }
+
+            function setBrush(start,end) {
+              console.log('setting brush')
+              var brush = window.readDepthChart.brush();
+                 // // set brush region
+              d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
+            }
+
+            function resetBrush() { setBrush([0,0]); }
 
             function setUrlRegion(region) {
               if (window.bam.sourceType == 'url' && region != undefined) {
@@ -436,26 +435,26 @@
                   var regionStr = region.chr;
                 }
                 var extraParams = '';
-                if (window.sampling) extraParams += '&sampling=' + window.sampling                
+                if (window.sampling) extraParams += '&sampling=' + window.sampling
                 window.history.pushState({'index.html' : 'bar'},null,"?bam=" + window.bam.bamUri + "&region=" + regionStr + extraParams);
               }
             }
-            
+
             function goSampling(options) {
                 // add default options
                 options = $.extend({
                     exomeSampling : 'checked' == $("#depth-distribution input").attr("checked"),
                     bed : window.bed,
-                    onEnd:function(){NProgress.done();}   
-                },options); 
-                
+                    onEnd:function(){NProgress.done();}
+                },options);
+
                 // turn on sampling message and off svg
                 $("section#middle svg").css("display", "none");
-                $(".samplingLoader").css("display", "block");      
-                updateTotalReads(0);          
+                $(".samplingLoader").css("display", "block");
+                updateTotalReads(0);
                 NProgress.start();
                 // update selected stats
-                window.bam.sampleStats( function(data){ 
+                window.bam.sampleStats( function(data){
                     // turn off sampling message
                     $(".samplingLoader").css("display", "none");
                     $("section#middle svg").css("display", "block");
@@ -475,7 +474,7 @@
                     updateHistogramCharts(data, undefined, "sampleBar")
                 },options);
             }
-            
+
             function sampleMore() {
                 if (window.sampleMultiplier >= window.sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
                 window.sampleMultiplier += 1;
@@ -484,61 +483,90 @@
                     binNumber : window.binNumber + parseInt(window.binNumber/4 * window.sampleMultiplier),
                     binSize : window.binSize + parseInt(window.binSize/4 * window.sampleMultiplier)
                 }
-                if (window.depthChart.brush().extent().length != 0 && window.depthChart.brush().extent().toString() != "0,0") {
-                    options.start = parseInt(window.depthChart.brush().extent()[0]);
-                    options.end = parseInt(window.depthChart.brush().extent()[1]);
+                if (window.readDepthChart.brush().extent().length != 0 && window.depthChart.brush().extent().toString() != "0,0") {
+                    options.start = parseInt(window.readDepthChart.brush().extent()[0]);
+                    options.end = parseInt(window.readDepthChart.brush().extent()[1]);
                 }
                 goSampling(options);
             }
-            
+
             function getSelectedSeqId() {
-              return $(".seq-buttons.selected").attr("data-id");  
+              return window.readDepthChart.getSelected();
             }
-                        
+
             function updatePercentCharts(stats, donutChart) {
                 var pie = d3.layout.pie()
                    .sort(null);
                 var value = undefined;
-                
+
+                var selected = getSelectedSeqId();
+                var unmappedReads, mappedReads;
+                if (selected == 'all') {
+                  if (window.bam.readDepth[Object.keys(window.bam.readDepth)[0]].mapped != undefined) {
+                    mappedReads = unmappedReads = 0;
+                    for ( var id  in window.bam.readDepth) {
+                      mappedReads += window.bam.readDepth[id].mapped;
+                      unmappedReads += window.bam.readDepth[id].unmapped;
+                    }
+                    unmappedReads = window.bam.n_no_coor;
+                  }
+                }
+                else {
+                  mappedReads = window.bam.readDepth[selected].mapped;
+                  unmappedReads = window.bam.readDepth[selected].unmapped;
+                }
+                var showMappedDataFromIndex = false;
+                if (window.readDepthChart.brush().extent()[1] == undefined && mappedReads != undefined && unmappedReads != undefined) {
+                  showMappedDataFromIndex = true;
+                  d3.select("#mapped_reads").selectAll('path')
+                    .attr('fill', function(d,i) { return i==0 ? 'rgb(9,176,135)' : 'rgba(9,176,135,0.5)' });
+                  d3.select('.percent .from-index').style('visibility', 'visible')
+                }
+                else
+                  d3.select('.percent .from-index').style('visibility', 'hidden')
+
                 //update percent charts
                 var keys = ['mapped_reads', "proper_pairs", "forward_strands", "singletons", "both_mates_mapped", "duplicates"]
                 // var colors = ["rgb(45,143,193)", 'rgb(231, 76, 60)', "rgb(243, 156, 18)", "rgb(155, 89, 182)", "rgb(46, 204, 113)", "rgb(241, 196, 15)"];
                 keys.forEach( function(key,i) {
-                    var stat = stats[key];                    
-                    var data = [ stat, stats['total_reads'] - stat ];
-                    var p = pie(data);
-                    console.log('before d = ' + p[0].data);
+                    var stat = stats[key];
+                    if (key == 'mapped_reads' && showMappedDataFromIndex)  {
+                      var data = [ mappedReads, unmappedReads ];
+                    }
+                    else {
+                      var data = [ stat, stats['total_reads'] - stat ];
+                    }
+
                     var selection = d3.select('#'+key  + ' .chart').datum(pie(data));
-                    console.log('before selection.datum() = ' + selection.datum()[0].data )
-                    donutChart(selection);                  
+                    donutChart(selection);
                 });
-                
+
             }
-            
-            function updateHistogramCharts(histograms, otherMinMax, klass) {  
-                
-                // check if coverage is zero                
+
+            function updateHistogramCharts(histograms, otherMinMax, klass) {
+
+                // check if coverage is zero
                 if (Object.keys(histograms.coverage_hist).length == 0) histograms.coverage_hist[0] = '1.0';
                 // update read coverage histogram
                 var d = Object.keys(histograms.coverage_hist).filter(function(i){return histograms.coverage_hist[i] != "0"}).map(function(k) { return [+k, +histograms.coverage_hist[k]] });
                 var selection = d3.select("#read-coverage-distribution-chart").datum(d);
                 window.readCoverageChart(selection);
-                if (histograms.coverage_hist[0] > 0.65) {
-                    // most likely exome
-                    // exclude <5 values b\c they are not informative dominating the chart
-                    var min = 5;
-                    var max = window.readCoverageChart.globalChart().x().domain()[1];
-                    window.readCoverageChart.setBrush([min, max]);
-                }
+                // if (histograms.coverage_hist[0] > 0.65) {
+                //     // most likely exome
+                //     // exclude <5 values b\c they are not informative dominating the chart
+                //     var min = 5;
+                //     var max = window.readCoverageChart.globalChart().x().domain()[1];
+                //     window.readCoverageChart.setBrush([min, max]);
+                // }
 
-                // update read length distribution                                
+                // update read length distribution
                 if ($("#length-distribution .selected").attr("data-id") == "frag_hist")
                     var d = Object.keys(histograms.frag_hist).filter(function(i){return histograms.frag_hist[i] != "0"}).map(function(k) { return  [+k, +histograms.frag_hist[k]] });
                 else
                     var d = Object.keys(histograms.length_hist).map(function(k) { return  [+k, +histograms.length_hist[k]] });
                 // remove outliers if outliers checkbox isn't explicity checked
-                var outliers = $("#length-distribution .checkbox").hasClass("checked");                
-                if (!outliers) d = iobio.viz.layout.outlier()(d);                
+                var outliers = $("#length-distribution .checkbox").hasClass("checked");
+                if (!outliers) d = iobio.viz.layout.outlier()(d);
                 var selection = d3.select("#length-distribution-chart").datum(d);
                 window.lengthChart( selection );
                 // window.lengthChart( selection, {'outliers':outliers} );
@@ -548,18 +576,18 @@
                     var d = Object.keys(histograms.mapq_hist).map(function(k) { return  [+k, +histograms.mapq_hist[k]] });
                 else
                     var d = Object.keys(histograms.baseq_hist).map(function(k) { return  [+k, +histograms.baseq_hist[k]] });
-                var selection = d3.select("#mapping-quality-distribution-chart").datum(d);    
+                var selection = d3.select("#mapping-quality-distribution-chart").datum(d);
                 window.qualityChart(selection);
             }
-            
+
             function toggleChart(elem, chartId) {
                 if ($(elem).hasClass("selected")) return;
                 // toggle selected
                 var pair = [elem, $(elem).siblings()[0]];
                 $(pair).toggleClass('selected');
-                
+
                 // redraw chart
-                var dataId = elem.getAttribute("data-id")                
+                var dataId = elem.getAttribute("data-id")
                 // var outlier = elem.getAttribute('data-outlier') === 'true' || elem.getAttribute('data-outlier') == null;
                 var h = window.sampleStats[dataId];
                 var d = Object.keys(h).map(function(k) { return  [+k, +h[k]] });
@@ -572,7 +600,7 @@
                 selection.datum(d);
                 window[chartId](selection);
             }
-            
+
             function shortenNumber(num) {
                 if(num.toString().length <= 3)
                     return [num];
@@ -581,7 +609,7 @@
                 else
                     return [Math.round(num/1000000), "million"];
             }
-                                    
+
             // function hist2array(hist) {
             //     var a = [];
             //     for ( var i in hist) {
@@ -593,13 +621,13 @@
             //     }
             //     return a;
             // }
-                        
+
             function displayBamUrlBox() {
                 $('#bam-url').css('visibility','visible');
                 $('#info').css('visibility', 'hidden');
                 $("#bam-url").children("input").focus();
             }
-            
+
             function openBamUrl() {
                 var url = $("#url-input").val();
                 // remove https if present
@@ -609,59 +637,59 @@
                 window.bam = new Bam( url );
                 goBam();
             }
-            
+
             function tickFormatter (d) {
               if ((d / 1000000) >= 1)
                 d = d / 1000000 + "M";
               else if ((d / 1000) >= 1)
                 d = d / 1000 + "K";
-              return d;            
+              return d;
            }
-            
-            
+
+
         </script>
     </head>
     <body>
         <header>
             <a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span></a>
             <div style="float:right" class="iobio-project" style="padding-top:20px">
-                <a href="http://iobio.io" style="margin: 0px 5px 0px 5px;">an iobio project</a>                     
+                <a href="http://iobio.io" style="margin: 0px 5px 0px 5px;">an iobio project</a>
             </div>
         </header>
         <div id="selectData">
             <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
-                <div style="margin-left:auto;margin-right:auto;font-size: 28px; color: rgb(110,110,110); margin-bottom:70px">                
-                    examine your sequence alignment file in seconds 
+                <div style="margin-left:auto;margin-right:auto;font-size: 28px; color: rgb(110,110,110); margin-bottom:70px">
+                    examine your sequence alignment file in seconds
                 </div>
-                
+
                 <div class="file" onClick="$('#bam-url').css('visibility', 'hidden')">
                     <input type="file" name="files[]" id="file"  multiple />
                     <label class="file-button" for="file" >choose bam file</label>
                 </div>
                 <div class="file-button" style="text-align:center" onClick="displayBamUrlBox()">choose bam url</div>
                 <div style="clear:both"></div>
-                <div id="info">                                
+                <div id="info">
                     <ul>
                             <li><a href="http://www.nature.com/nmeth/journal/v11/n12/full/nmeth.3174.html">Publication</a></li>
                             <li><a href="help.html">File Requirements</a></li>
                             <li><a href="license.html">License</a></li>
                             <li><a href="images/browserCompatability.png">Compatible Browsers</a></li>
-                    </ul>           
+                    </ul>
                 </div>
             </div>
             <div id='bam-url' style="margin-top:-21px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
                 <input id="url-input" value="http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam" ></input><button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
-            </div>            
-            <div style="margin: 50px auto 0px auto; font-size: 23px; width: 600px; text-align:center;  color: rgb(110,110,110)">
-                <div>for variant files check out <a href="http://vcf.iobio.io">vcf.iobio</a></div>                
             </div>
-            
-            <div id="footer">                        
-                <div class="logos">     
-                    <div style="position:absolute; left: 100px; top:4px; font-size:50px;font-family:'Overlock SC', cursive;">Marthlab</div>     
-                    <img src="images/ustar-ucgd-logo.jpg" style="height:60px;"/>            
-                    <a href="http://www.genetics.utah.edu/"><img src="images/genetics_mainlogo3_lrg.png" style="height:50px;position:absolute;right:0px;top:7px"/></a>          
-                </div>                      
+            <div style="margin: 50px auto 0px auto; font-size: 23px; width: 600px; text-align:center;  color: rgb(110,110,110)">
+                <div>for variant files check out <a href="http://vcf.iobio.io">vcf.iobio</a></div>
+            </div>
+
+            <div id="footer">
+                <div class="logos">
+                    <div style="position:absolute; left: 100px; top:4px; font-size:50px;font-family:'Overlock SC', cursive;">Marthlab</div>
+                    <img src="images/ustar-ucgd-logo.jpg" style="height:60px;"/>
+                    <a href="http://www.genetics.utah.edu/"><img src="images/genetics_mainlogo3_lrg.png" style="height:50px;position:absolute;right:0px;top:7px"/></a>
+                </div>
             </div>
         </div>
         <div id="showData">
@@ -690,14 +718,15 @@
                         <span id="number"></span>
                         <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-7px;cursor:pointer" onClick="sampleMore()"  src="images/more_sampling.png"></img>
                     </div>
-                    
+
                 </div>
             </section>
             <section id="middle">
                 <div id="percents">
-                    <div id="mapped_reads" class="percent panel">Mapped Reads                        
+                    <div id="mapped_reads" class="percent panel">Mapped Reads
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div class='chart'></div>                        
+                        <div class='chart'></div>
+                        <div class='from-index'>* full data available in index</div>
                     </div>
                     <div id="forward_strands" class="percent panel">Forward Strand
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
@@ -726,11 +755,11 @@
                         <div id="read-coverage-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
                     </div>
                     <div id="length-distribution" class="distribution panel">
-                        <div><div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Insert Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span></div></div>                    
+                        <div><div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Insert Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span></div></div>
                         <label class="checkbox" for="checkbox2" style="position:absolute;right:10px;top:24px;cursor:pointer" >
                             <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
                             Outliers
-                        </label>                        
+                        </label>
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                         <div id="length-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:85%"></div>
                     </div>
@@ -740,13 +769,13 @@
                         <div id="mapping-quality-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
                     </div>
                 </div>
-            </section>   
+            </section>
         </div>
         <script src="js/flatui-checkbox.js"></script>
         <script>
-            var div = d3.select("body").append("div")   
-                .attr("class", "tooltip")               
+            var div = d3.select("body").append("div")
+                .attr("class", "tooltip")
                 .style("opacity", 1);
-        </script>      
+        </script>
     </body>
 </html>
