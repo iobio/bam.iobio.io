@@ -29,12 +29,12 @@ var Bam = Class.extend({
       // this.iobio.bamReadDepther = "wss://services.iobio.io/bamreaddepther/";
       // this.iobio.bamstatsAlive = "wss://services.iobio.io/bamstatsalive/";
 
-      this.iobio.samtools = "services.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "services.iobio.io/bamreaddepther/";
-      this.iobio.bamstatsAlive = "services.iobio.io/bamstatsalive/";
+      this.iobio.samtools = "nv-prod.iobio.io/samtools/";
+      this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
+      this.iobio.bamstatsAlive = "nv-prod.iobio.io/bamstatsalive/";
 
       // this.iobio.samtools = "localhost:8060";
-      this.iobio.bamReadDepther = "localhost:8021";
+      // this.iobio.bamReadDepther = "localhost:8021";
       // this.iobio.bamstatsAlive = "localhost:7100";
 
       return this;
