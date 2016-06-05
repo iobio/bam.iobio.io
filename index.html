@@ -382,7 +382,7 @@
             }
 
             function resetBrush() {
-                var brush = window.depthChart.brush();
+                var brush = window.readDepthChart.brush();
                 var g = d3.selectAll("#depth-distribution .iobio-brush")
                 brush.clear();
                 brush(g);
@@ -425,7 +425,7 @@
               d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
             }
 
-            function resetBrush() { setBrush([0,0]); }
+            function resetBrush() { setBrush(0,0); }
 
             function setUrlRegion(region) {
               if (window.bam.sourceType == 'url' && region != undefined) {
@@ -453,6 +453,7 @@
                 $(".samplingLoader").css("display", "block");
                 updateTotalReads(0);
                 NProgress.start();
+                NProgress.set(0);
                 // update selected stats
                 window.bam.sampleStats( function(data){
                     // turn off sampling message
@@ -467,6 +468,7 @@
                         var length = window.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
                         var percentDone = Math.round( (data.last_read_position / length) * 100) / 100;
                     }
+
                     if (NProgress.status < percentDone) NProgress.set(percentDone);
                     // update charts
                     updatePercentCharts(data, window.sampleDonutChart)
@@ -483,7 +485,7 @@
                     binNumber : window.binNumber + parseInt(window.binNumber/4 * window.sampleMultiplier),
                     binSize : window.binSize + parseInt(window.binSize/4 * window.sampleMultiplier)
                 }
-                if (window.readDepthChart.brush().extent().length != 0 && window.depthChart.brush().extent().toString() != "0,0") {
+                if (window.readDepthChart.brush().extent().length != 0 && window.readDepthChart.brush().extent().toString() != "0,0") {
                     options.start = parseInt(window.readDepthChart.brush().extent()[0]);
                     options.end = parseInt(window.readDepthChart.brush().extent()[1]);
                 }

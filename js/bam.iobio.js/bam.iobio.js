@@ -110,7 +110,9 @@ var Bam = Class.extend({
             );
 
 
-      if (window.lastCmd) window.lastCmd.end();
+      if (window.lastCmd) {
+        window.lastCmd.closeClient();
+      }
       window.lastCmd = cmd;
       return cmd;
    },
