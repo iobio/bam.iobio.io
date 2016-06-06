@@ -26,7 +26,7 @@ var Bam = Class.extend({
       this.iobio = {}
 
       // this.iobio.samtools = "wss://services.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "wss://services.iobio.io/bamreaddepther/";
+      // this.iobio.bamReadDepther = "services.iobio.io/bamreaddepther/";
       // this.iobio.bamstatsAlive = "wss://services.iobio.io/bamstatsalive/";
 
       this.iobio.samtools = "nv-prod.iobio.io/samtools/";

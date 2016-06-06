@@ -518,7 +518,8 @@
                   unmappedReads = window.bam.readDepth[selected].unmapped;
                 }
                 var showMappedDataFromIndex = false;
-                if (window.readDepthChart.brush().extent()[1] == undefined && mappedReads != undefined && unmappedReads != undefined) {
+                var brushRange = window.readDepthChart.brush().extent();
+                if ( (brushRange == undefined || brushRange.toString() == '0,0' ) && mappedReads != undefined && unmappedReads != undefined) {
                   showMappedDataFromIndex = true;
                   d3.select("#mapped_reads").selectAll('path')
                     .attr('fill', function(d,i) { return i==0 ? 'rgb(9,176,135)' : 'rgba(9,176,135,0.5)' });
