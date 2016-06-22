@@ -173,15 +173,27 @@ var Bam = Class.extend({
       return bedRegions;
    },
 
-   _mapToBedCoordinates: function(ref, regions, bed) {
-      var a = this._bedToCoordinateArray(ref, bed);
-      var a_i = 0;
+   _mapToBedCoordinates: function(regions, bed) {
+
       var bedRegions = [];
-      if (a.length == 0) {
-         alert("Bed file doesn't have coordinates for reference: " + regions[0].name + ". Sampling normally");
-         return null;
-      }
+      var currRef;
+
+      var me = this;
+
+      var a,
+          a_i;
+
       regions.forEach(function(reg){
+        if (currRef != reg.name) {
+          currRef = reg.name;
+          a = me._bedToCoordinateArray(reg.name, bed);
+          a_i = 0;
+          if (a.length == 0) {
+            alert("Bed file doesn't have coordinates for reference: " + reg.name + ". Ignoring it");
+            return null;
+          }
+        }
+
          for (a_i; a_i < a.length; a_i++) {
             if (a[a_i].end > reg.end)
                break;
@@ -506,13 +518,9 @@ var Bam = Class.extend({
                     return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
                });
 
-               // intelligently determine exome bed coordinates
-               // if (options.exomeSampling)
-               //    options.bed = me._generateExomeBed(options.sequenceNames[0]);
-
                // map random region coordinates to bed coordinates
                if (options.bed != undefined)
-                  bedRegions = me._mapToBedCoordinates(SQs[0].name, regions, options.bed)
+                  bedRegions = me._mapToBedCoordinates(regions, options.bed)
             }
          //}
 

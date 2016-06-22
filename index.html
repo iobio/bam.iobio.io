@@ -122,6 +122,9 @@
                 var dists = document.getElementsByClassName("focus") // viewboxes need to be set at runtime to get accurate height/width
                 for (var i=0; i < dists.length; i++ ) { dists[i].setAttribute('viewBox', "0 0 " + width + " " + height) }
 
+                // get width for main panel depth chart
+                var depthChartWidth = $("#depth-distribution .chart").width();
+
 
                 // setup read coverage histogram chart
                 window.readCoverageChart = iobio.viz.barViewer()
@@ -167,7 +170,7 @@
                   .transitionDuration(400)
                   .margin({top: 10, right: 0, bottom: 30, left:0})
                   .height(150)
-                  .width(1024)
+                  .width(depthChartWidth)
                   .on('click', function(d) {
                     var name = d ? d.name : 'all';
                     setSelectedSeq(name);
@@ -242,14 +245,14 @@
                 $("#default-bedfile-button").css('visibility', 'visible');
                 $("#add-bedfile-button").css('visibility', 'visible');
                 window.bed = undefined;
-                goSampling({sequenceNames : [ getSelectedSeqId() ]});
+                goSampling({sequenceNames :  getSelectedSeqIds() });
             }
 
             function addDefaultBedFile() {
                 var bedurl = '/20130108.exome.targets.bed';
 
                 // clear brush on read coverage chart
-        	    window.readCoverageChart.setBrush([0,0]);
+        	    resetBrush();
 
                 // hide add bed / show remove bed buttons
                 $("#add-bedfile-button").css('visibility', 'hidden');
@@ -261,6 +264,7 @@
                 $("section#middle svg").css("display", "none");
                 $(".samplingLoader").css("display", "block");
 
+
                 // grab bed from url
                 $.ajax({
                     // XDomainRequest protocol (IE 8 & 9) must be the same scheme as the calling page
@@ -269,7 +273,7 @@
                 }).done(function (data) {
                     data = data.replace(/chr/g, '');
                     window.bed = data;
-                    goSampling({sequenceNames : [ getSelectedSeqId() ]});
+                    goSampling({sequenceNames : getSelectedSeqIds() });
                 });
 
             }
@@ -288,7 +292,7 @@
             	    return;
         	    }
         	    // clear brush on read coverage chart
-        	    window.readCoverageChart.setBrush([0,0]);
+        	    resetBrush();
 
                 // hide add bed / show remove bed buttons
                 $("#add-bedfile-button").css('visibility', 'hidden');
@@ -299,7 +303,7 @@
 	            var reader = new FileReader();
                 reader.onload = function(theFile) {
                     window.bed = this.result;
-                    goSampling({sequenceNames : [ getSelectedSeqId() ]});
+                    goSampling({sequenceNames : getSelectedSeqIds() });
                 }
                 reader.readAsText(event.target.files[0])
               }
@@ -402,7 +406,13 @@
 
             function setSelectedSeq(selected, start, end) {
                 if (selected == 'all')
-                  var seqDataIds = Object.keys(window.bam.readDepth);
+                  var seqDataIds = Object.keys(window.bam.readDepth)
+                        .filter(function(key) {
+                            if (key.substr(0,4) == 'GL00')
+                              return false
+                            if (window.bam.readDepth[key].length > 0)
+                              return  true
+                          })
                 else
                   var seqDataIds = [selected];
 
@@ -463,7 +473,7 @@
                     // update progress bar
                     if (options.start != null && options.end != null) {
                         var length = options.end - options.start;
-                        var percentDone = Math.round( ((data.last_read_position-options.start) / length) * 100) / 100;
+                        var percentDone = Math.max(Math.round( ((data.last_read_position-options.start) / length) * 100) / 100,0);
                     } else {
                         var length = window.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
                         var percentDone = Math.round( (data.last_read_position / length) * 100) / 100;
@@ -481,7 +491,7 @@
                 if (window.sampleMultiplier >= window.sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
                 window.sampleMultiplier += 1;
                 var options = {
-                    sequenceNames : [ getSelectedSeqId() ],
+                    sequenceNames : getSelectedSeqIds() ,
                     binNumber : window.binNumber + parseInt(window.binNumber/4 * window.sampleMultiplier),
                     binSize : window.binSize + parseInt(window.binSize/4 * window.sampleMultiplier)
                 }
@@ -494,6 +504,20 @@
 
             function getSelectedSeqId() {
               return window.readDepthChart.getSelected();
+            }
+
+            function getSelectedSeqIds() {
+              var selected = window.readDepthChart.getSelected();
+              if (selected == 'all') {
+                return Object.keys(window.bam.readDepth)
+                      .filter(function(key) {
+                        if (key.substr(0,4) == 'GL00')
+                          return false
+                        if (window.bam.readDepth[key].length > 0)
+                          return  true
+                      })
+              } else
+                return [selected];
             }
 
             function updatePercentCharts(stats, donutChart) {
@@ -537,7 +561,10 @@
                       var data = [ mappedReads, unmappedReads ];
                     }
                     else {
-                      var data = [ stat, stats['total_reads'] - stat ];
+                      if (stats['total_reads'] == 0)
+                        var data = [ 0, 100 ];
+                      else
+                        var data = [ stat, stats['total_reads'] - stat ];
                     }
 
                     var selection = d3.select('#'+key  + ' .chart').datum(pie(data));
