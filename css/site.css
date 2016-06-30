@@ -88,21 +88,39 @@ section#middle {
 
 .panel > .title { font-size: 30px}
 
+.panel#piechooser {
+  -webkit-flex: 1 1 250px;
+       flex: 1 1 250px;
+  -webkit-order: 1;
+     order: 1;
+  height: 250px;
+  position:relative;
+  width: 250px;
+}
+
+#reference-select {
+  position: absolute;
+  bottom: 15px;
+  width: 100px;
+  left: 50%;
+  margin-left: -50px;
+}
+
 .panel#depth-distribution {
     -webkit-flex: 1 1 auto;
        flex: 1 1 auto;
-    -webkit-order: 1;
-       order: 1;
+    -webkit-order: 2;
+       order: 2;
     height: 250px;
     position:relative;
-    width: 80%;
+    width: 65%;
 }
 
 .panel#depth-distribution .chart {
   -webkit-flex: 1 1 auto;
        flex: 1 1 auto;
-    -webkit-order: 1;
-       order: 1;
+    -webkit-order: 2;
+       order: 2;
   margin-left: auto;
   margin-right: auto;
 }
@@ -110,8 +128,8 @@ section#middle {
 .panel#total-reads {
     -webkit-flex: 1 1 150px;
        flex: 1 1 150px;
-    -webkit-order: 2;
-       order: 2;
+    -webkit-order: 3;
+       order: 3;
     margin-right:20px;
     width: 150px;
 }

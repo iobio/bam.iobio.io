@@ -24,7 +24,7 @@ iobio.viz.utils = require('./utils.js')
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./layout/layout.js":4,"./svg/svg.js":8,"./utils.js":10,"./viz/viz.js":19}],2:[function(require,module,exports){
+},{"./layout/layout.js":4,"./svg/svg.js":8,"./utils.js":10,"./viz/viz.js":20}],2:[function(require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toStr = Object.prototype.toString;
 var undefined;
@@ -231,17 +231,37 @@ var outlier = function() {
       count = function(d) { return d[1]; };
 
   function layout(data) {
-    var q1 = quantile(data, 0.25); 
-    var q3 = quantile(data, 0.75);
+    var realMin = d3.min(data, function(d,i) {
+      return value(d);
+    });
+    var realMax = d3.max(data, function(d,i) {
+      return value(d);
+    });
+    var max = Math.abs(realMin) + Math.abs(realMax);
+
+    var scale  = d3.scale.linear().domain([realMin,realMax]).range([0,max]);
+
+    data = data.sort(function(aItem,bItem) {
+      var a = value(aItem);
+      var b = value(bItem);
+      return a > b ? 1 : (a < b ? -1 : 0);
+    })
+
+    var q1 = quantile(data, scale, 0.25); 
+    var q3 = quantile(data, scale, 0.75);
     var iqr = (q3-q1) * 1.5; //
     
-    return data.filter(function(d) { return (value(d)>=(Math.max(q1-iqr,0)) && value(d)<=(q3+iqr)) });
+    var filteredData = data.filter(function(d) { 
+      return (scale(value(d)) >= (Math.max(q1-iqr,0)) && scale(value(d)) <= (q3+iqr)); 
+    });
+
+    return filteredData;  
   }
 
   /*
    * Determines quantile of array with given p
    */
-  function quantile(arr, p) {
+  function quantile(arr, scale, p) {
     var length = arr.reduce(function(previousValue, currentValue, index, array){
        return previousValue + count(currentValue);
     }, 0) - 1;
@@ -252,9 +272,9 @@ var outlier = function() {
     for (var i=0; i < arr.length; i++) {
        currValue += count(arr[i]);
        if (hMinus1Value == undefined && currValue >= (h-1))
-          hMinus1Value = value(arr[i]);
+          hMinus1Value = scale(value(arr[i]));
        if (hValue == undefined && currValue >= h) {
-          hValue = value(arr[i]);
+          hValue = scale(value(arr[i]));
           break;
        }
     } 
@@ -661,22 +681,31 @@ module.exports.tooltipHelper = function(selection, tooltipElem, titleAccessor) {
 	var utils = require('./utils.js')
 	selection
 		.on("mouseover", function(d,i) {
-			var tooltipStr = utils.value_accessor(titleAccessor, d); // handle both function and constant string
-			var opacity = tooltipStr ? .9 : 0; // don't show if tooltipStr is null
-			var elemHeight = tooltipElem.node().getBoundingClientRect().height
-			tooltipElem.transition()
-				.duration(200)
-				.style("opacity", opacity);
-			tooltipElem.html(tooltipStr)
-				.style("left", (d3.event.clientX + 8) + "px")
-				.style("text-align", 'left')
-				.style("top", (d3.event.clientY - elemHeight - 8) + "px");
+			utils.showTooltip(tooltipElem, titleAccessor, d);
 		})
 		.on("mouseout", function(d) {
-			tooltipElem.transition()
-				.duration(500)
-				.style("opacity", 0);
+			utils.hideTooltip(tooltipElem);
 		})
+}
+
+module.exports.showTooltip = function(tooltipElem, titleAccessor, d) {
+	var utils = require('./utils.js')
+	var tooltipStr = utils.value_accessor(titleAccessor, d); // handle both function and constant string
+	var opacity = tooltipStr ? .9 : 0; // don't show if tooltipStr is null
+	var elemHeight = tooltipElem.node().getBoundingClientRect().height
+	tooltipElem.transition()
+		.duration(200)
+		.style("opacity", opacity);
+	tooltipElem.html(tooltipStr)
+		.style("left", (d3.event.clientX + 8) + "px")
+		.style("text-align", 'left')
+		.style("top", (d3.event.clientY - elemHeight - 8) + "px");
+}
+
+module.exports.hideTooltip = function(tooltipElem) {
+	tooltipElem.transition()
+			   .duration(500)
+			   .style("opacity", 0);	
 }
 
 // Copies a variable number of methods from source to target.
@@ -905,6 +934,12 @@ var bar = function() {
 			transitionDuration = base.transitionDuration(),
 			innerHeight = base.height() - base.margin().top - base.margin().bottom;
 
+		if (innerHeight < 0) {
+			console.log("Negative inner height " + innerHeight + " calculated for bar chart. Change height or margins.");
+			console.trace();
+			return;
+		}
+
 		// Draw
 		// enter
 		var g = selection.select('g.iobio-container').classed('iobio-bar', true);; // grab container to draw into (created by base chart)
@@ -1018,6 +1053,8 @@ var barViewer = function() {
 			.y( chart.y() )
 			.x( chart.x() )
 			.id( chart.id() )
+			.color( chart.color() )
+			.tooltip( chart.tooltip() )
 			.transitionDuration( chart.transitionDuration() )
 
 		var focalSelection = selection.select('.iobio-bar-0').datum( selection.datum() )
@@ -1034,6 +1071,8 @@ var barViewer = function() {
 			.width( chart.width() )
 			.transitionDuration( chart.transitionDuration() )
 			.id( chart.id() )
+			.color( chart.color() )
+			.tooltip( chart.tooltip() )
 			.height( origHeight * (1-sizeRatio) )
 			.brush('brush', function() {
 				var x2 = globalBar.x(), brush = globalBar.brush();
@@ -1795,12 +1834,15 @@ var multiLine = function() {
 
 	// Defaults
 	var events = [],
-	selected = 'all';
+		selected = 'all',
+		color = d3.scale.category20();
 
 	// Default Options
 	var defaults = { };
 
 	function chart(selection, opts) {
+		chart.selection = selection;
+
 		// Merge defaults and options
 		var options = {};
 		extend(options, defaults, opts);
@@ -1838,15 +1880,12 @@ var multiLine = function() {
 				pointData.forEach(function(p) {
 					p.globalPos = d.globalPos;
 				})
-
-				data = selection.datum();
 				points = points.concat(pointData);
 		    } else {
-		      	if(selected == nameValue(d)) {
-		      		data = selection.datum().filter(function(d) { return selected == nameValue(d); })
+		    	d.globalPos = 0;
+	    		if(selected == nameValue(d)) {
 		      		points = dataValue(d);
-		      		d.globalPos = 0;
-		      	}
+	      		}
 	      }
 	    })
 
@@ -1866,11 +1905,13 @@ var multiLine = function() {
 		    } else {
 		    	chart.selectedGlobalpos = selectedGlobalpos
 		    	points.forEach(function(d) { d.globalPos = 0; });
-		    	x.domain([points[0].pos, points.slice(-1)[0].pos ]);
-		    	lineBase
-		        	.yAxis(null)
-		        	.xAxis( xAxis.scale(x) )
-		        	.call(this, selection.select('.line-panel').datum(smooth(points)), options);
+		    	if(points.length > 0) {
+			    	x.domain([points[0].pos, points.slice(-1)[0].pos ]);
+			    	lineBase
+			        	.yAxis(null)
+			        	.xAxis( xAxis.scale(x) )
+			        	.call(this, selection.select('.line-panel').datum(smooth(points)), options);
+			    }
 		    }
 		} else {
 			var maxX = points[points.length-1].globalPos + xValue(points[points.length-1]);
@@ -1886,15 +1927,16 @@ var multiLine = function() {
 					.style('width', '100%');
 
 	   	var button = selection.select('.button-panel svg').selectAll('.button')
-	    			 	.data( data, function(d) { return nameValue(d); });
+	    			 	.data( selection.datum(), function(d) { return nameValue(d); });
 
 	    // Exit
-	    button.exit().remove();
+	    button.exit().style('display', 'none');
 
 	   	// Enter
 	    var buttonEnter = button.enter().append('g')
 	    	.attr('class', 'button')
-	    	.attr('transform', function(d) {return 'translate(' + x(d.globalPos) + ')'; })
+	    	.attr('transform', function(d) {return 'translate(' + x(d.globalPos) + ')';})
+	    	.attr('id', function(d) { return 'iobio-button-' + nameValue(d) })
 
 		buttonEnter.append('rect')
 			.attr('width', function(d) {
@@ -1903,7 +1945,7 @@ var multiLine = function() {
 		    		var xpos = x( last ) - x(parseInt(d.globalPos));
 		    		return  xpos + 'px'
 		    })
-		    .style('fill', chart.color() )
+		    .style('fill', color )
 		    .style('height', '20px');
 
 	    buttonEnter.append('text')
@@ -1921,6 +1963,12 @@ var multiLine = function() {
 	    // Update
 	    button.transition()
 	    	.duration(transitionDuration)
+	    	.style('display', function(d) {
+	    		if (selected == 'all' || selected == nameValue(d) )
+	    			return 'block';
+	    		else
+	    			return 'none';
+	    	})
 	    	.attr('transform', function(d) {return 'translate(' + x(d.globalPos) + ')'; });
 
 
@@ -1965,7 +2013,7 @@ var multiLine = function() {
 	    	})
 	    if (selected != 'all') {
 	    	selection.select('.line-panel .iobio-container').append('text')
-	    			.attr('id', 'back-ctrl')
+	    			.attr('id', 'iobio-button-all')
 	    			.attr('x', m.left + 5)
 	    			.attr('y', 0)
 	    			.text('< All')
@@ -1989,6 +2037,12 @@ var multiLine = function() {
 		return chart;
 	};
 
+	chart.color = function(_) {
+		if (!arguments.length) return color;
+		color = _;
+		return chart;
+	};
+
 	chart.nameValue = function(_) {
 		if (!arguments.length) return nameValue;
 		nameValue = _;
@@ -1997,6 +2051,19 @@ var multiLine = function() {
 
 	chart.getSelected = function(_) {
 		return selected;
+	};
+
+	chart.setSelected = function(_) {
+		chart(this.selection, {'selected' : _});
+		return chart;
+	};
+
+	chart.trigger = function(event, buttonName) {
+		this.selection.select('#iobio-button-' + buttonName).each(function(d, i) {
+			var data = d.find(function(d) { return nameValue(d) == buttonName })
+		    var onEventFunc = d3.select(this).on(event);
+			if(onEventFunc) onEventFunc.apply(this, [data, i]);
+		});
 	};
 
 
@@ -2028,9 +2095,11 @@ var pie = function() {
 	// Defaults
 	var radius = 90,
 		innerRadius = 0,
+		padding = 0,
 		arc,
 		events = [],
 		tooltip,
+		nameValue = '',
 		text = function(data, total) {
 			var count = data[0].data;
 			var percent = utils.format_percent(count/total);
@@ -2052,8 +2121,8 @@ var pie = function() {
 
 		// Call base chart
 		base
-			.width(radius*2)
-			.height(radius*2)
+			.width(radius*2 + padding)
+			.height(radius*2 + padding)
 			.xAxis(null)
 			.yAxis(null);
 		base.call(this, selection, options);
@@ -2080,22 +2149,44 @@ var pie = function() {
 				.data(selection.datum())
 
 		// enter
-		path.enter().append("g")
+		var pathEnter = path.enter().append("g")
 			.attr('id', id)
 			.attr('class', 'arc')
 			.style('fill', color)
-			.append('path')
-				.attr("d", function(d) {
-					// return arc(d);
-					return arc({"data":0,"value":0,"startAngle":0,"endAngle":0, "padAngle":0})
-				})
-				.each(function(d) { this._current = {"data":0,"value":0,"startAngle":0,"endAngle":0, "padAngle":0}; }); // store the initial angles
+
+		pathEnter.append('path')
+			.attr("d", function(d,i) {
+				if (transitionDuration && transitionDuration > 0) {
+					return arc({"data":d.data,"value":0,"startAngle":0,"endAngle":0, "padAngle":0});
+				} else {
+					return arc(d);
+				}
+
+			})
+			.each(function(d) {
+				this._current = {"data":d.data,"value":0,"startAngle":0,"endAngle":0, "padAngle":0};  // store the initial angles
+			});
+
+		pathEnter.append('text')
+			.attr("transform", function(d) {
+	          return "translate(" + arcLabelPosition(d, .55) + ")";
+	        })
+			.text(nameValue)
 
        	// update
-       	path.style('fill', color)
-       		.select('path').transition()
-	         	.duration( transitionDuration )
-	         	.attrTween("d", arcTween);
+       	if (transitionDuration != undefined && transitionDuration >= 0) {
+	       	path.style('fill', color)
+	       		.select('path').transition()
+		         	.duration( transitionDuration )
+		         	.attrTween("d", arcTween);
+
+		    path.select('text').transition()
+		    	.duration(transitionDuration)
+		    	.attr("transform", function(d) {
+		          return "translate(" + arcLabelPosition(d, .55) + ")";
+		        })
+		}
+
 
        	// exit
 		path.exit().remove();
@@ -2140,6 +2231,19 @@ var pie = function() {
 	  };
 	}
 
+	function arcLabelPosition(d, ratio) {
+		var r = ( chart.innerRadius() + chart.radius() ) * ratio;
+		var oa = arc.startAngle.call(d);
+		var ia = arc.endAngle.call(d);
+		a = ( oa(d) + ia(d) ) / 2 - (Math.PI/ 2);
+		return [ Math.cos(a) * r, Math.sin(a) * r ];
+	}
+
+	chart.padding = function(_) {
+		if (!arguments.length) return padding;
+		padding = _;
+		return chart;
+	}
 
    	chart.radius = function(_) {
 		if (!arguments.length) return radius;
@@ -2153,6 +2257,12 @@ var pie = function() {
 		return chart;
 	};
 
+	chart.nameValue = function(_) {
+		if (!arguments.length) return nameValue;
+		nameValue = _;
+		return chart;
+	}
+
 
 	chart.text = function(_) {
 		if (!arguments.length) return text;
@@ -2160,7 +2270,7 @@ var pie = function() {
 		return text;
 	}
 
-		/*
+	/*
    	 * Set events on rects
    	 */
 	chart.on = function(event, listener) {
@@ -2184,11 +2294,419 @@ var pie = function() {
 // Export alignment
 module.exports = pie;
 },{"../utils.js":10,"./base.js":14,"extend":2}],19:[function(require,module,exports){
+/*
+  pieChooser - a iobio viz component that is a pie chart with clickable slices.  All slices
+               can be selected by clicking the 'All' circle in the middle of the pie chart.
+*/
+var pieChooser = function() {
+	// Import base chart
+	var base = require("./base.js")(),
+		pie = require('./pie.js')(),
+		utils = require('../utils.js'),
+		extend = require('extend');
+
+	// Defaults
+	var events = [],
+		eventMap = {},
+		tooltip;
+
+	// Default Options
+	var defaults = {};
+
+	var name = function(d) { return  d.data.name};
+
+	var chartContainer = null;
+
+	var clickedSlice = null;
+	var clickedSlices = [];
+
+	var sliceApiSelected = null;
+  	var arcs = null;
+ 	var radiusOffset;
+  	var arc;
+  	var options;
+  	var labels;
+  	var text;
+
+	function chart(selection, opts) {
+		// Merge defaults and options
+		options = {};
+		extend(options, defaults, opts);
+		chartContainer = selection;
+
+		arc = d3.svg.arc()
+				    .innerRadius(chart.innerRadius())
+				    .outerRadius(chart.radius());
+
+		// Create a pie chart
+		pie.nameValue(name)
+		   .radius(chart.radius())
+	       .innerRadius(chart.innerRadius())
+	       .padding(chart.padding())
+	       .transitionDuration(200)
+	       .color(chart.color())
+	       .text( function(d,i) {return ""});
+
+		pie(selection, options);
+
+		arcs = selection.selectAll('.arc')
+
+		// var label = selection.selectAll('.arc').selectAll('.chartlabel').data(selection.datum());
+
+		// // Add labels to the arcs
+		// label.enter().append("text")
+	 //        .attr("class", "chartlabel")
+	 //        .attr("dy", ".35em")
+	 //        .attr("text-anchor", "middle")
+	 //        .style("pointer-events", "none")
+
+	 //    label.transition()
+	 //    	.duration( chart.transitionDuration() )
+	 //    	.attr("transform", function(d) {
+	 //          return "translate(" + chart._arcLabelPosition(d, .55) + ")";
+	 //        })
+		//     .text(function(d,i) {
+	 //          return name(d);
+	 //        });
+
+	 //    label.exit().remove();
+
+		// Stick events in map for easy lookup
+		events.forEach(function(ev) {
+			eventMap[ev.event] = ev.listener;
+		})
+
+		// Handle movements of arcs during mouseover and click
+ 		arcs.on("mouseover", function(d, i) {
+                d3.select(this).attr("cursor", "pointer");
+                chart._selectSlice.call(this, d, i, null, true);
+
+				d3.select(this).select("path")
+				               .style("stroke", "darkturquoise")
+				               .style("stroke-width", "2")
+				               .style("opacity", 1);
+				if (tooltip) {
+					utils.showTooltip(d3.select('.iobio-tooltip'), tooltip, d);
+				}
+
+				var listener = eventMap["mouseover"];
+				if (listener) {
+					listener.call(chart, d, i);
+				}
+
+            })
+           .on("mouseout", function(d) {
+				d3.select(this).attr("cursor", "default");
+				if (clickedSlices.length == 0 && this != clickedSlice) {
+				d3.select(this)
+				  .select("path")
+				  .transition()
+				  .duration(150).attr("transform", "translate(0,0)");
+				}
+
+              	d3.select(this).select("path")
+                               .style("stroke-width", "0");
+
+				if (tooltip) {
+					utils.hideTooltip(d3.select('.iobio-tooltip'))
+				}
+
+                var listener = eventMap["mouseout"];
+              	if (listener) {
+              		listener.call(chart, d, i);
+              	}
+
+            })
+           .on("click", function(d, i) {
+              	chart._clickSlice(this, d, i, true);
+
+              	var listener = eventMap["click"];
+              	if (listener) {
+              		listener.call(chart, d, i);
+              	}
+            });
+
+
+	    // ALL circle inside of donut chart for selecting all pieces
+	    var g = selection.select('.iobio-pie');
+	    g.append("circle")
+	      .attr("id", "all-circle")
+	      .attr("cx", 0)
+	      .attr("cy", 0)
+	      .attr("r", 25)
+	      .attr("stroke", 'lightgrey')
+	      .attr("fill", 'transparent')
+	      .on("mouseover", function(d) {
+	        d3.select(this).attr("cursor", "pointer");
+	      })
+	      .on("mouseout", function(d) {
+	        d3.select(this).attr("cursor", "default");
+	      })
+		  .on("click", function(d) {
+		  		d3.select(this).classed("selected", true);
+	          	chart._clickAllSlices(d);
+	          	var listener = eventMap["clickall"];
+	          	if (listener) {
+	          		listener.call(chart, d);
+	          	}
+	       })
+	     g.append("text")
+	        .attr("id", "all-text")
+	        .attr("dy", ".35em")
+	        .style("text-anchor", "middle")
+	        .style("pointer-events", "none")
+	        .attr("class", "inside")
+	        .text(function(d) { return 'All'; });
+
+
+
+	    // if ( options.selected != undefined ) {
+	    // 	var selectedName = options.selected;
+	    // 	var a = arcs;
+	    // 	arcs.each(function(d,i) {
+	    // 		if ( name(d) ==  selectedName) {
+	    // 			chart._selectSlice(d, i, a[0][i], true);
+	    // 		}
+
+
+	    // 	})
+
+	    // }
+
+
+	}
+	// Rebind methods in pie.js to this chart
+	base.rebind(chart);
+
+	/*
+   	 * Set events on arcs
+   	 */
+	chart.on = function(event, listener) {
+		if (!arguments.length) {
+			return events;
+		}
+		events.push( {'event':event, 'listener':listener})
+		return chart;
+	}
+
+	/*
+   	 * Set tooltip that appears when mouseover arcs
+   	 */
+	chart.tooltip = function(_) {
+		if (!arguments.length) return tooltip;
+			tooltip = _;
+			return chart;
+	}
+
+	chart.name = function(_) {
+		if (!arguments.length) return name;
+		name = _;
+		return name;
+	}
+
+	chart.text = function(_) {
+		if (!arguments.length) return text;
+		text = _;
+		return text;
+	}
+
+	chart.padding = function(_) {
+		if (!arguments.length) return padding;
+		padding = _;
+		return chart;
+	}
+
+   	chart.radius = function(_) {
+		if (!arguments.length) return radius;
+		radius = _;
+		return chart;
+	};
+
+	chart.innerRadius = function(_) {
+		if (!arguments.length) return innerRadius;
+		innerRadius = _;
+		return chart;
+	};
+
+  	chart._clickSlice = function(theSlice, d, i, singleSelection) {
+	    if (singleSelection) {
+	      chartContainer.select("circle#all-circle.selected").classed("selected", false);
+	    }
+
+
+	    if (singleSelection) {
+	      if (clickedSlices.length > 0) {
+	        for (var i = 0; i < clickedSlices.length; i++) {
+	          chart._unclickSlice(clickedSlices[i]);
+	        }
+	        clickedSlices.length = 0;
+
+	      } else if (clickedSlice) {
+	        chart._unclickSlice(clickedSlice);
+	      }
+
+	    }
+
+	    // Bold the label of the clicked slice
+	    d3.select(theSlice).selectAll("text").attr("class", "chartlabelSelected");
+
+	    // Offset the arc even more than mouseover offset
+	    // Calculate angle bisector
+	    var ang = d.startAngle + (d.endAngle - d.startAngle)/2;
+	    // Transformate to SVG space
+	    ang = (ang - (Math.PI / 2) ) * -1;
+
+	    // Calculate a 10% radius displacement
+	    var x = Math.cos(ang) * radius * 0.1;
+	    var y = Math.sin(ang) * radius * -0.1;
+
+	    d3.select(theSlice)
+	      .select("path")
+	      .attr("transform", "rotate(0)")
+	      .transition()
+	      .duration(200)
+	      .attr("transform", "translate("+x+","+y+")");
+
+	    if (singleSelection) {
+	      clickedSlice = theSlice;
+	    }
+	    else {
+	      clickedSlices.push(theSlice);
+	    }
+
+	}
+
+    chart._unclickSlice = function(clickedSlice) {
+	    // change the previous clicked slice back to no offset
+	    d3.select(clickedSlice)
+	      .select("path")
+	      .transition()
+	      .duration(150).attr("transform", "translate(0,0)");
+
+	    // change the previous clicked slice label back to normal font
+	    d3.select(clickedSlice).selectAll("text").attr("class", "chartlabel");
+	    var labelPos = chart._arcLabelPosition(clickedSlice.__data__, .55);
+
+    	return chart;
+
+  	}
+
+  	chart._selectSlice = function(d, i, gNode, deselectPrevSlice) {
+		var theSlice = this;
+
+		// We have a gNode when this function is
+		// invoked during initialization to selected
+		// the first slice.
+		if (gNode) {
+		  theSlice = gNode;
+		  sliceApiSelected = gNode;
+
+		} else {
+		  // We have to get rid of previous selection
+		  // when we mouseenter after first chromsome
+		  // was auto selected because mouseout
+		  // event not triggered when leaving first
+		  // selected slice.
+		  if (deselectPrevSlice) {
+		    if (sliceApiSelected) {
+		      d3.select(sliceApiSelected).select("path")
+		          .transition()
+		          .duration(150)
+		          .attr("transform", "translate(0,0)");
+		        sliceApiSelected = null;
+		    }
+		  }
+		}
+
+		// show tooltip
+		if (options.showTooltip) {
+		  _tooltip().transition()
+		    .duration(200)
+		    .style("opacity", .9);
+
+		  var centroid = arc.centroid(d);
+
+		  var matrix = theSlice.getScreenCTM()
+		                       .translate(+theSlice.getAttribute("cx"),
+		                                  +theSlice.getAttribute("cy"));
+		  // position tooltip
+		  _tooltip().html(name(d.data))
+		    .style("visibility", "visible")
+		    .style("left", (matrix.e + centroid[0]) + "px")
+		    .style("top", (matrix.f + centroid[1]- 18) + "px");
+
+		}
+
+
+		if (theSlice != clickedSlice) {
+		  // Calculate angle bisector
+		  var ang = d.startAngle + (d.endAngle - d.startAngle)/2;
+		  // Transformate to SVG space
+		  ang = (ang - (Math.PI / 2) ) * -1;
+
+		  // Calculate a .5% radius displacement (inverse to make slice to inward)
+		  var x = Math.cos(ang) * radius * 0.1;
+		  var y = Math.sin(ang) * radius * -0.1;
+		  d3.select(theSlice)
+		    .select("path")
+		    .attr("transform", "rotate(0)")
+		    .transition()
+		    .duration(200)
+		    .attr("transform", "translate("+x+","+y+")");
+
+		}
+    	return chart;
+  	}
+
+
+	chart._arcLabelPosition = function(d, ratio) {
+		var r = ( chart.innerRadius() + chart.radius() ) * ratio;
+		var oa = arc.startAngle.call(d);
+		var ia = arc.endAngle.call(d);
+		a = ( oa(d) + ia(d) ) / 2 - (Math.PI/ 2);
+		return [ Math.cos(a) * r, Math.sin(a) * r ];
+	};
+
+	chart._clickAllSlices = function(data)  {
+		chartContainer.select("circle#all-circle").classed("selected", true);
+
+		clickedSlices.length = 0;
+		for (var i = 0; i < data.length; i++) {
+		    var theSlice = arcs.selectAll("d.arc")[i].parentNode;
+		    chart._clickSlice(theSlice, theSlice.__data__,  i, false);
+		}
+		return chart;
+	}
+
+
+
+	chart.clickSlice = function(i) {
+		var theSlice = arcs.selectAll("d.arc")[i].parentNode;
+		chart._clickSlice(theSlice, theSlice.__data__, i, true);
+		chart._selectSlice(theSlice.__data__,  i, theSlice);
+		clickedSlice = theSlice;
+		return chart;
+	}
+
+	chart.clickAllSlices = function(data) {
+		chart._clickAllSlices(data);
+		return chart;
+	}
+
+
+
+	return chart;
+}
+
+// Export alignment
+module.exports = pieChooser;
+},{"../utils.js":10,"./base.js":14,"./pie.js":18,"extend":2}],20:[function(require,module,exports){
 
 var viz = {};
 // add visualizations
 viz.base = require('./base.js')
 viz.pie = require('./pie.js')
+viz.pieChooser = require('./pieChooser.js')
 viz.alignment = require('./alignment.js')
 viz.line = require('./line.js')
 viz.bar = require('./bar.js')
@@ -2197,7 +2715,7 @@ viz.gene = require('./gene.js')
 viz.multiLine = require('./multiLine.js')
 
 module.exports = viz;
-},{"./alignment.js":11,"./bar.js":12,"./barViewer.js":13,"./base.js":14,"./gene.js":15,"./line.js":16,"./multiLine.js":17,"./pie.js":18}]},{},[1])
+},{"./alignment.js":11,"./bar.js":12,"./barViewer.js":13,"./base.js":14,"./gene.js":15,"./line.js":16,"./multiLine.js":17,"./pie.js":18,"./pieChooser.js":19}]},{},[1])
 
 
 //# sourceMappingURL=iobio.viz.js.map

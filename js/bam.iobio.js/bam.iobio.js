@@ -558,8 +558,6 @@ var Bam = Class.extend({
         cmd.on('end', function() {
            if (options.onEnd != undefined)
               options.onEnd();
-
-            console.log('command ending')
         });
 
         cmd.on('exit', function(code) {
