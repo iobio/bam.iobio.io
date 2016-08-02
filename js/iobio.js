@@ -7,12 +7,16 @@
 var iobio = global.iobio || {};
 global.iobio = iobio;
 
+iobio.version = require('../package.json').version;
+
 // export if being used as a node module - needed for test framework
 if ( typeof module === 'object' ) { module.exports = iobio;}
 
-var EventEmitter = require('events').EventEmitter;
-var inherits = require('inherits');
-var shortid = require('shortid');
+var EventEmitter = require('events').EventEmitter,
+	inherits = require('inherits'),
+	shortid = require('shortid'),
+	extend = require('extend'),
+	conn = require('./conn.js');
 
 
 // Command function starts here
@@ -20,23 +24,26 @@ iobio.cmd = function(service, params, opts) {
 	// Call EventEmitter constructor
 	EventEmitter.call(this);
 
-	var extend = require('extend');
+	var me = this;
 
+	this.id = shortid.generate()
    	this.options = {
    		/* defaults */
-   		id: shortid.generate()
+   		id: me.id
    	};
    	extend(this.options, opts);
 	this.protocol = this.options.ssl ? 'wss' : 'ws';
-	this.pipedCommands = { };
+	this.service = service;
+	this.params = params;
+	this.pipedCommands = {};
 	this.pipedCommands[ this.options.id ] = this;
+	this.argCommands = {};
 
 	// make sure params isn't undefined
 	params = params || [];
 
-	var conn = require('./conn.js'); // handles connection code
+	// handles the connection
 	this.connection = new conn(this.protocol, service, params, this.options);
-	var me = this;
 
 	// bind stream events
 	require('./utils/bindStreamEvents')(this, this.connection);
@@ -50,17 +57,29 @@ inherits(iobio.cmd, EventEmitter);
 // Chain commands
 iobio.cmd.prototype.pipe = function(service, params, opts) {
 
+	// Default options
+	var options = {
+		urlparams : { stdin: this.url() }
+	}
+	// merge options
+	extend(true, options, opts);
 
 	// add current url to params
 	params = params || [];
-	params.push( this.url() );
+	// params.push( this.url() );
 
 	// create new command
-	var newCmd = new iobio.cmd(service, params, opts || {});
-	// var newCmd = new iobio.cmd(service, params, opts || {});
+	var newCmd = new iobio.cmd(service, params, options);
 
 	// transfer pipedCommands to new command;
-	for (var id in this.pipedCommands ) { newCmd.pipedCommands[id] = this.pipedCommands[id]; }
+	for (var id in this.pipedCommands ) {
+		newCmd.pipedCommands[id] = this.pipedCommands[id];
+
+		// transfer argCommands to new command;
+		for (var id in this.connection.urlBuilder.argCommands ) {
+			newCmd.connection.urlBuilder.argCommands[id] = this.connection.urlBuilder.argCommands[id];
+		}
+	}
 
 	return newCmd;
 }
@@ -78,6 +97,18 @@ iobio.cmd.prototype.id = this.id
 iobio.cmd.prototype.protocol = function(_) {
 	if (!arguments.length) return this.protocol;
 	this.protocol = _;
+	return this;
+}
+
+iobio.cmd.prototype.service = function(_) {
+	if (!arguments.length) return this.service;
+	this.service = _;
+	return this;
+}
+
+iobio.cmd.prototype.arguments = function(_) {
+	if (!arguments.length) return this.params;
+	this.params = _;
 	return this;
 }
 
@@ -108,9 +139,13 @@ iobio.cmd.prototype.end = function() {
 	if (this.connection && this.connection.runner )
 		this.connection.runner.end();
 }
+
+iobio.cmd.prototype.toString = function() {
+	return '[object iobio.cmd]'
+}
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./conn.js":18,"./utils/bindStreamEvents":24,"events":7,"extend":8,"inherits":9,"shortid":13}],2:[function(require,module,exports){
+},{"../package.json":18,"./conn.js":19,"./utils/bindStreamEvents":25,"events":7,"extend":8,"inherits":9,"shortid":13}],2:[function(require,module,exports){
 (function (Buffer){
 /*! binary.js build:0.2.1, development. Copyright(c) 2012 Eric Zhang <eric@ericzhang.com> MIT Licensed */
 (function(exports){
@@ -4140,7 +4175,47 @@ module.exports = {
 module.exports = 0;
 
 },{}],18:[function(require,module,exports){
-(function (global){
+module.exports={
+  "name": "iobio.js",
+  "version": "0.2.0",
+  "description": "Client side iobio javascript library for building and executing iobio commands",
+  "browser": {
+    "binaryjs": "./lib/binary.js"
+  },
+  "browserify-shim": {
+    "external": "global:External"
+  },
+  "devDependencies": {
+    "brfs": "^1.4.0",
+    "browserify": "^10.2.0",
+    "browserify-istanbul": "^0.2.1",
+    "browserify-shim": "~3.8.0",
+    "coveralls": "^2.11.2",
+    "gulp": "^3.8.11",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-uglify": "^1.2.0",
+    "jasmine-core": "^2.4.1",
+    "karma": "^0.12.31",
+    "karma-browserify": "^4.1.2",
+    "karma-chrome-launcher": "^0.1.7",
+    "karma-coverage": "0.2.6",
+    "karma-firefox-launcher": "^0.1.6",
+    "karma-jasmine": "^0.3.5",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "dependencies": {
+    "extend": "^2.0.1",
+    "inherits": "^2.0.1",
+    "shortid": "^2.2.2"
+  },
+  "scripts": {
+    "testServer": "node ./node_modules/karma/bin/karma start test/karma.conf.js",
+    "test": "gulp testTravis"
+  }
+}
+
+},{}],19:[function(require,module,exports){
 // Create connection and handle the results
 
 var EventEmitter = require('events').EventEmitter;
@@ -4178,19 +4253,15 @@ conn.prototype.run = function(pipedCommands) {
 	// run
 	this.runner = new this.Runner(this.urlBuilder, pipedCommands, this.opts);
 	var me = this;
-	global.iobioClients = global.iobioClients || []
-	global.iobioClients.push(this.runner);
 
 	// bind stream events
 	require('./utils/bindStreamEvents')(this,this.runner);
 }
 
 module.exports = conn;
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./protocol/http.js":20,"./protocol/ws.js":21,"./urlBuilder.js":24,"./utils/bindStreamEvents":25,"events":7,"inherits":9}],20:[function(require,module,exports){
 
-},{"./protocol/http.js":19,"./protocol/ws.js":20,"./urlBuilder.js":23,"./utils/bindStreamEvents":24,"events":7,"inherits":9}],19:[function(require,module,exports){
-
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 // Websocket code for running iobio command and getting results
 
 var EventEmitter = require('events').EventEmitter;
@@ -4217,10 +4288,19 @@ var ws = function(urlBuilder, pipedCommands, opts) {
 			stream.on('createClientConnection', function(connection) {
 				// determine serverAddress
 				var serverAddress;
-				var cmd = pipedCommands[connection.id];
-				if (cmd) {
+				// grab first half of connection id which is the command id
+				var cmdId = connection.id.split('&')[0];
+
+				// get correct command
+				var cmd;
+				if (pipedCommands[cmdId]) {
+					cmd = pipedCommands[cmdId];
 					var cmdOpts = cmd.options;
 					var cmdUrlBuilder = cmd.connection.urlBuilder;
+				} else if (urlBuilder.argCommands[cmdId]) {
+					cmd = urlBuilder.argCommands[cmdId];
+					var cmdOpts =  cmd.options;
+					var cmdUrlBuilder =  cmd.connection.urlBuilder;
 				} else {
 					var cmdOpts =  opts;
 					var cmdUrlBuilder =  urlBuilder;
@@ -4233,14 +4313,18 @@ var ws = function(urlBuilder, pipedCommands, opts) {
 				else if (cmdOpts && cmdOpts.writeStream && cmdOpts.writeStream.serverAddress) // defined by writestream on client
 					serverAddress = cmdOpts.writeStream.serverAddress
 				else  // defined by client
-					serverAddress = cmdUrlBuilder.getService();
+					serverAddress = cmdUrlBuilder.service;
 
 				// connect to server
 				var dataClient = BinaryClient(protocol + '://' + serverAddress);
 				dataClient.on('open', function() {
 					var dataStream = dataClient.createStream({event:'clientConnected', 'connectionID' : connection.id});
-					var file = cmdUrlBuilder.getFile();
+					var argPos = connection.argPos || 0;
+					var file = cmdUrlBuilder.files[argPos];
 					file.write(dataStream, cmdOpts);
+					dataStream.on('softend', function() {
+						file.end();
+					})
 				})
             })
 
@@ -4276,22 +4360,26 @@ ws.prototype.closeClient = function() {
 }
 
 ws.prototype.kill = function() {
-	if (this.stream)
-		this.stream.destroy();
-}
-
-ws.prototype.end = function() {
+	// end stream immediately
 	if (this.stream)
 		this.stream.end();
 }
 
+ws.prototype.end = function() {
+	// send end event without ending stream
+    // this lets upstream streams end first, which causes
+    // downstream streams to end gracefully when the data runs out
+	if (this.stream)
+		this.stream.message('softend');
+}
+
 module.exports = ws;
-},{"binaryjs":2,"events":7,"inherits":9}],21:[function(require,module,exports){
-// Create iobio url for a file command and setup stream for reading the file to the iobio web service
+},{"binaryjs":2,"events":7,"inherits":9}],22:[function(require,module,exports){
+// Create iobio url for a file/function command and setup stream for reading the file/function to the iobio web service
 
 var BlobReadStream = require('binaryjs').BlobReadStream;
 
-var file = function(fileObj) {       
+var file = function(fileObj) {
     var me = this;
     me.fileObj = fileObj
     me.url = encodeURIComponent("http://client");
@@ -4306,16 +4394,22 @@ file.prototype.getUrl = function( ) { return this.url; }
 file.prototype.write = function(stream, options) {
 
     var me = this;
+    this.stream = stream;
     var chunkSize = options.chunkSize || (500 * 1024);             ;
-    if (options && options.writeStream) 
-        options.writeStream(stream, function() {stream.end()})
-    else {        
+    // check if fileObj is a function and if so execute it
+    if (Object.prototype.toString.call(this.fileObj) == '[object Function]')
+        this.fileObj(stream, function() {stream.end()});
+    else {
         (new BlobReadStream(this.fileObj, {'chunkSize': chunkSize})).pipe(stream);
     }
 }
 
+file.prototype.end = function() {
+    if (this.stream) this.stream.end();
+}
+
 module.exports = file;
-},{"binaryjs":2}],22:[function(require,module,exports){
+},{"binaryjs":2}],23:[function(require,module,exports){
 // Create iobio url for a url command
 
 var url = function(param) {	
@@ -4328,44 +4422,57 @@ url.prototype.getType = function() { return 'url'; }
 url.prototype.getUrl = function( ) { return this.url; }
 
 module.exports = url;
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 // Creates the command
 
-var urlBuilder = function(service, params, opts) {	
+var urlBuilder = function(service, params, opts) {
 	var urlParams = require('./utils/hash2UrlParams.js'),
 		eventEmitter = require('events').EventEmitter(),
-		fileParamer = require('./source/file.js'),
-		urlParamer = require('./source/url.js'),
-		sourceType
+		fileParameter = require('./source/file.js'),
+		urlParameter = require('./source/url.js'),
+		fileSource = false;
+
 		opts = opts || {};
 
-	this.uri = null;	
+	this.uri = null;
 	this.service = service;
-	var me = this;	
+	this.files = [];
+	this.argCommands = {};
+	var me = this;
 
-	// handle iobio urls and files to correct
-	for (var i=0; i< params.length; i++) {					
-		if(params[i].slice(0,8) == 'iobio://') {
-			sourceType = 'url'
-			var source = new urlParamer(params[i]);
+	// handle iobio urls and files/functions
+	for (var i=0; i< params.length; i++) {
+		if (Object.prototype.toString.call(params[i]) == '[object File]' || Object.prototype.toString.call(params[i]) == '[object Blob]' || Object.prototype.toString.call(params[i]) == '[object Function]') {
+			fileSource = true;
+			var source = new fileParameter(params[i]);
+			me.files.push( source );
 			params[i] = source.getUrl();
-		} else if (Object.prototype.toString.call(params[i]) == '[object File]' || Object.prototype.toString.call(params[i]) == '[object Blob]') {
-			sourceType = 'file';						
-			me.file = new fileParamer(params[i])
-			params[i] = me.file.getUrl();			
+		} else if(params[i].toString() == '[object iobio.cmd]') {
+			me.argCommands[params[i].id] = params[i];
+			var source = new urlParameter(params[i].url());
+			params[i] = source.getUrl();
+		} else if(params[i].toString().slice(0,8) == 'iobio://') {
+			var source = new urlParameter(params[i]);
+			params[i] = source.getUrl();
 		}
 	}
 
+	// handle stdin special case
+	if(opts && opts.urlparams && opts.urlparams.stdin) {
+		var source = new urlParameter(opts.urlparams.stdin);
+		opts.urlparams.stdin = source.getUrl();
+	}
+
 	// create source url
-	this.uri =  encodeURI(service + '?cmd=' + params.join(' ') + urlParams(opts.urlparams) + urlParams({id:opts.id}));		
-	if (sourceType == 'file') this.uri += '&protocol=websocket';
+	this.uri =  encodeURI(service + '?cmd=' + params.join(' ') + urlParams(opts.urlparams) + urlParams({id:opts.id}));
+	if (fileSource) this.uri += '&protocol=websocket';
+
+	// add iobio version
+	this.uri += '&iobiojsversion=' + iobio.version;
 }
 
-urlBuilder.prototype.getFile = function() { return this.file; }
-urlBuilder.prototype.getService = function() { return this.service; }
-
 module.exports = urlBuilder;
-},{"./source/file.js":21,"./source/url.js":22,"./utils/hash2UrlParams.js":25,"events":7}],24:[function(require,module,exports){
+},{"./source/file.js":22,"./source/url.js":23,"./utils/hash2UrlParams.js":26,"events":7}],25:[function(require,module,exports){
 var bindStreamEvents = function(parent, child) {
 	// handle events
 	child.on('data', function(data) { parent.emit('data',data)});
@@ -4377,7 +4484,7 @@ var bindStreamEvents = function(parent, child) {
 }
 
 module.exports = bindStreamEvents;
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var urlParams = function(params) {
 	var str = ''
 	if (params)

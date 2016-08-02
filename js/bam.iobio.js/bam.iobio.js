@@ -29,9 +29,17 @@ var Bam = Class.extend({
       // this.iobio.bamReadDepther = "services.iobio.io/bamreaddepther/";
       // this.iobio.bamstatsAlive = "wss://services.iobio.io/bamstatsalive/";
 
-      this.iobio.samtools = "nv-prod.iobio.io/samtools/";
-      this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
-      this.iobio.bamstatsAlive = "nv-prod.iobio.io/bamstatsalive/";
+      // this.iobio.samtools = "nv-prod.iobio.io/samtools/";
+      // this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
+      // this.iobio.bamstatsAlive = "nv-prod.iobio.io/bamstatsalive/";
+
+      // this.iobio.samtools = "nv-prod.iobio.io/samtools/";
+      // this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
+      // this.iobio.bamstatsAlive = "nv-prod.iobio.io/bamstatsalive/";
+
+      this.iobio.samtools = "nv-green.iobio.io/samtools/";
+      this.iobio.bamReadDepther = "nv-green.iobio.io/bamreaddepther/";
+      this.iobio.bamstatsAlive = "nv-green.iobio.io/bamstatsalive/";
 
       // this.iobio.samtools = "localhost:8060";
       // this.iobio.bamReadDepther = "localhost:8021";
@@ -82,24 +90,24 @@ var Bam = Class.extend({
             { ssl:this.ssl, 'urlparams': {'encoding':'binary'} }
           )
       } else {
+        var writeFile = function(stream) {
+            var ended = 0;
+            stream.write(me.header.toStr);
+            for (var i=0; i < regions.length; i++) {
+              var region = regions[i];
+               me.convert('sam', region.name, region.start, region.end, function(data,e) {
+                  stream.write(data);
+                  ended += 1;
+                  if ( regions.length == ended) stream.end();
+               }, {noHeader:true});
+            }
+          }
           var cmd = new iobio.cmd(
             this.iobio.samtools,
-            ['view', '-S', '-b', me.bamUri],
+            ['view', '-S', '-b', writeFile],
             {
               ssl:this.ssl,
-              'urlparams': {'encoding':'binary'},
-              writeStream: function(stream) {
-                var ended = 0;
-                stream.write(me.header.toStr);
-                for (var i=0; i < regions.length; i++) {
-                  var region = regions[i];
-                   me.convert('sam', region.name, region.start, region.end, function(data,e) {
-                      stream.write(data);
-                      ended += 1;
-                      if ( regions.length == ended) stream.end();
-                   }, {noHeader:true});
-                }
-              }
+              'urlparams': {'encoding':'binary'}
           })
       }
 
@@ -417,7 +425,7 @@ var Bam = Class.extend({
               }
 
               // Invoke Callback function
-              cb();
+              cb(true);
           });
       }
 

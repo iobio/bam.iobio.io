@@ -134,6 +134,8 @@ section#middle {
     width: 150px;
 }
 
+.iobio-multi-line text { fill: white; }
+
 #percents {
     margin-right: 20px;
     -webkit-flex: 1 1 auto;
