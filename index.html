@@ -226,13 +226,30 @@
 
                 window.bam = undefined;
                 window.sampling = getUrlParameter('sampling')
+
+                // check if app is triggered from illumina
+                var action = getUrlParameter('action')
+                if (action == 'trigger') {
+                  getIlluminaBamBaiUrls(function(bamUrl, baiUrl) {
+                    console.log('bamUrl = ' + bamUrl)
+                    console.log('baiUrl = ' + baiUrl)
+                    window.bam = new Bam(bamUrl, { bai: baiUrl});
+                    goBam();
+                  })
+                }
+
+                // check if url is present
                 var bamUrl = getUrlParameter('bam')
                 // check if url to bam file is supplied in url and sample it
                 if (bamUrl != undefined) {
                     // remove https if present
                     // if (bamUrl.slice(0,5) == 'https')
                     //   bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
-                    window.bam = new Bam( bamUrl );
+                    var baiUrl = getUrlParameter('bai');
+                    if (baiUrl)
+                        window.bam = new Bam( bamUrl, {bai: baiUrl} );
+                    else
+                        window.bam = new Bam( bamUrl );
                     var r = getUrlParameter('region');
                     var region = undefined;
                     if (r != undefined) {
@@ -252,11 +269,11 @@
             });
 
             function getUrlParameter(sParam) {
-                var sPageURL = window.location.search.substring(1);
-                var sURLVariables = sPageURL.split('&');
+                var sPageURL = decodeURI(window.location.search.substring(1));
+                var sURLVariables = sPageURL.match(/(?:[^&"]+|"[^"]*")+/g)
                 for (var i = 0; i < sURLVariables.length; i++)
                 {
-                    var sParameterName = sURLVariables[i].split('=');
+                    var sParameterName = sURLVariables[i].match(/(?:[^="]+|"[^"]*")+/g);
                     if (sParameterName[0] == sParam)
                     {
                         return sParameterName[1];
@@ -661,6 +678,81 @@
                 var selection = d3.select("#mapping-quality-distribution-chart").datum(d);
                 window.qualityChart(selection);
             }
+
+            function getIlluminaAccessToken(callback) {
+                var basespace = 'nv-dev-new.iobio.io/basespaceauth/';
+                var authorization_code = getUrlParameter('authorization_code');
+                var cmd = new iobio.cmd(basespace, [authorization_code]);
+
+                cmd.on('data', function(d) {
+                    var accessToken = JSON.parse(d).access_token
+                    callback(accessToken);
+                })
+                    .on('error', function(e) { /*console.error(e)*/ ;})
+                    .run()
+            }
+
+            function getIlluminaBamBaiUrls(callback) {
+                var appSessionHref = getUrlParameter('appsessionuri'),
+                    apiUrl = "https://api.basespace.illumina.com/";
+
+                getIlluminaAccessToken(function(accessToken) {
+                    console.log('accessToken = ' + accessToken);
+                    $.ajax({
+                       url: apiUrl + appSessionHref,
+                       data: {access_token: accessToken},
+                       type: 'GET',
+                       contentType: "application/json",
+                       dataType: 'json',
+                       error: function(error) {
+                          console.error(error);
+                       }
+
+                    }).done(function(sessionRes) {
+                        var bamHref, baiHref;
+
+                        sessionRes.Response.References.forEach(function(ref) {
+                            if (ref.Type == 'File' && ref.Rel == 'Input') {
+                                if (ref.Content.Name.slice(-3) == 'bam')
+                                    bamHref = ref.Content.HrefContent;
+                                else if (ref.Content.Name.slice(-3) == 'bai')
+                                    baiHref = ref.Content.HrefContent;
+                            }
+                        })
+
+                        // get bam S3 location
+                        $.ajax({
+                            url: apiUrl + bamHref,
+                            data: {access_token: accessToken, redirect: 'meta'},
+                            type: 'GET',
+                            contentType: "application/json",
+                            dataType: 'json',
+                            error: function(error) {
+                                console.error(error);
+                            }
+                        }).done(function(bamRes) {
+
+                            var bamUrl = '"' + bamRes.Response.HrefContent + '"' ;
+
+                            // get bai s3 location
+                            $.ajax({
+                                url: apiUrl + baiHref,
+                                data: {access_token: accessToken, redirect: 'meta'},
+                                type: 'GET',
+                                contentType: "application/json",
+                                dataType: 'json',
+                                error: function(error) {
+                                    console.error(error);
+                                }
+                            }).done(function(baiRes) {
+                                var baiUrl = '"' + baiRes.Response.HrefContent + '"';
+                                callback(bamUrl, baiUrl);
+                            })
+                        })
+                    })
+                })
+            }
+
 
             function toggleChart(elem, chartId) {
                 if ($(elem).hasClass("selected")) return;
