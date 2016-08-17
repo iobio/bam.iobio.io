@@ -231,8 +231,6 @@
                 var action = getUrlParameter('action')
                 if (action == 'trigger') {
                   getIlluminaBamBaiUrls(function(bamUrl, baiUrl) {
-                    console.log('bamUrl = ' + bamUrl)
-                    console.log('baiUrl = ' + baiUrl)
                     window.bam = new Bam(bamUrl, { bai: baiUrl});
                     goBam();
                   })
@@ -458,7 +456,6 @@
             }
 
             function setSelectedSeq(selected, start, end) {
-              console.log('set selected = ' + selected);
                 if (selected == 'all') {
                   var seqDataIds = Object.keys(window.bam.readDepth)
                         .filter(function(key) {
@@ -697,7 +694,6 @@
                     apiUrl = "https://api.basespace.illumina.com/";
 
                 getIlluminaAccessToken(function(accessToken) {
-                    console.log('accessToken = ' + accessToken);
                     $.ajax({
                        url: apiUrl + appSessionHref,
                        data: {access_token: accessToken},

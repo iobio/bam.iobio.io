@@ -323,15 +323,24 @@ var Bam = Class.extend({
       var me = this, readDepth = {};
       me.readDepth = {};
 
-      function cb(done) {
+      var isdone = false;
+
+      function cb() {
+
          if (me.header) {
-            for (var id in readDepth) {
-              if (readDepth.hasOwnProperty(id))
-              var name = me.header.sq[parseInt(id)].name;
-               if ( me.readDepth[ name ] == undefined){
-                  me.readDepth[ name ] = readDepth[id];
-                  callback( name, readDepth[id], done );
-               }
+            var keys = Object.keys(readDepth);
+            for (var i=0; i < keys.length; i++) {
+              var name = me.header.sq[parseInt(keys[i])].name;
+              // console.log('cb done = ' + done);
+              //console.log('before last callback');
+              if ( me.readDepth[ name ] == undefined){
+                //console.log('last callback');
+                me.readDepth[ name ] = readDepth[keys[i]];
+                // check if request is done and this is the last iteration
+                done = (isdone && ( (i+1)==keys.length ) )
+                callback( name, readDepth[keys[i]], done );
+              }
+
             }
          }
       }
@@ -374,7 +383,8 @@ var Bam = Class.extend({
           });
           cmd.on('end', function() {
             console.log('estimate done');
-             cb(true);
+            isdone = true;
+            cb();
           });
           cmd.run();
 
