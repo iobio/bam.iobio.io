@@ -125,7 +125,7 @@
                 // get width for main panel depth chart
                 var depthChartWidth = $("#depth-distribution .chart").width();
                 var pieChooserPadding = 30;
-                var pieChooserWidth = +$("#piechooser").width();
+                var pieChooserWidth = Math.min(+$("#piechooser").width(), +$("#piechooser").height() - 0) ;
 
                 var color = d3.scale.category20b();
 
