@@ -18,8 +18,10 @@ var Bam = Class.extend({
             me.setHeader(bam.header);
             me.provide(bam);
          });
-      } else if ( this.bamUri.slice(0,4) == "http" ) {
+      } else {
          this.sourceType = "url";
+         if (this.options && this.options.bai)
+          this.baiUri = this.options.bai;
       }
 
       // set iobio servers
@@ -37,9 +39,14 @@ var Bam = Class.extend({
       // this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
       // this.iobio.bamstatsAlive = "nv-prod.iobio.io/bamstatsalive/";
 
-      this.iobio.samtools = "nv-green.iobio.io/samtools/";
-      this.iobio.bamReadDepther = "nv-green.iobio.io/bamreaddepther/";
-      this.iobio.bamstatsAlive = "nv-green.iobio.io/bamstatsalive/";
+      // this.iobio.samtools = "nv-green.iobio.io/samtools/";
+      // this.iobio.bamReadDepther = "nv-green.iobio.io/bamreaddepther/";
+      // this.iobio.bamstatsAlive = "nv-green.iobio.io/bamstatsalive/";
+
+
+      this.iobio.samtools = "nv-dev-new.iobio.io/samtools/";
+      this.iobio.bamReadDepther = "nv-dev-new.iobio.io/bamreaddepther/";
+      this.iobio.bamstatsAlive = "nv-dev-new.iobio.io/bamstatsalive/";
 
       // this.iobio.samtools = "localhost:8060";
       // this.iobio.bamReadDepther = "localhost:8021";
@@ -84,11 +91,19 @@ var Bam = Class.extend({
       var regStr = JSON.stringify(regions.map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));
 
       if ( this.sourceType == "url") {
+
+        var args;
+        if (this.baiUri) {
+          // explciity stet bai url
+          args = ['-z', this.baiUri, 'view', '-b', this.bamUri, regArr.join(' ')];
+        } else {
+          args = ['view', '-b', this.bamUri, regArr.join(' ')];
+        }
         var cmd = new iobio.cmd(
-            this.iobio.samtools,
-            ['view', '-b', this.bamUri, regArr.join(' ')],
-            { ssl:this.ssl, 'urlparams': {'encoding':'binary'} }
-          )
+              this.iobio.samtools,
+              args,
+              { ssl:this.ssl, 'urlparams': {'encoding':'binary'} }
+            )
       } else {
         var writeFile = function(stream) {
             var ended = 0;
@@ -308,15 +323,24 @@ var Bam = Class.extend({
       var me = this, readDepth = {};
       me.readDepth = {};
 
-      function cb(done) {
+      var isdone = false;
+
+      function cb() {
+
          if (me.header) {
-            for (var id in readDepth) {
-              if (readDepth.hasOwnProperty(id))
-              var name = me.header.sq[parseInt(id)].name;
-               if ( me.readDepth[ name ] == undefined){
-                  me.readDepth[ name ] = readDepth[id];
-                  callback( name, readDepth[id], done );
-               }
+            var keys = Object.keys(readDepth);
+            for (var i=0; i < keys.length; i++) {
+              var name = me.header.sq[parseInt(keys[i])].name;
+              // console.log('cb done = ' + done);
+              //console.log('before last callback');
+              if ( me.readDepth[ name ] == undefined){
+                //console.log('last callback');
+                me.readDepth[ name ] = readDepth[keys[i]];
+                // check if request is done and this is the last iteration
+                done = (isdone && ( (i+1)==keys.length ) )
+                callback( name, readDepth[keys[i]], done );
+              }
+
             }
          }
       }
@@ -329,7 +353,8 @@ var Bam = Class.extend({
          callback(me.readDepth)
       else if (me.sourceType == 'url') {
           var currentSequence;
-          var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', me.bamUri + ".bai"], {ssl:this.ssl,})
+          var indexUrl = this.baiUri || this.bamUri + ".bai";
+          var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', indexUrl], {ssl:this.ssl,})
           cmd.on('error', function(e){ console.log(e); });
           cmd.on('data', function(data, options) {
              data = data.split("\n");
@@ -357,7 +382,9 @@ var Bam = Class.extend({
              }
           });
           cmd.on('end', function() {
-             cb(true);
+            console.log('estimate done');
+            isdone = true;
+            cb();
           });
           cmd.run();
 

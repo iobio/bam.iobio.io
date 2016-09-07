@@ -784,9 +784,9 @@ var alignment = function() {
 		aln.enter().append('g')
 			.attr('id', function(d) { return id(d)})
 			.attr('class', 'alignment')
-			.attr('transform', function(d) {
-				var translate = 'translate('+parseInt(x(xValue(d) + wValue(d)/2))+','+ parseInt(y(yValue(d))-elemHeight/2) + ')'
-				if (directionValue && directionValue(d) == 'reverse')
+			.attr('transform', function(d,i) {
+				var translate = 'translate('+parseInt(x(xValue(d,i) + wValue(d,i)/2))+','+ parseInt(y(yValue(d,i))-elemHeight/2) + ')'
+				if (directionValue && directionValue(d,i) == 'reverse')
 					return translate + ' rotate(180)';
 				else
 					return translate;
@@ -816,9 +816,9 @@ var alignment = function() {
 
 		aln.transition()
 			.duration(transitionDuration)
-			.attr('transform', function(d) {
-				var translate = 'translate('+parseInt(x(xValue(d) + wValue(d)/2))+','+ parseInt(y(yValue(d))-elemHeight/2) + ')'
-				if (directionValue && directionValue(d) == 'reverse')
+			.attr('transform', function(d,i) {
+				var translate = 'translate('+parseInt(x(xValue(d,i) + wValue(d,i)/2))+','+ parseInt(y(yValue(d,i))-elemHeight/2) + ')'
+				if (directionValue && directionValue(d,i) == 'reverse')
 					return translate + ' rotate(180)';
 				else
 					return translate;
@@ -827,8 +827,8 @@ var alignment = function() {
 
 		aln.select('polygon').transition()
 			.duration(transitionDuration)
-			.attr('points', function(d) {
-				var rW = x(xValue(d)+wValue(d)) - x(xValue(d));
+			.attr('points', function(d,i) {
+				var rW = x(xValue(d,i)+wValue(d,i)) - x(xValue(d,i));
 				var rH = elemHeight;
 				var arrW = Math.min(5, rW);
 
@@ -910,7 +910,8 @@ var bar = function() {
 
 	// Defaults
 	var events = [],
-		tooltip;
+		tooltip,
+		keyValue;
 
 	// Default Options
 	var defaults = { yMin: 0 };
@@ -930,6 +931,7 @@ var bar = function() {
 			xValue = base.xValue(),
 			yValue = base.yValue(),
 			wValue = base.wValue(),
+			keyValue = base.keyValue(),
 			color = base.color(),
 			transitionDuration = base.transitionDuration(),
 			innerHeight = base.height() - base.margin().top - base.margin().bottom;
@@ -944,7 +946,7 @@ var bar = function() {
 		// enter
 		var g = selection.select('g.iobio-container').classed('iobio-bar', true);; // grab container to draw into (created by base chart)
 		var rect = g.selectAll('.rect')
-				.data(selection.datum(), function(d) { return xValue(d); })
+				.data(selection.datum(), keyValue )
 		// exit
 	    rect.exit().remove();
 
@@ -955,8 +957,8 @@ var bar = function() {
 			.style('fill', color )
 			.append('rect')
 				.attr('y', function(d) { return innerHeight })
-				.attr('x', function(d) { return x(xValue(d)) })
-				.attr('width', function(d) { return x(xValue(d)+wValue(d)) - x(xValue(d));})
+				.attr('x', function(d,i) { return x(xValue(d,i)) })
+				.attr('width', function(d,i) { return x(xValue(d,i)+wValue(d,i)) - x(xValue(d,i));})
 				.attr('height', function(d) { return 0; });
 
 		// update
@@ -964,10 +966,10 @@ var bar = function() {
 			.style('fill', color )
 			.select('rect').transition()
 				.duration( transitionDuration )
-				.attr('x', function(d) { return x(xValue(d)) })
-				.attr('y', function(d) { return y(yValue(d)) })
-				.attr('width', function(d) { return x(xValue(d)+wValue(d)) - x(xValue(d));})
-				.attr('height', function(d) { return innerHeight - y(yValue(d)); });
+				.attr('x', function(d,i) { return x(xValue(d,i)) })
+				.attr('y', function(d,i) { return y(yValue(d,i)) })
+				.attr('width', function(d,i) { return x(xValue(d,i)+wValue(d,i)) - x(xValue(d,i));})
+				.attr('height', function(d,i) { return innerHeight - y(yValue(d,i)); });
 
 
 		// Add title on hover
@@ -1077,8 +1079,8 @@ var barViewer = function() {
 			.brush('brush', function() {
 				var x2 = globalBar.x(), brush = globalBar.brush();
 	        	var x = brush.empty() ? x2.domain() : brush.extent();
-	        	var datum = globalSelection.datum().filter(function(d) {
-	        		return (globalBar.xValue()(d) >= x[0] && globalBar.xValue()(d) <= x[1])
+	        	var datum = globalSelection.datum().filter(function(d,i) {
+	        		return (globalBar.xValue()(d,i) >= x[0] && globalBar.xValue()(d,i) <= x[1])
 	        	});
 	        	options.xMin = x[0];
 	        	options.xMax = x[1];
@@ -1169,7 +1171,8 @@ var base = function() {
 	var xValue = function(d) { return d[0]; },
    	 	yValue = function(d) { return d[1]; },
        	wValue = function(d) { return d[2] || 1 },
-       	id = function(d) { return null; };
+       	id = function(d) { return null; },
+       	keyValue = xValue;
 
     // Color
     var colorScale = d3.scale.category10(),
@@ -1363,6 +1366,12 @@ var base = function() {
 		return chart;
 	};
 
+	chart.keyValue = function(_) {
+		if (!arguments.length) return keyValue;
+		keyValue = _;
+		return chart;
+	};
+
 	chart.id = function(_) {
 		if (!arguments.length) return id;
 		id = _;
@@ -1440,7 +1449,7 @@ var base = function() {
    	 */
 	chart.rebind = function(object) {
 		utils.rebind(object, this, 'rebind', 'margin', 'width', 'height', 'x', 'y', 'id',
-			'xValue', 'yValue', 'wValue', 'xAxis', 'yAxis', 'brush', 'onChart',
+			'xValue', 'yValue', 'wValue', 'keyValue', 'xAxis', 'yAxis', 'brush', 'onChart',
 			'tooltipChart', 'preserveAspectRatio', 'getBoundingClientRect', 'transitionDuration', 'color');
 	}
 
@@ -1768,8 +1777,8 @@ var line = function(container) {
             // Draw
             var lineGen = d3.svg.line()
                 .interpolate("linear")
-                .x(function(d,i) { return +x( xValue(d) ); })
-                .y(function(d) { return +y( yValue(d) ); })
+                .x(function(d,i) { return +x( xValue(d,i) ); })
+                .y(function(d,i) { return +y( yValue(d,i) ); })
 
             var g = selection.select('g.iobio-container').classed('iobio-line', true); // grab container to draw into (created by base chart)
 
@@ -1862,7 +1871,7 @@ var multiLine = function() {
 		// Smoothing function
 		var smooth = iobio.viz.layout.pointSmooth()
 	    	.size(w)
-	    	.pos(function(d) { return (d.globalPos || 0) + xValue(d)})
+	    	.pos(function(d,i) { return (d.globalPos || 0) + xValue(d,i)})
 	    	.epsilonRate(0.1);
 
 	    // Add global positions to data
@@ -1875,16 +1884,16 @@ var multiLine = function() {
 
 			if (selected == 'all') {
 				d.globalPos = curr;
-				var pointData = dataValue(d);
-				curr += chart.xValue()(pointData[pointData.length-1]);
+				var pointData = dataValue(d,i);
+				curr += chart.xValue()(pointData[pointData.length-1],i);
 				pointData.forEach(function(p) {
 					p.globalPos = d.globalPos;
 				})
 				points = points.concat(pointData);
 		    } else {
 		    	d.globalPos = 0;
-	    		if(selected == nameValue(d)) {
-		      		points = dataValue(d);
+	    		if(selected == nameValue(d,i)) {
+		      		points = dataValue(d,i);
 	      		}
 	      }
 	    })
@@ -1927,7 +1936,7 @@ var multiLine = function() {
 					.style('width', '100%');
 
 	   	var button = selection.select('.button-panel svg').selectAll('.button')
-	    			 	.data( selection.datum(), function(d) { return nameValue(d); });
+	    			 	.data( selection.datum(), function(d,i) { return nameValue(d,i); });
 
 	    // Exit
 	    button.exit().style('display', 'none');
@@ -1936,59 +1945,74 @@ var multiLine = function() {
 	    var buttonEnter = button.enter().append('g')
 	    	.attr('class', 'button')
 	    	.attr('transform', function(d) {return 'translate(' + x(d.globalPos) + ')';})
-	    	.attr('id', function(d) { return 'iobio-button-' + nameValue(d) })
+	    	.attr('id', function(d,i) { return 'iobio-button-' + nameValue(d,i) })
 
 		buttonEnter.append('rect')
-			.attr('width', function(d) {
-					var data = dataValue(d);
-		    		var last = parseInt(xValue(data[data.length-1]))+parseInt(d.globalPos)
+			.attr('width', function(d,i) {
+					var data = dataValue(d,i);
+		    		var last = parseInt(xValue(data[data.length-1],i))+parseInt(d.globalPos)
 		    		var xpos = x( last ) - x(parseInt(d.globalPos));
 		    		return  xpos + 'px'
 		    })
 		    .style('fill', color )
-		    .style('height', '20px');
+		    .style('height', '20px')
+		    .append('title')
+		    	.text(nameValue);
 
 	    buttonEnter.append('text')
 	    	.attr('y', 10)
-    		.attr('x', function(d) {
-    			var data = dataValue(d);
-	    		var last = parseInt(xValue(data[data.length-1]))+parseInt(d.globalPos)
+    		.attr('x', function(d,i) {
+    			var data = dataValue(d,i);
+	    		var last = parseInt(xValue(data[data.length-1],i))+parseInt(d.globalPos)
 	    		var xpos = (x( last ) - x(parseInt(d.globalPos)))/2;
 	    		return  xpos + 'px'
 	    	})
 	    	.attr('alignment-baseline', 'middle')
-	    	.attr('text-anchor', 'middle')
-	    	.text(function(d) { return nameValue(d); });
+	    	.attr('text-anchor', 'middle');
 
 	    // Update
 	    button.transition()
 	    	.duration(transitionDuration)
-	    	.style('display', function(d) {
-	    		if (selected == 'all' || selected == nameValue(d) )
+	    	.style('display', function(d,i) {
+	    		if (selected == 'all' || selected == nameValue(d,i) )
 	    			return 'block';
 	    		else
 	    			return 'none';
 	    	})
-	    	.attr('transform', function(d) {return 'translate(' + x(d.globalPos) + ')'; });
+	    	.attr('transform', function(d,i) {return 'translate(' + x(d.globalPos) + ')'; });
 
 
 	    button.select('rect').transition()
 	    	.duration(transitionDuration)
-	    	.attr('width', function(d) {
-	    		var data = dataValue(d);
-	    		var last = parseInt(xValue(data[data.length-1]))+parseInt(d.globalPos)
+	    	.attr('width', function(d,i) {
+	    		var data = dataValue(d,i);
+	    		var last = parseInt(xValue(data[data.length-1],i))+parseInt(d.globalPos)
 	    		var xpos = x( last ) - x(parseInt(d.globalPos));
 	    		return  xpos + 'px'
 	    	});
 
 	   	button.select('text').transition()
 	   		.duration(transitionDuration)
-	   		.attr('x', function(d) {
-	   			var data = dataValue(d);
-	    		var last = parseInt(xValue(data[data.length-1]))+parseInt(d.globalPos)
+	   		.attr('x', function(d,i) {
+	   			var data = dataValue(d,i);
+	    		var last = parseInt(xValue(data[data.length-1],i))+parseInt(d.globalPos)
 	    		var xpos = (x( last ) - x(parseInt(d.globalPos)))/2;
 	    		return  xpos + 'px'
-	    	});
+	    	})
+	    	.text(function(d,i) {
+	    		// get rect width
+	    		var data = dataValue(d,i);
+	    		var last = parseInt(xValue(data[data.length-1],i))+parseInt(d.globalPos)
+	    		var rectWidth = x( last ) - x(parseInt(d.globalPos));
+
+	    		// get text width
+	    		var name = nameValue(d,i)
+	    		this.textContent = name;
+	    		var textWidth = this.getComputedTextLength();
+
+	    		if ( textWidth <= rectWidth)
+	    			return name;
+	    	});;
 
 
 	    // Attach events
@@ -2002,10 +2026,10 @@ var multiLine = function() {
 
 		// // Add control click event to all buttons
 	    button
-			.on('click', function(d) {
+			.on('click', function(d,i) {
 	    		var xMin = d.globalPos;
-	    		var xMax = d.globalPos + xValue(d.data[d.data.length-1]) ;
-	    		chart(selection, {'selected':nameValue(d) });
+	    		var xMax = d.globalPos + xValue(d.data[d.data.length-1],i) ;
+	    		chart(selection, {'selected':nameValue(d,i) });
 	    		// chart(selection, {'xMin': xMin, 'xMax': xMax, 'selected':nameValue(d) });
 
 	    		// Handle user event
@@ -2169,9 +2193,10 @@ var pie = function() {
 
 		pathEnter.append('text')
 			.attr("transform", function(d) {
-	          return "translate(" + arcLabelPosition(d, .55) + ")";
+	          return "translate(" + arcLabelPosition(d, .5) + ")";
 	        })
-			.text(nameValue)
+	        .attr('text-anchor', "middle")
+	        .attr('alignment-baseline', "middle")
 
        	// update
        	if (transitionDuration != undefined && transitionDuration >= 0) {
@@ -2183,7 +2208,18 @@ var pie = function() {
 		    path.select('text').transition()
 		    	.duration(transitionDuration)
 		    	.attr("transform", function(d) {
-		          return "translate(" + arcLabelPosition(d, .55) + ")";
+		    	  var angle = arcLabelAngle(d, 0.55) * (180/Math.PI) - 180;
+		          return "translate(" + arcLabelPosition(d, .55) + ") rotate(" + angle + ")";
+		        }).text(function(d,i) {
+		        	if (!nameValue) return;
+		        	var h = ( chart.innerRadius() + chart.radius() ) * 0.55;
+					var oa = arc.startAngle.call(d)(d);
+					var ia = arc.endAngle.call(d)(d);
+		        	var a = (ia - oa);
+		        	var width = (Math.sin(a/2)*h) * 2;
+		        	var fontSize = parseInt(d3.select(this).style('font-size'));
+		        	if (fontSize <= width)
+		        		return nameValue(d,i);
 		        })
 		}
 
@@ -2231,11 +2267,17 @@ var pie = function() {
 	  };
 	}
 
-	function arcLabelPosition(d, ratio) {
+	function arcLabelAngle(d, ratio) {
 		var r = ( chart.innerRadius() + chart.radius() ) * ratio;
 		var oa = arc.startAngle.call(d);
 		var ia = arc.endAngle.call(d);
 		a = ( oa(d) + ia(d) ) / 2 - (Math.PI/ 2);
+		return a;
+	}
+
+	function arcLabelPosition(d, ratio) {
+		var r = ( chart.innerRadius() + chart.radius() ) * ratio;
+		var a = arcLabelAngle(d, ratio);
 		return [ Math.cos(a) * r, Math.sin(a) * r ];
 	}
 
@@ -2351,26 +2393,6 @@ var pieChooser = function() {
 
 		arcs = selection.selectAll('.arc')
 
-		// var label = selection.selectAll('.arc').selectAll('.chartlabel').data(selection.datum());
-
-		// // Add labels to the arcs
-		// label.enter().append("text")
-	 //        .attr("class", "chartlabel")
-	 //        .attr("dy", ".35em")
-	 //        .attr("text-anchor", "middle")
-	 //        .style("pointer-events", "none")
-
-	 //    label.transition()
-	 //    	.duration( chart.transitionDuration() )
-	 //    	.attr("transform", function(d) {
-	 //          return "translate(" + chart._arcLabelPosition(d, .55) + ")";
-	 //        })
-		//     .text(function(d,i) {
-	 //          return name(d);
-	 //        });
-
-	 //    label.exit().remove();
-
 		// Stick events in map for easy lookup
 		events.forEach(function(ev) {
 			eventMap[ev.event] = ev.listener;
@@ -2457,22 +2479,6 @@ var pieChooser = function() {
 	        .style("pointer-events", "none")
 	        .attr("class", "inside")
 	        .text(function(d) { return 'All'; });
-
-
-
-	    // if ( options.selected != undefined ) {
-	    // 	var selectedName = options.selected;
-	    // 	var a = arcs;
-	    // 	arcs.each(function(d,i) {
-	    // 		if ( name(d) ==  selectedName) {
-	    // 			chart._selectSlice(d, i, a[0][i], true);
-	    // 		}
-
-
-	    // 	})
-
-	    // }
-
 
 	}
 	// Rebind methods in pie.js to this chart
