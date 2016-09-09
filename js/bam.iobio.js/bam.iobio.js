@@ -44,13 +44,13 @@ var Bam = Class.extend({
       // this.iobio.bamstatsAlive = "nv-green.iobio.io/bamstatsalive/";
 
 
-      this.iobio.samtools = "nv-dev-new.iobio.io/samtools/";
-      this.iobio.bamReadDepther = "nv-dev-new.iobio.io/bamreaddepther/";
-      this.iobio.bamstatsAlive = "nv-dev-new.iobio.io/bamstatsalive/";
+      // this.iobio.samtools = "nv-dev-new.iobio.io/samtools/";
+      // this.iobio.bamReadDepther = "nv-dev-new.iobio.io/bamreaddepther/";
+      // this.iobio.bamstatsAlive = "nv-dev-new.iobio.io/bamstatsalive/";
 
-      // this.iobio.samtools = "localhost:8060";
-      // this.iobio.bamReadDepther = "localhost:8021";
-      // this.iobio.bamstatsAlive = "localhost:7100";
+      this.iobio.samtools = "localhost:8060";
+      this.iobio.bamReadDepther = "localhost:8021";
+      this.iobio.bamstatsAlive = "localhost:7100";
 
       return this;
    },
@@ -452,7 +452,8 @@ var Bam = Class.extend({
               }
 
               // Invoke Callback function
-              cb(true);
+              isdone = true;
+              cb();
           });
       }
 

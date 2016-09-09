@@ -4177,7 +4177,7 @@ module.exports = 0;
 },{}],18:[function(require,module,exports){
 module.exports={
   "name": "iobio.js",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Client side iobio javascript library for building and executing iobio commands",
   "browser": {
     "binaryjs": "./lib/binary.js"
@@ -4282,7 +4282,8 @@ var ws = function(urlBuilder, pipedCommands, opts) {
 
 		client.on('open', function(stream){
 			var stream = client.createStream({event:'run', params : {'url':wsUrl}}),
-				first = true;
+				first = true,
+				dataClients = [];
 			me.stream = stream;
 
 			stream.on('createClientConnection', function(connection) {
@@ -4317,6 +4318,7 @@ var ws = function(urlBuilder, pipedCommands, opts) {
 
 				// connect to server
 				var dataClient = BinaryClient(protocol + '://' + serverAddress);
+				dataClients.push(dataClient);
 				dataClient.on('open', function() {
 					var dataStream = dataClient.createStream({event:'clientConnected', 'connectionID' : connection.id});
 					var argPos = connection.argPos || 0;
@@ -4335,6 +4337,8 @@ var ws = function(urlBuilder, pipedCommands, opts) {
 
 			stream.on('end', function() {
 				me.emit('end');
+				me.closeClient();
+				dataClients.forEach(function(dc) { dc.close(); })
 			})
 
 			stream.on('exit', function(code) {
