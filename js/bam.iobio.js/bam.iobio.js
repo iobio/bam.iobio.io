@@ -30,6 +30,7 @@ var Bam = Class.extend({
       this.iobio.samtools = "nv-green.iobio.io/samtools/";
       this.iobio.bamReadDepther = "nv-green.iobio.io/bamreaddepther/";
       this.iobio.bamstatsAlive = "nv-green.iobio.io/bamstatsalive/";
+
       return this;
    },
 
@@ -571,7 +572,6 @@ var Bam = Class.extend({
         });
 
         cmd.on('exit', function(code) {
-          console.log('command exits with code: ' + code);
         })
 
         cmd.run();
