@@ -27,30 +27,9 @@ var Bam = Class.extend({
       // set iobio servers
       this.iobio = {}
 
-      // this.iobio.samtools = "wss://services.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "services.iobio.io/bamreaddepther/";
-      // this.iobio.bamstatsAlive = "wss://services.iobio.io/bamstatsalive/";
-
-      // this.iobio.samtools = "nv-prod.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
-      // this.iobio.bamstatsAlive = "nv-prod.iobio.io/bamstatsalive/";
-
-      // this.iobio.samtools = "nv-prod.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
-      // this.iobio.bamstatsAlive = "nv-prod.iobio.io/bamstatsalive/";
-
-      // this.iobio.samtools = "nv-green.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "nv-green.iobio.io/bamreaddepther/";
-      // this.iobio.bamstatsAlive = "nv-green.iobio.io/bamstatsalive/";
-
-
-      // this.iobio.samtools = "nv-dev-new.iobio.io/samtools/";
-      // this.iobio.bamReadDepther = "nv-dev-new.iobio.io/bamreaddepther/";
-      // this.iobio.bamstatsAlive = "nv-dev-new.iobio.io/bamstatsalive/";
-
-      this.iobio.samtools = "localhost:8060";
-      this.iobio.bamReadDepther = "localhost:8021";
-      this.iobio.bamstatsAlive = "localhost:7100";
+      this.iobio.samtools = "nv-green.iobio.io/samtools/";
+      this.iobio.bamReadDepther = "nv-green.iobio.io/bamreaddepther/";
+      this.iobio.bamstatsAlive = "nv-green.iobio.io/bamstatsalive/";
 
       return this;
    },
@@ -597,7 +576,6 @@ var Bam = Class.extend({
         });
 
         cmd.on('exit', function(code) {
-          console.log('command exits with code: ' + code);
         })
 
         cmd.run();
