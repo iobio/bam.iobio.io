@@ -1,3 +1,12 @@
+// send disconnect event to server instantly when browser tab is closed
+window.onbeforeunload = function() {
+    window.binwsClients.forEach(function(client) {
+      try {
+        client.createStream({event:'close'});          
+      } catch() {} // use try catch in case client is already closed
+    })    
+};
+
 /*! binary.js build:0.2.1, development. Copyright(c) 2012 Eric Zhang <eric@ericzhang.com> MIT Licensed */
 (function(exports){
 var binaryFeatures = {};
@@ -1255,6 +1264,10 @@ BinaryStream.prototype._onError = function(error){
   this.emit('error', error);
 };
 
+BinaryStream.prototype._onMessage = function(event, msg){    
+  this.emit(event, msg);
+};
+
 BinaryStream.prototype._onCreateClientConnection = function(connection){
   this.emit('createClientConnection', connection);
 };
@@ -1309,6 +1322,10 @@ BinaryStream.prototype.createClientConnection = function(connection) {
   this._write(8, connection, this.id);
 };
 
+BinaryStream.prototype.message = function(event, msg) {    
+  this._write(9, [event, msg], this.id);
+};
+
 BinaryStream.prototype.destroy = BinaryStream.prototype.destroySoon = function() {
   this._onClose();
   this._write(6, null, this.id);
@@ -1343,7 +1360,7 @@ BinaryStream.prototype.resume = function() {
 
 
 function BinaryClient(socket, options) {
-  if (!(this instanceof BinaryClient)) return new BinaryClient(socket, options);
+  if (!(this instanceof BinaryClient)) return new BinaryClient(socket, options);  
   
   EventEmitter.call(this);
   
@@ -1367,7 +1384,7 @@ function BinaryClient(socket, options) {
   this._socket.binaryType = 'arraybuffer';
   
   this._socket.addEventListener('open', function(){
-    self.emit('open');
+    self.emit('open');    
   });
   this._socket.addEventListener('error', function(error){
     var ids = Object.keys(self.streams);
@@ -1506,7 +1523,18 @@ function BinaryClient(socket, options) {
           } else {
             self.emit('error', new Error('Received `error` message for unknown stream: ' + streamId));
           }
-          break;          
+          break; 
+        case 9:          
+          var event = data[1][0];
+          var msg = data[1][1];
+          var streamId = data[2];          
+          var binaryStream = self.streams[streamId];          
+          if(binaryStream) {            
+            binaryStream._onMessage(event, msg);
+          } else {
+            self.emit('error', new Error('Received `error` message for unknown stream: ' + streamId));
+          }
+          break;                   
         default:
           self.emit('error', new Error('Unrecognized message type received: ' + data[0]));
       }
