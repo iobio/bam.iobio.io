@@ -237,13 +237,13 @@
                 }
 
                 // check if url is present
-                var bamUrl = getUrlParameter('bam')
+                var bamUrl = decodeUrl(getUrlParameter('bam'))
                 // check if url to bam file is supplied in url and sample it
                 if (bamUrl != undefined) {
                     // remove https if present
                     // if (bamUrl.slice(0,5) == 'https')
                     //   bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
-                    var baiUrl = getUrlParameter('bai');
+                    var baiUrl = decodeUrl(getUrlParameter('bai'));
                     if (baiUrl)
                         window.bam = new Bam( bamUrl, {bai: baiUrl} );
                     else
@@ -265,6 +265,13 @@
                     goBam(region);
                 }
             });
+
+            function decodeUrl(url) {
+              if (url && (url.slice(0,14) == 'https%3A%2F%2F' || url.slice(0,13) == 'http%3A%2F%2F'))
+                return decodeURIComponent(url)
+              else
+                return url;
+            }
 
             function getUrlParameter(sParam) {
                 var sPageURL = decodeURI(window.location.search.substring(1));
@@ -512,7 +519,7 @@
                 }
                 var extraParams = '';
                 if (window.sampling) extraParams += '&sampling=' + window.sampling
-                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + window.bam.bamUri + "&region=" + regionStr + extraParams);
+                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&region=" + regionStr + extraParams);
               }
             }
 
@@ -803,7 +810,7 @@
                 // remove https if present
                 // if (url.slice(0,5) == 'https')
                 //   url = 'http' + url.slice(5,url.length);
-                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + url);
+                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(url));
                 window.bam = new Bam( url );
                 goBam();
             }
