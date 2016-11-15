@@ -134,7 +134,8 @@ section#middle {
     width: 150px;
 }
 
-.iobio-multi-line text { fill: white; }
+.iobio-multi-line.line-panel text { fill: black; }
+.iobio-multi-line.button-panel text { fill: white; }
 
 #percents {
     margin-right: 20px;
