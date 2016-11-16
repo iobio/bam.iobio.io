@@ -134,6 +134,15 @@ section#middle {
     width: 150px;
 }
 
+#not_enough_data {
+  display: none;
+  margin-top: 40px;
+  background: rgb(120,120,120);
+  color: white;
+  font-family: arial;
+  font-size: 20px;
+}
+
 .iobio-multi-line.line-panel text { fill: black; }
 .iobio-multi-line.button-panel text { fill: white; }
 

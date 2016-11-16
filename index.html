@@ -435,6 +435,10 @@
                      if ( (done && !region) || (done && region && region.chr == 'all') ) {
                         setSelectedSeq( 'all' , start, end );
                      }
+
+                     if (done && allPoints.length <= 1) {
+                        $('#not_enough_data').css('display','block');
+                     }
                  });
 
              }
@@ -889,6 +893,7 @@
                     <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">Default Bed</div>
                     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
                     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
+                    <div id="not_enough_data">Bam file is too small to read coverage information</div>
                     <!-- <div id="test-chart" style="width:100%"></div> -->
                     <div class='chart' style="width:98%; height:60%"></div>
                     <!-- <ul id="sequences"></ul> -->

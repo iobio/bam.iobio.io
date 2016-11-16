@@ -358,7 +358,6 @@ var Bam = Class.extend({
              }
           });
           cmd.on('end', function() {
-            console.log('estimate done');
             isdone = true;
             cb();
           });
@@ -507,8 +506,8 @@ var Bam = Class.extend({
             var sqStart = options.start;
             var length = SQs.length == 1 ? SQs[0].end - sqStart : null;
             if ( length &&  length < options.binSize * options.binNumber) {
-               SQs[j].start = sqStart;
-               regions.push(SQs[j])
+               SQs[0].start = sqStart;
+               regions.push(SQs[0])
             } else {
                // create random reference coordinates
                var regions = [];
