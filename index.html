@@ -75,6 +75,16 @@
                 //         window.readCoverageDistChart(hist2array(window.sampleStats.coverage_hist), { noOutliers : true })
                 // });
 
+                $("#scale-switch input[type='checkbox']").change(function(){
+                  var selection = d3.select('#depth-distribution .chart')
+
+                  if ( $(this).parent().hasClass("checked") )
+                    window.readDepthChart.lineChart().y( window.readDepthChart.lineChart().y().exponent(0.5) );
+                  else
+                    window.readDepthChart.lineChart().y( window.readDepthChart.lineChart().y().exponent(1) );
+
+                  window.readDepthChart(selection, { selected: getSelectedSeqId()});
+                })
 
                 $("#length-distribution input[type='checkbox']").change(function(){
                     var outliers = $(this).parent().hasClass("checked");
@@ -86,10 +96,6 @@
                     if (!outliers) d = iobio.viz.layout.outlier()(d);
                     selection.datum(d);
                     window.lengthChart(selection, {'outliers':outliers});
-                });
-
-                $("#depth-distribution input[type='checkbox']").change(function(){
-                    goSampling({sequenceNames : [ getSelectedSeqId() ]});
                 });
 
                 $("#url-input").keyup(function(event){
@@ -184,6 +190,7 @@
                 window.qualityChart.yAxis().tickFormat(tickFormatter);
 
                 // setup main panel read chart
+                var yscale = d3.scale.pow().exponent(1);
                 window.readDepthChart = iobio.viz.multiLine()
                   .nameValue(function(d) { return d.name; })
                   .dataValue(function(d) { return d.data; })
@@ -191,6 +198,7 @@
                   .yValue(function(d,i) { return d.depth; })
                   .wValue(function() { return 1; })
                   .transitionDuration(400)
+                  .epsilonRate(0.3)
                   .margin({top: 10, right: 0, bottom: 30, left:0})
                   .height(150)
                   .color(function(d,i) {return color(d.name); })
@@ -206,6 +214,8 @@
                     else
                       setSelectedSeq( window.readDepthChart.getSelected() );
                   });
+
+                window.readDepthChart.lineChart().y(yscale);
 
                 // setup donut chart
                 // window.sampleDonutChart = donutD3().radius(61).klass("sampleArc");
@@ -892,6 +902,13 @@
                     <div id="remove-bedfile-button" class="bedfile-button" onClick="removeBedFile()" style="visibility:hidden">Remove Bed</div>
                     <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">Default Bed</div>
                     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
+
+                    <!-- log toggle -->
+                    <label id="scale-switch" class="checkbox">
+                            <input type="checkbox"value=""  class='power-scale' data-toggle="checkbox" >
+                            Power Scale
+                    </label>
+
                     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
                     <div id="not_enough_data">Bam file is too small to read coverage information</div>
                     <!-- <div id="test-chart" style="width:100%"></div> -->

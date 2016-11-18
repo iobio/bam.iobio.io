@@ -146,6 +146,8 @@ section#middle {
 .iobio-multi-line.line-panel text { fill: black; }
 .iobio-multi-line.button-panel text { fill: white; }
 
+.iobio-multi-line #iobio-button-all { display: none; }
+
 #percents {
     margin-right: 20px;
     -webkit-flex: 1 1 auto;
@@ -346,6 +348,14 @@ section#middle {
 }
 .samplingLoader img {
     height:9px;
+}
+
+/* power scale */
+#scale-switch {
+  position: absolute;
+  top:50px;
+  left:16px;
+  cursor: pointer;
 }
 
 div.tooltip {

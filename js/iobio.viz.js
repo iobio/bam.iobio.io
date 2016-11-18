@@ -24,7 +24,7 @@ iobio.viz.utils = require('./utils.js')
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./layout/layout.js":4,"./svg/svg.js":8,"./utils.js":10,"./viz/viz.js":20}],2:[function(require,module,exports){
+},{"./layout/layout.js":5,"./svg/svg.js":9,"./utils.js":11,"./viz/viz.js":25}],2:[function(require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toStr = Object.prototype.toString;
 var undefined;
@@ -116,6 +116,111 @@ module.exports = function extend() {
 
 
 },{}],3:[function(require,module,exports){
+
+
+var box = function() {
+  // Defaults
+  var value = function(d) { return +d },
+      quartiles = function(d) { return [d3.quantile(d, .25),d3.quantile(d, .5),d3.quantile(d, .75)]; },
+      whiskers = function(d) { return [0, d.length - 1]; },
+      includeData = true,
+      includeOutliers = true,
+      modifiedBoxPlot = true;
+
+  function layout(data) {
+
+    // Sort data and Compute the numeric values for each data element.
+    data = data.sort(function(i,j) { return value(j) - value(i); })
+    var values = data.map(function(d, i) { return value.call(this,d,i) });
+
+    // Compute quartiles
+    var quartileData = quartiles.call(this,values),
+        q1 = quartileData[2],
+        q3 = quartileData[0],
+        iqr = (q3-q1) * 1.5;
+
+    // if modified box plot, then use iqr to determine outliers
+    if(modifiedBoxPlot) {
+        var outliers = [];
+        var filtered = [];
+        values.forEach(function(d) {
+            if ( d>=(q1-iqr) && d <=(q3+iqr) )
+                filtered.push(d);
+            else
+                outliers.push(d);
+        })
+        values = filtered;
+    }
+
+    // Compute whiskers. Must return exactly 2 elements, or null.
+    var whiskerIndices = whiskers && whiskers.call(this, values),
+        whiskerData = whiskerIndices && whiskerIndices.map(function(i) { return +values[i]; });
+
+    var boxData = {
+        'quartiles' : quartileData,
+        'whiskers' : whiskerData
+    };
+    if (includeOutliers) boxData.outliers = outliers || [];
+    if (includeData) boxData.data = data;
+
+    return boxData;
+  }
+
+  /*
+   * Specifies the value function, which returns a nonnegative numeric value
+   * for each datum. The default value function is `return d`. The value function
+   * is passed two arguments: the current datum and the current index.
+   */
+  layout.value = function(_) {
+    if (!arguments.length) return value;
+    value = _;
+    return layout;
+  };
+
+  /*
+   * Boolean for including the data in the final product or not
+   */
+  layout.includeData = function(_) {
+    if (!arguments.length) return includeData;
+    includeData = _;
+    return layout;
+  };
+
+  /*
+   * Boolean for including the outliers in the final product or not
+   */
+  layout.includeOutliers = function(_) {
+    if (!arguments.length) return includeOutliers;
+    includeOutliers = _;
+    return layout;
+  };
+
+  /*
+   * A modified box plot uses the interquartile range to determine the whisers.
+   * A standard box plot defines the whiskers by the max and min value.
+   * Default: true
+   */
+  layout.modifiedBoxPlot = function(_) {
+    if (!arguments.length) return modifiedBoxPlot;
+    modifiedBoxPlot = _;
+    return layout;
+  };
+
+  /*
+   * Specifies how the quartiles are calculated
+   *
+   */
+  layout.quartiles = function(_) {
+    if (!arguments.length) return quartiles;
+    quartiles = _;
+    return layout;
+  };
+
+  return layout;
+};
+
+module.exports = box;
+},{}],4:[function(require,module,exports){
 var utils = require('../utils.js');
 
 var graph = function() {
@@ -212,7 +317,7 @@ var graph = function() {
   };
  
  module.exports = graph;
-},{"../utils.js":10}],4:[function(require,module,exports){
+},{"../utils.js":11}],5:[function(require,module,exports){
 
 var layout = {};
 // add layouts
@@ -220,9 +325,10 @@ layout.pileup = require('./pileup.js');
 layout.graph = require('./graph.js');
 layout.pointSmooth = require('./pointSmooth.js');
 layout.outlier = require('./outlier.js');
+layout.box = require('./box.js');
 
 module.exports = layout;
-},{"./graph.js":3,"./outlier.js":5,"./pileup.js":6,"./pointSmooth.js":7}],5:[function(require,module,exports){
+},{"./box.js":3,"./graph.js":4,"./outlier.js":6,"./pileup.js":7,"./pointSmooth.js":8}],6:[function(require,module,exports){
 
 
 var outlier = function() {
@@ -309,7 +415,7 @@ var outlier = function() {
 
 module.exports = outlier;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 
 
 var pileup = function() {
@@ -428,7 +534,7 @@ var pileup = function() {
 };
 
 module.exports = pileup;
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 
 
 var pointSmooth = function() {
@@ -560,14 +666,14 @@ function findPerpendicularDistance(p, p1,p2) {
 
     return result;
 }
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 
 var svg = {};
 // add shapes
 svg.variant = require('./variant.js');
 
 module.exports = svg;
-},{"./variant.js":9}],9:[function(require,module,exports){
+},{"./variant.js":10}],10:[function(require,module,exports){
 var variant = function() { 
     
     // Value transformers
@@ -642,7 +748,7 @@ var variant = function() {
 };
 
 module.exports = variant;
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 
 module.exports.format_unit_names = function(d) {
 	if ((d / 1000000) >= 1)
@@ -673,8 +779,8 @@ module.exports.getUID = function(separator) {
     return (S4() + S4() + delim + S4() + delim + S4() + delim + S4() + delim + S4() + S4() + S4());
 }
 
-module.exports.value_accessor = function(value, d) {
-	return typeof value === 'function' ? value(d) : value;
+module.exports.value_accessor = function(value, d,i) {
+	return typeof value === 'function' ? value(d,i) : value;
 }
 
 module.exports.tooltipHelper = function(selection, tooltipElem, titleAccessor) {
@@ -705,7 +811,7 @@ module.exports.showTooltip = function(tooltipElem, titleAccessor, d) {
 module.exports.hideTooltip = function(tooltipElem) {
 	tooltipElem.transition()
 			   .duration(500)
-			   .style("opacity", 0);	
+			   .style("opacity", 0);
 }
 
 // Copies a variable number of methods from source to target.
@@ -724,7 +830,7 @@ function iobio_rebind(target, source, method) {
     return value === source ? target : value;
   };
 }
-},{"./utils.js":10}],11:[function(require,module,exports){
+},{"./utils.js":11}],12:[function(require,module,exports){
 var alignment = function() {
 	// Import base chart
 	var base = require('./base.js')(),
@@ -901,7 +1007,7 @@ var alignment = function() {
 
 // Export alignment
 module.exports = alignment;
-},{"../utils.js":10,"./base.js":14,"extend":2}],12:[function(require,module,exports){
+},{"../utils.js":11,"./base.js":15,"extend":2}],13:[function(require,module,exports){
 var bar = function() {
 	// Import base chart
 	var base = require('./base.js')(),
@@ -927,7 +1033,7 @@ var bar = function() {
 		// Grab base functions for easy access
 		var x = base.x(),
 			y = base.y(),
-			id = base.id();
+			id = base.id(),
 			xValue = base.xValue(),
 			yValue = base.yValue(),
 			wValue = base.wValue(),
@@ -1005,12 +1111,20 @@ var bar = function() {
 			return chart;
 	}
 
+	/*
+   	 * Easy method to rebind bar chart functions to the argument chart
+   	 */
+	chart.rebind = function(object) {
+		base.rebind(object);
+		utils.rebind(object, this, 'rebind');
+	}
+
 	return chart;
 }
 
 // Export alignment
 module.exports = bar;
-},{"../utils.js":10,"./base.js":14,"extend":2}],13:[function(require,module,exports){
+},{"../utils.js":11,"./base.js":15,"extend":2}],14:[function(require,module,exports){
 var barViewer = function() {
 	// Import base chart
 	var bar = require('./bar.js'),
@@ -1140,7 +1254,7 @@ var barViewer = function() {
 
 // Export alignment
 module.exports = barViewer;
-},{"../utils.js":10,"./bar.js":12,"extend":2}],14:[function(require,module,exports){
+},{"../utils.js":11,"./bar.js":13,"extend":2}],15:[function(require,module,exports){
 var utils = require('../utils.js'),
 	extend = require('extend');
 
@@ -1236,8 +1350,22 @@ var base = function() {
 		x.domain([xMin, xMax]);
 		x.range([0, widthPx - margin.left - margin.right]);
 
-		var yMin = (options.yMin === undefined || options.yMin === null) ? d3.min(data, function(d) { return d[1]}) : options.yMin;
-		var yMax = (options.yMax === undefined || options.yMax === null) ? d3.max(data, function(d) { return d[1]}) : options.yMax;
+		var yMin = (options.yMin === undefined || options.yMin === null)
+			? d3.min(data, function(d) {
+				if (d[1] && d[1].constructor === Array)
+					return d3.min(d[1]);
+				else
+					return d[1];
+			})
+			: options.yMin;
+		var yMax = (options.yMax === undefined || options.yMax === null)
+			? d3.max(data, function(d) {
+				if (d[1] && d[1].constructor === Array)
+					return d3.max(d[1]);
+				else
+					return d[1];
+			})
+			: options.yMax;
 
 		// Update y scale
 		y.domain( [yMin, yMax] )
@@ -1458,7 +1586,428 @@ var base = function() {
 
 module.exports = base;
 
-},{"../utils.js":10,"extend":2}],15:[function(require,module,exports){
+},{"../utils.js":11,"extend":2}],16:[function(require,module,exports){
+var box = function() {
+	// Import base chart
+	var base = require('./base.js')(),
+		utils = require('../utils.js'),
+		extend = require('extend');
+
+	// Defaults
+	var events = [],
+		tooltip,
+		padding = 0.1,
+		outerPadding = 0,
+		whiskersValue = function(d,i) { return d.whiskers; },
+		quartilesValue = function(d,i) { return d.quartiles; },
+		whiskerType = 'line',
+		klass = '',
+		x = d3.scale.ordinal();
+
+	// Base chart changes
+	base.xValue(function(d,i){ return i; })
+
+	// Default Options
+	var defaults = {};
+
+	function chart(selection, opts) {
+		// Merge defaults and options
+		var options = {};
+		extend(options, defaults, opts);
+
+		options.yMin = options.yMin==undefined ? d3.min(selection.datum(), function(d) { return +whiskersValue(d)[1]; }) : options.yMin;
+		options.yMax = options.yMax==undefined ? d3.max(selection.datum(), function(d) { return +whiskersValue(d)[0]; }) : options.yMax;
+		// var max =
+		// 	var min =
+
+		// Call base chart
+		base.call(this, selection, options);
+
+		// Grab base functions for easy access
+		var y = base.y(),
+			id = base.id(),
+			xValue = base.xValue(),
+			yValue = base.yValue(),
+			wValue = base.wValue(),
+			keyValue = base.keyValue(),
+			tt = d3.select('.iobio-tooltip'),
+			color = base.color(),
+			transitionDuration = base.transitionDuration(),
+			innerWidth = base.width() - base.margin().left - base.margin().right;
+
+		// Alter scales to work for boxplots
+		x.rangeBands([0,innerWidth], padding, outerPadding).domain( selection.datum().map(function(d,i) { return i } ) );
+		var boxWidth = x.rangeBand();
+
+		// Draw
+		var g = selection.select('g.iobio-container').classed('iobio-box', true);; // grab container to draw into (created by base chart)
+
+		// g box container
+		var box = g.selectAll('.box')
+			.data(selection.datum())
+			// .data(selection.datum(), keyValue )
+
+		// enter
+		box.enter().append('g')
+			.attr('id', id )
+			.style('fill', color )
+			.attr('transform', function(d,i){return "translate(" + x(xValue(d,i)) + ", 0)";});
+		// exit
+	    box.exit().remove();
+		// update
+		box.attr('class', function(d,i) { return 'box ' + utils.value_accessor(klass,d,i) })
+		box.transition()
+			.duration(transitionDuration)
+			.attr('transform', function(d,i){return "translate(" + x(xValue(d,i)) + ", 0)";})
+			.attr('data-median', function(d) {
+				return quartilesValue(d)[1]
+			});
+
+		// center line
+		var center = box.selectAll('.center').data(function(d) {return [whiskersValue(d)];})
+		// enter
+		center.enter().insert("line", "rect")
+				.attr("class", "center")
+				.attr("x1", boxWidth / 2)
+				.attr("y1", function(d) { return y(d[0]); })
+				.attr("x2", boxWidth / 2)
+				.attr("y2", function(d) { return y(d[1]); })
+				.style('opacity', 0);
+		//exit
+		center.exit().remove();
+		// update
+		center.transition()
+			.duration(transitionDuration)
+			.attr("y1", function(d) { return y(d[0]); })
+			.attr("y2", function(d) { return y(d[1]); })
+			.style('opacity', 1);
+
+		// rect
+		var rect = box.selectAll('.rect').data(function(d) {return [quartilesValue(d)];});
+		// enter
+		rect.enter().append('rect')
+				.attr('class', 'rect')
+				.attr('y', function(d) {return y(d[0])})
+				.attr('x', function(d,i) { return boxWidth/2 })
+				.attr('width', function(d,i) { return 0 })
+				.attr('height', function(d) { return y(d[2]) - y(d[0]) });
+		// exit
+		rect.exit().remove()
+		// update
+		rect.transition()
+			.duration(transitionDuration)
+			.attr('y', function(d) {return y(d[0])})
+			.attr('x', function(d,i) { return 0 })
+			.attr('width', function(d,i) { return boxWidth })
+			.attr('height', function(d) { return y(d[2]) - y(d[0]) });
+		// tooltip
+		utils.tooltipHelper(rect, tt, function(d) { return "q3: " + d[0] + "<br/>median: " + d[1] + "<br/>q1: " + d[2]; });
+
+		// median line
+        var median = box.selectAll('.median').data(function(d) {return [quartilesValue(d)[1]];});
+        // enter
+      	median.enter().append("line")
+				.attr("class", "median")
+				.attr("x1", boxWidth/2)
+				.attr("y1", y)
+				.attr("x2", boxWidth/2)
+				.attr("y2", y)
+		// exit
+		median.exit().remove();
+		// update
+		median.transition()
+			.duration(transitionDuration)
+			.attr("x1", 0)
+			.attr("y1", y)
+			.attr("x2", boxWidth)
+			.attr("y2", y)
+
+		// whiskers
+		var whisker = box.selectAll(".whisker").data(function(d) {return whiskersValue(d);});
+		if(utils.value_accessor(whiskerType, boxWidth) == 'circle') {
+			// enter
+	  		whisker.enter().append("circle")
+					.attr("class", "whisker")
+					.attr("cx", boxWidth/2)
+					.attr("cy", y)
+					.attr("r", 0 );
+			// exit
+			whisker.exit().remove();
+			// update
+			whisker.transition()
+				.duration(transitionDuration)
+				.attr("cx", boxWidth/2)
+				.attr("cy", y)
+				.attr("r", boxWidth/2 );
+		} else {
+			// enter
+	  		whisker.enter().append("line")
+					.attr("class", "whisker")
+					.attr("x1", boxWidth/2)
+					.attr("y1", y)
+					.attr("x2", boxWidth/2 )
+					.attr("y2", y);
+			// exit
+			whisker.exit().remove();
+			// update
+			whisker.transition()
+				.duration(transitionDuration)
+				.attr("x1", 0)
+				.attr("y1", y)
+				.attr("x2", boxWidth )
+				.attr("y2", y);
+		}
+		// tooltip
+	    utils.tooltipHelper(whisker, tt, function(d) { return d; });
+
+
+		// Add title on hover
+	 //    if (tooltip) {
+	 //    	var tt = d3.select('.iobio-tooltip')
+	 //    	utils.tooltipHelper(g.selectAll('.rect'), tt, tooltip);
+	 //    }
+
+	 //    // Attach events
+		// events.forEach(function(ev) {
+		// 	rect.on(ev.event, ev.listener);
+		// })
+
+	}
+	// Rebind methods in base.js to this chart
+	base.rebind(chart);
+
+	/* Chart Member Functions */
+
+	/*
+	 * Value accessor for whiskers
+	 * data format = [max, min]
+	 */
+	chart.whiskersValue = function(_) {
+		if (!arguments.length) return whiskersValue;
+		whiskersValue = _;
+		return chart;
+	};
+
+	/*
+	 * Value accessor for quartiles
+	 * data format = [q3, median, q1]
+	 */
+	chart.quartilesValue = function(_) {
+		if (!arguments.length) return quartilesValue;
+		quartilesValue = _;
+		return chart;
+	};
+
+	/*
+   	 * Set outer padding according to https://github.com/d3/d3-3.x-api-reference/blob/master/Ordinal-Scales.md#ordinal_rangeBands
+   	 */
+	chart.outerPadding = function(_) {
+		if (!arguments.length) return outerPadding;
+			outerPadding = _;
+		return chart;
+	}
+
+	/*
+   	 * Set step padding according to https://github.com/d3/d3-3.x-api-reference/blob/master/Ordinal-Scales.md#ordinal_rangeBands
+   	 */
+	chart.padding = function(_) {
+		if (!arguments.length) return padding;
+			padding = _;
+		return chart;
+	}
+
+	/*
+   	 * Set step padding according to https://github.com/d3/d3-3.x-api-reference/blob/master/Ordinal-Scales.md#ordinal_rangeBands
+   	 */
+	chart.whiskerType = function(_) {
+		if (!arguments.length) return whiskerType;
+			whiskerType = _;
+		return chart;
+	}
+
+	/*
+   	 * Set class on the g element of each box plot
+   	 */
+	chart.class = function(_) {
+		if (!arguments.length) return klass;
+			klass= _;
+		return chart;
+	}
+
+	/*
+   	 * Set events on rects
+   	 */
+	chart.on = function(event, listener) {
+		if (!arguments.length) return events;
+		events.push( {'event':event, 'listener':listener})
+		return chart;
+	}
+
+	/*
+   	 * Set tooltip that appears when mouseover rects
+   	 */
+	chart.tooltip = function(_) {
+		if (!arguments.length) return tooltip;
+			tooltip = _;
+		return chart;
+	}
+
+	/*
+   	 * Easy method to rebind box chart functions to the argument chart
+   	 */
+	chart.rebind = function(object) {
+		base.rebind(object);
+		utils.rebind(object, this, 'rebind', 'whiskersValue', 'quartilesValue', 'outerPadding', 'padding', 'whiskerType', 'class');
+	}
+
+	return chart;
+}
+
+// Export alignment
+module.exports = box;
+},{"../utils.js":11,"./base.js":15,"extend":2}],17:[function(require,module,exports){
+var boxViewer = function() {
+	// Import base chart
+	var box = require('./box.js'),
+		utils = require('../utils.js'),
+		extend = require('extend');
+
+	// Defaults
+	var events = [],
+		tooltip,
+		sizeRatio = 0.8,
+		origHeight;
+
+	// Default Options
+	var defaults = { };
+
+	// Base Chart
+	var basebox = box();
+
+	function chart(selection, opts) {
+		// Merge defaults and options
+		var options = {};
+		extend(options, defaults, opts);
+
+		origHeight = chart.height();
+
+		// Setup both chart divs
+		selection.selectAll('div')
+				.data([0,0])
+			.enter().append('div')
+				.attr('class', function(d,i) { return 'iobio-box-' + i + ' iobio-boxViewer' });
+
+		// Call big box chart
+		var focalbox = box()
+			.height( origHeight * sizeRatio )
+			.xValue( chart.xValue() )
+			.yValue( chart.yValue() )
+			.wValue( chart.wValue() )
+			.xAxis( chart.xAxis() )
+			.yAxis( chart.yAxis() )
+			.whiskersValue( chart.whiskersValue() )
+			.quartilesValue( chart.quartilesValue() )
+			.outerPadding( chart.outerPadding() )
+			.padding( chart.padding() )
+			.whiskerType( chart.whiskerType() )
+			.class( chart.class() )
+			.margin( chart.margin() )
+			.width( chart.width() )
+			.y( chart.y() )
+			.x( chart.x() )
+			.id( chart.id() )
+			.color( chart.color() )
+			.tooltip( chart.tooltip() )
+			.transitionDuration( chart.transitionDuration() )
+
+		var focalSelection = selection.select('.iobio-box-0').datum( selection.datum() )
+		focalbox(focalSelection, options);
+
+		// Call little box chart
+		var globalbox = box()
+			.xValue( chart.xValue() )
+			.yValue( chart.yValue() )
+			.wValue( chart.wValue() )
+			.xAxis( chart.xAxis() )
+			.yAxis( null )
+			.whiskersValue( chart.whiskersValue() )
+			.quartilesValue( chart.quartilesValue() )
+			.outerPadding( chart.outerPadding() )
+			.padding( chart.padding() )
+			.whiskerType( chart.whiskerType() )
+			.class( chart.class() )
+			.margin( chart.margin() )
+			.width( chart.width() )
+			.transitionDuration( chart.transitionDuration() )
+			.id( chart.id() )
+			.color( chart.color() )
+			.tooltip( chart.tooltip() )
+			.height( origHeight * (1-sizeRatio) )
+			.brush('brush', function() {
+				var x2 = globalbox.x(), brush = globalbox.brush();
+	        	var x = brush.empty() ? x2.domain() : brush.extent();
+	        	var datum = globalSelection.datum().filter(function(d,i) {
+	        		return (globalbox.xValue()(d,i) >= x[0] && globalbox.xValue()(d,i) <= x[1])
+	        	});
+	        	options.xMin = x[0];
+	        	options.xMax = x[1];
+	        	options.globalbox = globalbox;
+	           	focalbox( focalSelection.datum(datum), options );
+			});
+
+		var globalSelection = selection.select('.iobio-box-1').datum( selection.datum() )
+		globalbox(globalSelection, options);
+
+		// // Add title on hover
+	 //    if (tooltip) {
+	 //    	var tt = d3.select('.iobio-tooltip')
+	 //    	utils.tooltipHelper(g.selectAll('.rect'), tt, tooltip);
+	 //    }
+
+	 //    // Attach events
+		// events.forEach(function(ev) {
+		// 	var cb = ev.listener ? function() {ev.listener.call(chart, svg)} : null;
+		// 	g.selectAll('.rect').on(ev.event, cb);
+		// })
+		// focalbox.rebind(this);
+	}
+
+	// Rebind methods in box chart to this chart
+	basebox.rebind(chart);
+
+	/*
+   	 * Set events on rects
+   	 */
+	chart.sizeRatio = function(_) {
+		if (!arguments.length) return sizeRatio;
+		sizeRatio = _;
+		return chart;
+	};
+
+	/*
+   	 * Set events on rects
+   	 */
+	chart.on = function(event, listener) {
+		if (!arguments.length) return events;
+		events.push( {'event':event, 'listener':listener})
+		return chart;
+	}
+
+	/*
+   	 * Set tooltip that appears when mouseover rects
+   	 */
+	chart.tooltip = function(_) {
+		if (!arguments.length) return tooltip;
+		tooltip = _;
+		return chart;
+	}
+
+	return chart;
+}
+
+// Export alignment
+module.exports = boxViewer;
+},{"../utils.js":11,"./box.js":16,"extend":2}],18:[function(require,module,exports){
 //
 // consumes data in following format
 // var data = [ {name: 'somename',
@@ -1514,7 +2063,7 @@ var gene = function() {
         // Grab base functions for easy access
         var x = base.x(),
             y = base.y(),
-            id = base.id();
+            id = base.id(),
             xValue = base.xValue(),
             yValue = base.yValue(),
             wValue = base.wValue(),
@@ -1732,7 +2281,7 @@ var gene = function() {
 
 // Export alignment
 module.exports = gene;
-},{"../utils.js":10,"./base.js":14,"extend":2}],16:[function(require,module,exports){
+},{"../utils.js":11,"./base.js":15,"extend":2}],19:[function(require,module,exports){
 var line = function(container) {
     // Import base chart
     var base = require('./base.js')(),
@@ -1767,7 +2316,7 @@ var line = function(container) {
             // Grab base functions for easy access
             var x = base.x(),
                 y = base.y(),
-                id = base.id();
+                id = base.id(),
                 xValue = base.xValue(),
                 yValue = base.yValue(),
                 wValue = base.wValue(),
@@ -1823,7 +2372,7 @@ var line = function(container) {
 // Export circle
 module.exports = line;
 
-},{"../utils.js":10,"./base.js":14,"extend":2}],17:[function(require,module,exports){
+},{"../utils.js":11,"./base.js":15,"extend":2}],20:[function(require,module,exports){
 var multiLine = function() {
 	// Import base chart
 	var lineBase = require('./line.js')(),
@@ -1844,7 +2393,8 @@ var multiLine = function() {
 	// Defaults
 	var events = [],
 		selected = 'all',
-		color = d3.scale.category20();
+		color = d3.scale.category20(),
+		epsilonRate = 0.1;
 
 	// Default Options
 	var defaults = { };
@@ -1872,7 +2422,7 @@ var multiLine = function() {
 		var smooth = iobio.viz.layout.pointSmooth()
 	    	.size(w)
 	    	.pos(function(d,i) { return (d.globalPos || 0) + xValue(d,i)})
-	    	.epsilonRate(0.1);
+	    	.epsilonRate(epsilonRate);
 
 	    // Add global positions to data
 	    var curr = 0,
@@ -2067,6 +2617,12 @@ var multiLine = function() {
 		return chart;
 	};
 
+	chart.epsilonRate = function(_) {
+		if (!arguments.length) return epsilonRate;
+		epsilonRate = _;
+		return chart;
+	};
+
 	chart.nameValue = function(_) {
 		if (!arguments.length) return nameValue;
 		nameValue = _;
@@ -2081,6 +2637,12 @@ var multiLine = function() {
 		chart(this.selection, {'selected' : _});
 		return chart;
 	};
+
+	chart.lineChart = function(_) {
+		if (!arguments.length) return lineBase;
+		lineBase = _;
+		return chart;
+	}
 
 	chart.trigger = function(event, buttonName) {
 		this.selection.select('#iobio-button-' + buttonName).each(function(d, i) {
@@ -2106,7 +2668,7 @@ var multiLine = function() {
 
 // Export alignment
 module.exports = multiLine;
-},{"../utils.js":10,"./line.js":16,"extend":2}],18:[function(require,module,exports){
+},{"../utils.js":11,"./line.js":19,"extend":2}],21:[function(require,module,exports){
 var pie = function() {
 	// Import base chart
 	var base = require('./base.js')(),
@@ -2335,7 +2897,7 @@ var pie = function() {
 
 // Export alignment
 module.exports = pie;
-},{"../utils.js":10,"./base.js":14,"extend":2}],19:[function(require,module,exports){
+},{"../utils.js":11,"./base.js":15,"extend":2}],22:[function(require,module,exports){
 /*
   pieChooser - a iobio viz component that is a pie chart with clickable slices.  All slices
                can be selected by clicking the 'All' circle in the middle of the pie chart.
@@ -2706,7 +3268,302 @@ var pieChooser = function() {
 
 // Export alignment
 module.exports = pieChooser;
-},{"../utils.js":10,"./base.js":14,"./pie.js":18,"extend":2}],20:[function(require,module,exports){
+},{"../utils.js":11,"./base.js":15,"./pie.js":21,"extend":2}],23:[function(require,module,exports){
+var scatter = function() {
+	// Import base chart
+	var base = require('./base.js')(),
+		utils = require('../utils.js'),
+		extend = require('extend');
+
+	// Defaults
+	var events = [],
+		tooltip,
+		keyValue,
+		klass = '',
+		symbol = 'x';
+
+	// Default Options
+	var defaults = { yMin: 0 };
+
+	function chart(selection, opts) {
+		// Merge defaults and options
+		var options = {};
+		extend(options, defaults, opts);
+
+		// Call base chart
+		base.call(this, selection, options);
+
+		// Grab base functions for easy access
+		var y = base.y(),
+			x = base.x(),
+			id = base.id(),
+			xValue = base.xValue(),
+			yValue = base.yValue(),
+			wValue = base.wValue(),
+			keyValue = base.keyValue(),
+			color = base.color(),
+			transitionDuration = base.transitionDuration(),
+			innerHeight = base.height() - base.margin().top - base.margin().bottom;
+
+		if (innerHeight < 0) {
+			console.log("Negative inner height " + innerHeight + " calculated for scatter chart. Change height or margins.");
+			console.trace();
+			return;
+		}
+
+		// Draw
+		// enter
+		var g = selection.select('g.iobio-container').classed('iobio-scatter', true);; // grab container to draw into (created by base chart)
+		var dot = g.selectAll('.dot')
+				.data(selection.datum(), keyValue )
+		// exit
+	    dot.exit().remove();
+
+	    if (symbol == 'circle') {
+			// enter
+			dot.enter().append('g')
+				.attr('id', id )
+				.style('fill', color )
+				.append('circle')
+					.attr('cy', function(d,i) { return y(yValue(d,i)) })
+					.attr('cx', function(d,i) { return x(xValue(d,i)) })
+					.attr('r', function(d,i) { return 0 });
+
+			// update
+			dot
+				.attr('class', function(d,i) { return 'dot ' + utils.value_accessor(klass,d,i) })
+				.style('fill', color )
+				.select('circle').transition()
+					.duration( transitionDuration )
+					.attr('cx', function(d,i) { return x(xValue(d,i)) })
+					.attr('cy', function(d,i) { return y(yValue(d,i)) })
+					.attr('r', function(d,i) { return (x(xValue(d,i)+wValue(d,i)) - x(xValue(d,i)))/2; });
+		} else if (symbol == "x") {
+			// enter
+			dot.enter().append('g')
+				.attr('id', id )
+				.attr('class', 'dot')
+				.style('fill', color )
+				.style('font-size', '0.1')
+					.append('text')
+					.attr('x', function(d,i) { return x(xValue(d,i)) })
+					.attr('y', function(d,i) { return y(yValue(d,i)) })
+					.attr('text-anchor', 'middle')
+					.attr('alignment-baseline', 'middle')
+					.text('x');
+
+			// update
+			dot.attr('class', function(d,i) { return 'dot ' + utils.value_accessor(klass,d,i) })
+				.transition()
+				.duration( transitionDuration )
+				.style('fill', color )
+				.style('font-size', function(d,i) { return x(xValue(d,i)+wValue(d,i)) - x(xValue(d,i)); })
+					.select('text')
+						.attr('x', function(d,i) { return x(xValue(d,i)) })
+						.attr('y', function(d,i) { return y(yValue(d,i)) })
+						.text('x');
+		}
+
+
+		// Add title on hover
+	    if (tooltip) {
+	    	var tt = d3.select('.iobio-tooltip')
+	    	utils.tooltipHelper(g.selectAll('.dot'), tt, tooltip);
+	    }
+
+	    // Attach events
+		events.forEach(function(ev) {
+			dot.on(ev.event, ev.listener);
+		})
+
+	}
+	// Rebind methods in base.js to this chart
+	base.rebind(chart);
+
+	/*
+   	 * Set events on dots
+   	 */
+	chart.on = function(event, listener) {
+		if (!arguments.length) return events;
+		events.push( {'event':event, 'listener':listener})
+		return chart;
+	}
+
+	/*
+   	 * Set tooltip that appears when mouseover dots
+   	 */
+	chart.tooltip = function(_) {
+		if (!arguments.length) return tooltip;
+			tooltip = _;
+			return chart;
+	}
+
+	/*
+   	 * Set class on the g element of each symbol
+   	 */
+	chart.class = function(_) {
+		if (!arguments.length) return klass;
+			klass= _;
+		return chart;
+	}
+
+	/*
+   	 * Set type of symbol to draw
+   	 */
+	chart.symbol = function(_) {
+		if (!arguments.length) return symbol;
+			symbol = _;
+			return chart;
+	}
+
+	/*
+   	 * Easy method to rebind scatter chart functions to the argument chart
+   	 */
+	chart.rebind = function(object) {
+		base.rebind(object);
+		utils.rebind(object, this, 'rebind', 'class', 'symbol');
+	}
+
+	return chart;
+}
+
+// Export alignment
+module.exports = scatter;
+},{"../utils.js":11,"./base.js":15,"extend":2}],24:[function(require,module,exports){
+var scatterViewer = function() {
+	// Import base chart
+	var scatter = require('./scatter.js'),
+		utils = require('../utils.js'),
+		extend = require('extend');
+
+	// Defaults
+	var events = [],
+		tooltip,
+		sizeRatio = 0.8,
+		origHeight;
+
+	// Default Options
+	var defaults = { };
+
+	// Base Chart
+	var basescatter = scatter();
+
+	function chart(selection, opts) {
+		// Merge defaults and options
+		var options = {};
+		extend(options, defaults, opts);
+
+		origHeight = chart.height();
+
+		// Setup both chart divs
+		selection.selectAll('div')
+				.data([0,0])
+			.enter().append('div')
+				.attr('class', function(d,i) { return 'iobio-scatter-' + i + ' iobio-scatterViewer' });
+
+		// Call big scatter chart
+		var focalscatter = scatter()
+			.height( origHeight * sizeRatio )
+			.xValue( chart.xValue() )
+			.yValue( chart.yValue() )
+			.wValue( chart.wValue() )
+			.xAxis( chart.xAxis() )
+			.yAxis( chart.yAxis() )
+			.symbol( chart.symbol() )
+			.class( chart.class() )
+			.margin( chart.margin() )
+			.width( chart.width() )
+			.y( chart.y() )
+			.x( chart.x() )
+			.id( chart.id() )
+			.color( chart.color() )
+			.tooltip( chart.tooltip() )
+			.transitionDuration( chart.transitionDuration() )
+
+		var focalSelection = selection.select('.iobio-scatter-0').datum( selection.datum() )
+		focalscatter(focalSelection, options);
+
+		// Call little scatter chart
+		var globalscatter = scatter()
+			.xValue( chart.xValue() )
+			.yValue( chart.yValue() )
+			.wValue( chart.wValue() )
+			.xAxis( chart.xAxis() )
+			.yAxis( null )
+			.symbol( chart.symbol() )
+			.class( chart.class() )
+			.margin( chart.margin() )
+			.width( chart.width() )
+			.transitionDuration( chart.transitionDuration() )
+			.id( chart.id() )
+			.color( chart.color() )
+			.tooltip( chart.tooltip() )
+			.height( origHeight * (1-sizeRatio) )
+			.brush('brush', function() {
+				var x2 = globalscatter.x(), brush = globalscatter.brush();
+	        	var x = brush.empty() ? x2.domain() : brush.extent();
+	        	var datum = globalSelection.datum().filter(function(d,i) {
+	        		return (globalscatter.xValue()(d,i) >= x[0] && globalscatter.xValue()(d,i) <= x[1])
+	        	});
+	        	options.xMin = x[0];
+	        	options.xMax = x[1];
+	        	options.globalscatter = globalscatter;
+	           	focalscatter( focalSelection.datum(datum), options );
+			});
+
+		var globalSelection = selection.select('.iobio-scatter-1').datum( selection.datum() )
+		globalscatter(globalSelection, options);
+
+		// // Add title on hover
+	 //    if (tooltip) {
+	 //    	var tt = d3.select('.iobio-tooltip')
+	 //    	utils.tooltipHelper(g.selectAll('.rect'), tt, tooltip);
+	 //    }
+
+	 //    // Attach events
+		// events.forEach(function(ev) {
+		// 	var cb = ev.listener ? function() {ev.listener.call(chart, svg)} : null;
+		// 	g.selectAll('.rect').on(ev.event, cb);
+		// })
+		// focalscatter.rebind(this);
+	}
+
+	// Rebind methods in scatter chart to this chart
+	basescatter.rebind(chart);
+
+	/*
+   	 * Set events on rects
+   	 */
+	chart.sizeRatio = function(_) {
+		if (!arguments.length) return sizeRatio;
+		sizeRatio = _;
+		return chart;
+	};
+
+	/*
+   	 * Set events on rects
+   	 */
+	chart.on = function(event, listener) {
+		if (!arguments.length) return events;
+		events.push( {'event':event, 'listener':listener})
+		return chart;
+	}
+
+	/*
+   	 * Set tooltip that appears when mouseover rects
+   	 */
+	chart.tooltip = function(_) {
+		if (!arguments.length) return tooltip;
+		tooltip = _;
+		return chart;
+	}
+
+	return chart;
+}
+
+// Export alignment
+module.exports = scatterViewer;
+},{"../utils.js":11,"./scatter.js":23,"extend":2}],25:[function(require,module,exports){
 
 var viz = {};
 // add visualizations
@@ -2719,9 +3576,13 @@ viz.bar = require('./bar.js')
 viz.barViewer = require('./barViewer.js')
 viz.gene = require('./gene.js')
 viz.multiLine = require('./multiLine.js')
+viz.box = require('./box.js')
+viz.boxViewer = require('./boxViewer.js')
+viz.scatter = require('./scatter.js')
+viz.scatterViewer = require('./scatterViewer.js')
 
 module.exports = viz;
-},{"./alignment.js":11,"./bar.js":12,"./barViewer.js":13,"./base.js":14,"./gene.js":15,"./line.js":16,"./multiLine.js":17,"./pie.js":18,"./pieChooser.js":19}]},{},[1])
+},{"./alignment.js":12,"./bar.js":13,"./barViewer.js":14,"./base.js":15,"./box.js":16,"./boxViewer.js":17,"./gene.js":18,"./line.js":19,"./multiLine.js":20,"./pie.js":21,"./pieChooser.js":22,"./scatter.js":23,"./scatterViewer.js":24}]},{},[1])
 
 
 //# sourceMappingURL=iobio.viz.js.map
