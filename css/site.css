@@ -134,7 +134,7 @@ section#middle {
     width: 150px;
 }
 
-#not_enough_data {
+.warning {
   display: none;
   margin-top: 40px;
   background: rgb(120,120,120);

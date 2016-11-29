@@ -137,6 +137,8 @@
 
                 var r = pieChooserWidth/2 - pieChooserPadding;
 
+                window.draw = true;
+
                 window.pieChooserChart = iobio.viz.pieChooser()
                     .radius(r)
                     .innerRadius(r*.5)
@@ -415,19 +417,28 @@
                         return {"name" : key, "data" : window.bam.readDepth[key] }
                      })
 
-                     var selection = d3.select('#depth-distribution .chart').datum(allPoints);
+                    draw = true;
+
+                    var selection = d3.select('#depth-distribution .chart').datum(allPoints);
 
                     var pie = d3.layout.pie()
                        .sort(null)
                        .value(function(d,i) {return d.data.length });
+
                     var pieSelection = d3.select('#piechooser').datum( pie(allPoints) )
 
-                    window.pieChooserChart(pieSelection);
+                    if (allPoints.length > 50) {
+                      $('#piechooser svg').css('visibility', 'hidden');
+                      $('.too-many-refs').css('display', 'block')
+                      draw = false;
+                    }
+
+                    if(draw) (window.pieChooserChart(pieSelection));
                     if (region && region.chr != 'all') {
-                      window.readDepthChart(selection, {selected:region.chr, noLine:!done});
+                      if(draw) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
                     }
                     else {
-                      window.readDepthChart(selection, {noLine:!done});
+                      if(draw) window.readDepthChart(selection, {noLine:!done});
                     }
 
                     $('#reference-select')
@@ -500,7 +511,7 @@
                 }
 
                 // window.readDepthChart.trigger('click', selected);
-                window.readDepthChart.setSelected(selected);
+                if(draw) window.readDepthChart.setSelected(selected);
 
                 $("#reference-select").val(selected);
 
@@ -910,7 +921,8 @@
                     </label>
 
                     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
-                    <div id="not_enough_data">Bam file is too small to read coverage information</div>
+                    <div class='warning' id="not_enough_data">Bam file is too small to read coverage information</div>
+                    <div class="warning too-many-refs">Too many references to display. Use the dropdown to the left to select the reference</div>
                     <!-- <div id="test-chart" style="width:100%"></div> -->
                     <div class='chart' style="width:98%; height:60%"></div>
                     <!-- <ul id="sequences"></ul> -->
