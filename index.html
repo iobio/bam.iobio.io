@@ -857,135 +857,140 @@
                 <a href="http://iobio.io" style="margin: 0px 5px 0px 5px;">an iobio project</a>
             </div>
         </header>
-        <div id="selectData">
-            <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
-                <div style="margin-left:auto;margin-right:auto;font-size: 28px; color: rgb(110,110,110); margin-bottom:70px">
-                    examine your sequence alignment file in seconds
-                </div>
-
-                <div class="file" onClick="$('#bam-url').css('visibility', 'hidden')">
-                    <input type="file" name="files[]" id="file"  multiple />
-                    <label class="file-button" for="file" >choose bam file</label>
-                </div>
-                <div class="file-button" style="text-align:center" onClick="displayBamUrlBox()">choose bam url</div>
-                <div style="clear:both"></div>
-                <div id="info">
-                    <ul>
-                            <li><a href="http://www.nature.com/nmeth/journal/v11/n12/full/nmeth.3174.html">Publication</a></li>
-                            <li><a href="help.html">File Requirements</a></li>
-                            <li><a href="license.html">License</a></li>
-                            <li><a href="images/browserCompatability.png">Compatible Browsers</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div id='bam-url' style="margin-top:-21px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
-                <input id="url-input" value="http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam" ></input><button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
-            </div>
-            <div style="margin: 50px auto 0px auto; font-size: 23px; width: 600px; text-align:center;  color: rgb(110,110,110)">
-                <div>for variant files check out <a href="http://vcf.iobio.io">vcf.iobio</a></div>
-            </div>
-
-            <div id="footer">
-                <div class="logos">
-                    <div style="position:absolute; left: 100px; top:4px; font-size:50px;font-family:'Overlock SC', cursive;">Marthlab</div>
-                    <img src="images/ustar-ucgd-logo.jpg" style="height:60px;"/>
-                    <a href="http://www.genetics.utah.edu/"><img src="images/genetics_mainlogo3_lrg.png" style="height:50px;position:absolute;right:0px;top:7px"/></a>
-                </div>
-            </div>
+        <div id='maintenance_mode' style="text-align: center; width:80%; font-family: arial; font-size: 30px; margin: 100px auto;">
+          We are currently undergoing maintenance please check back in a few minutes
         </div>
-        <div id="showData">
-            <section id="top">
-                <div id="piechooser" class="panel">
-                  <select onchange='setSelectedSeq(this.value);' id="reference-select">
-                    <!-- <option onchange="setSelectedSeq(this.value)" value="all">all</option> -->
-                    <option value="all">all</option>
-                  </select>
-                </div>
-                <div id="depth-distribution" class="panel">
+        <div id="content" style="display: none">
+          <div id="selectData">
+              <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
+                  <div style="margin-left:auto;margin-right:auto;font-size: 28px; color: rgb(110,110,110); margin-bottom:70px">
+                      examine your sequence alignment file in seconds
+                  </div>
 
-                    <div class="title">Read Coverage</div>
-                    <div class="hint">(drag to select region)</div>
-                    <!-- <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
-                        <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
-                        Exome
-                    </label> -->
-                    <input type="file" name="files[]" id="bedfile"  multiple />
-                    <div id="remove-bedfile-button" class="bedfile-button" onClick="removeBedFile()" style="visibility:hidden">Remove Bed</div>
-                    <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">Default Bed</div>
-                    <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
+                  <div class="file" onClick="$('#bam-url').css('visibility', 'hidden')">
+                      <input type="file" name="files[]" id="file"  multiple />
+                      <label class="file-button" for="file" >choose bam file</label>
+                  </div>
+                  <div class="file-button" style="text-align:center" onClick="displayBamUrlBox()">choose bam url</div>
+                  <div style="clear:both"></div>
+                  <div id="info">
+                      <ul>
+                              <li><a href="http://www.nature.com/nmeth/journal/v11/n12/full/nmeth.3174.html">Publication</a></li>
+                              <li><a href="help.html">File Requirements</a></li>
+                              <li><a href="license.html">License</a></li>
+                              <li><a href="images/browserCompatability.png">Compatible Browsers</a></li>
+                      </ul>
+                  </div>
+              </div>
+              <div id='bam-url' style="margin-top:-21px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
+                  <input id="url-input" value="http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam" ></input><button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
+              </div>
+              <div style="margin: 50px auto 0px auto; font-size: 23px; width: 600px; text-align:center;  color: rgb(110,110,110)">
+                  <div>for variant files check out <a href="http://vcf.iobio.io">vcf.iobio</a></div>
+              </div>
 
-                    <!-- log toggle -->
-                    <label id="scale-switch" class="checkbox">
-                            <input type="checkbox"value=""  class='power-scale' data-toggle="checkbox" >
-                            Power Scale
-                    </label>
+              <div id="footer">
+                  <div class="logos">
+                      <div style="position:absolute; left: 100px; top:4px; font-size:50px;font-family:'Overlock SC', cursive;">Marthlab</div>
+                      <img src="images/ustar-ucgd-logo.jpg" style="height:60px;"/>
+                      <a href="http://www.genetics.utah.edu/"><img src="images/genetics_mainlogo3_lrg.png" style="height:50px;position:absolute;right:0px;top:7px"/></a>
+                  </div>
+              </div>
+          </div>
+          <div id="showData">
+              <section id="top">
+                  <div id="piechooser" class="panel">
+                    <select onchange='setSelectedSeq(this.value);' id="reference-select">
 
-                    <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
-                    <div class='warning' id="not_enough_data">Bam file is too small to read coverage information</div>
-                    <div class="warning too-many-refs">Too many references to display. Use the dropdown to the left to select the reference</div>
-                    <!-- <div id="test-chart" style="width:100%"></div> -->
-                    <div class='chart' style="width:98%; height:60%"></div>
-                    <!-- <ul id="sequences"></ul> -->
-                </div>
-                <div id="total-reads" class="panel">
-                    <div class="title">Reads Sampled</div>
-                    <div id="value" style="font-size:5.5vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
-                    <div id="base" style="font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;">
-                        <span id="number"></span>
-                        <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-7px;cursor:pointer" onClick="sampleMore()"  src="images/more_sampling.png"></img>
-                    </div>
+                      <option value="all">all</option>
+                    </select>
+                  </div>
+                  <div id="depth-distribution" class="panel">
 
-                </div>
-            </section>
-            <section id="middle">
-                <div id="percents">
-                    <div id="mapped_reads" class="percent panel">Mapped Reads
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div class='chart'></div>
-                        <div class='from-index'>* full data available in index</div>
-                    </div>
-                    <div id="forward_strands" class="percent panel">Forward Strand
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div class='chart'></div>
-                    </div>
-                    <div id="proper_pairs" class="percent panel">Proper Pairs
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div class='chart'></div>
-                    </div>
-                    <div id="singletons" class="percent panel">Singletons
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div class='chart'></div>
-                    </div>
-                    <div id="both_mates_mapped" class="percent panel">Both Pairs Mapped
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div class='chart'></div>
-                    </div>
-                    <div id="duplicates" class="percent panel">Duplicates
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div class='chart'></div>
-                    </div>
-                </div>
-                <div id="distributions" >
-                    <div id="read-coverage-distribution" class="distribution panel"><div>Read Coverage Distribution</div>
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div id="read-coverage-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
-                    </div>
-                    <div id="length-distribution" class="distribution panel">
-                        <div><div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Insert Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span></div></div>
-                        <label class="checkbox" for="checkbox2" style="position:absolute;right:10px;top:24px;cursor:pointer" >
-                            <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
-                            Outliers
-                        </label>
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div id="length-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:85%"></div>
-                    </div>
-                    <div id="mapping-quality-distribution" class="distribution panel">
-                        <div><div class="chart-chooser"><span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span></div></div>
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
-                        <div id="mapping-quality-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
-                    </div>
-                </div>
-            </section>
+                      <div class="title">Read Coverage</div>
+                      <div class="hint">(drag to select region)</div>
+                      <!-- <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
+                          <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
+                          Exome
+                      </label> -->
+                      <input type="file" name="files[]" id="bedfile"  multiple />
+                      <div id="remove-bedfile-button" class="bedfile-button" onClick="removeBedFile()" style="visibility:hidden">Remove Bed</div>
+                      <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">Default Bed</div>
+                      <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
+
+                      <!-- log toggle -->
+                      <label id="scale-switch" class="checkbox">
+                              <input type="checkbox"value=""  class='power-scale' data-toggle="checkbox" >
+                              Power Scale
+                      </label>
+
+                      <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
+                      <div class='warning' id="not_enough_data">Bam file is too small to read coverage information</div>
+                      <div class="warning too-many-refs">Too many references to display. Use the dropdown to the left to select the reference</div>
+                      <!-- <div id="test-chart" style="width:100%"></div> -->
+                      <div class='chart' style="width:98%; height:60%"></div>
+                      <!-- <ul id="sequences"></ul> -->
+                  </div>
+                  <div id="total-reads" class="panel">
+                      <div class="title">Reads Sampled</div>
+                      <div id="value" style="font-size:5.5vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
+                      <div id="base" style="font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;">
+                          <span id="number"></span>
+                          <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-7px;cursor:pointer" onClick="sampleMore()"  src="images/more_sampling.png"></img>
+                      </div>
+
+                  </div>
+              </section>
+              <section id="middle">
+                  <div id="percents">
+                      <div id="mapped_reads" class="percent panel">Mapped Reads
+                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class='chart'></div>
+                          <div class='from-index'>* full data available in index</div>
+                      </div>
+                      <div id="forward_strands" class="percent panel">Forward Strand
+                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class='chart'></div>
+                      </div>
+                      <div id="proper_pairs" class="percent panel">Proper Pairs
+                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class='chart'></div>
+                      </div>
+                      <div id="singletons" class="percent panel">Singletons
+                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class='chart'></div>
+                      </div>
+                      <div id="both_mates_mapped" class="percent panel">Both Pairs Mapped
+                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class='chart'></div>
+                      </div>
+                      <div id="duplicates" class="percent panel">Duplicates
+                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class='chart'></div>
+                      </div>
+                  </div>
+                  <div id="distributions" >
+                      <div id="read-coverage-distribution" class="distribution panel"><div>Read Coverage Distribution</div>
+                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div id="read-coverage-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
+                      </div>
+                      <div id="length-distribution" class="distribution panel">
+                          <div><div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Insert Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span></div></div>
+                          <label class="checkbox" for="checkbox2" style="position:absolute;right:10px;top:24px;cursor:pointer" >
+                              <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
+                              Outliers
+                          </label>
+                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div id="length-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:85%"></div>
+                      </div>
+                      <div id="mapping-quality-distribution" class="distribution panel">
+                          <div><div class="chart-chooser"><span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span></div></div>
+                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div id="mapping-quality-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
+                      </div>
+                  </div>
+              </section>
+          </div>
         </div>
         <script src="js/flatui-checkbox.js"></script>
         <script>
