@@ -98,7 +98,7 @@
                     window.lengthChart(selection, {'outliers':outliers});
                 });
 
-                $("#url-input").keyup(function(event){
+                $("#url-input, #bai-url-input").keyup(function(event){
                     if(event.keyCode == 13){
                         $("#bam-url-go-button").click();
                     }
@@ -544,7 +544,12 @@
                 }
                 var extraParams = '';
                 if (window.sampling) extraParams += '&sampling=' + window.sampling
-                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&region=" + regionStr + extraParams);
+                if (window.bam.baiUri != undefined) {
+                  window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
+
+                } else {
+                  window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&region=" + regionStr + extraParams);
+                }
               }
             }
 
@@ -827,16 +832,24 @@
             function displayBamUrlBox() {
                 $('#bam-url').css('visibility','visible');
                 $('#info').css('visibility', 'hidden');
-                $("#bam-url").children("input").focus();
+                $("#bam-url").children("input").first().focus();
             }
 
             function openBamUrl() {
                 var url = $("#url-input").val();
+                var baiUrl = $("#bai-url-input").val()
                 // remove https if present
                 // if (url.slice(0,5) == 'https')
                 //   url = 'http' + url.slice(5,url.length);
-                window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(url));
-                window.bam = new Bam( url );
+
+
+                if( baiUrl != '' ) {
+                  window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(url) + "&bai=" + encodeURIComponent(baiUrl));
+                  window.bam = new Bam(url, { bai: baiUrl});
+                } else {
+                  window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(url));
+                  window.bam = new Bam( url );
+                }
                 goBam();
             }
 
@@ -883,7 +896,9 @@
                   </div>
               </div>
               <div id='bam-url' style="margin-top:-21px;width:700px;margin-left:auto;margin-right:auto;visibility:hidden" class="arrow_box">
-                  <input id="url-input" value="http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam" ></input><button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
+                  <input id="url-input" value="http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam" ></input>
+                  <input id="bai-url-input" placeholder="BAI URL (optional)" ></input>
+                  <button id="bam-url-go-button" onClick="openBamUrl()">Go</button>
               </div>
               <div style="margin: 50px auto 0px auto; font-size: 23px; width: 600px; text-align:center;  color: rgb(110,110,110)">
                   <div>for variant files check out <a href="http://vcf.iobio.io">vcf.iobio</a></div>

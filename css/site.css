@@ -42,6 +42,20 @@ header .iobio-project a:hover {color:#2d8fc1;}
   cursor: pointer;
 }
 
+#explicit-bai {
+  width: 100%;
+  text-align: center;
+}
+
+#explicit-bai a {
+  font-family: helvetica;
+  text-decoration: underline;
+}
+
+#explicit-bai a:hover {
+  cursor: pointer;
+}
+
 .bedfile-button{
     position:absolute;
     right:15px;
@@ -283,14 +297,23 @@ section#middle {
     margin-left: -23px;
 }
 .arrow_box input {
-    border: none;
-    outline: none;
+    /*border: none;*/
+    /*outline: none;*/
     width:610px;
     margin: 8px;
     color: #2d8fc1;
     font:300 30px quicksand;
 }
 .arrow_box button { font:300 28px quicksand;}
+
+.input-title {
+    margin: 0px auto;
+    width: 180px;
+    text-align: center;
+    font-style: italic;
+    font-weight: 500;
+    color: rgb(111, 111, 111);
+}
 
 .brush .extent {
   stroke: #000;

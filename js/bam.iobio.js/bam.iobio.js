@@ -28,6 +28,7 @@ var Bam = Class.extend({
       this.iobio = {}
 
       this.iobio.samtools       = "nv-prod.iobio.io/samtools/";
+      this.iobio.od_samtools       = "nv-dev-new.iobio.io/od_samtools/";
       this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
       this.iobio.bamstatsAlive  = "nv-prod.iobio.io/bamstatsalive/";
 
@@ -71,15 +72,18 @@ var Bam = Class.extend({
 
       if ( this.sourceType == "url") {
 
-        var args;
+        var args,
+        samtools_service;
         if (this.baiUri) {
-          // explciity stet bai url
-          args = ['-z', this.baiUri, 'view', '-b', this.bamUri, regArr.join(' ')];
+          // explciity set bai url
+          samtools_service = this.iobio.od_samtools;
+          args = ['view', '-b', this.bamUri, regArr.join(' '), this.baiUri];
         } else {
+          samtools_service = this.iobio.samtools;
           args = ['view', '-b', this.bamUri, regArr.join(' ')];
         }
         var cmd = new iobio.cmd(
-              this.iobio.samtools,
+              samtools_service,
               args,
               { ssl:this.ssl, 'urlparams': {'encoding':'binary'} }
             )
