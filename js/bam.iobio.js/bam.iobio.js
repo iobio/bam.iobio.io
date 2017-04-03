@@ -27,10 +27,15 @@ var Bam = Class.extend({
       // set iobio servers
       this.iobio = {}
 
-      this.iobio.samtools       = "nv-prod.iobio.io/samtools/";
-      this.iobio.od_samtools       = "nv-dev-new.iobio.io/od_samtools/";
-      this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
-      this.iobio.bamstatsAlive  = "nv-prod.iobio.io/bamstatsalive/";
+      // this.iobio.samtools       = "nv-prod.iobio.io/samtools/";
+      // this.iobio.od_samtools       = "nv-dev-new.iobio.io/od_samtools/";
+      // this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
+      // this.iobio.bamstatsAlive  = "nv-prod.iobio.io/bamstatsalive/";
+
+      this.iobio.samtools       = "nv-blue.iobio.io/samtools/";
+      this.iobio.od_samtools    = "nv-dev-new.iobio.io/od_samtools/";
+      this.iobio.bamReadDepther = "nv-blue.iobio.io/bamreaddepther/";
+      this.iobio.bamstatsAlive  = "nv-blue.iobio.io/bamstatsalive/";
 
       return this;
    },

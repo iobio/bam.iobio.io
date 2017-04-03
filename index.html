@@ -457,7 +457,8 @@
                         setSelectedSeq( 'all' , start, end );
                      }
 
-                     if (done && allPoints.length <= 1) {
+                     var totalPoints = allPoints.reduce(function(acc,val) { return acc + val.data.length  },0)
+                     if (done && totalPoints <= 1) {
                         $('#not_enough_data').css('display','block');
                      }
                  });
