@@ -4,7 +4,7 @@ var Bam = Class.extend({
 
    init: function(bamUri, options) {
       this.bamUri = bamUri;
-      this.ssl = false;
+      this.ssl = true;
       this.options = options; // *** add options mapper ***
       // test if file or url
       if (typeof(this.bamUri) == "object") {
