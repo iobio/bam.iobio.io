@@ -112,7 +112,8 @@ var Bam = Class.extend({
       cmd = cmd.pipe(
               this.iobio.bamstatsAlive,
               ['-u', '500', '-k', '1', '-r', regStr],
-              { ssl:this.ssl, urlparams: {cache:'stats.json', partialCache:true}}
+              { ssl:this.ssl}
+              // { ssl:this.ssl, urlparams: {cache:'stats.json', partialCache:true}}
             );
 
 
