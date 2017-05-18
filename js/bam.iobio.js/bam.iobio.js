@@ -28,7 +28,7 @@ var Bam = Class.extend({
       this.iobio = {}
 
       this.iobio.samtools       = "nv-prod.iobio.io/samtools/";
-      this.iobio.od_samtools       = "nv-dev-new.iobio.io/od_samtools/";
+      this.iobio.od_samtools    = "nv-dev-new.iobio.io/od_samtools/";
       this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
       this.iobio.bamstatsAlive  = "nv-prod.iobio.io/bamstatsalive/";
 
@@ -77,10 +77,10 @@ var Bam = Class.extend({
         if (this.baiUri) {
           // explciity set bai url
           samtools_service = this.iobio.od_samtools;
-          args = ['view', '-b', this.bamUri, regArr.join(' '), this.baiUri];
+          args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' '), '"'+this.baiUri+'"'];
         } else {
           samtools_service = this.iobio.samtools;
-          args = ['view', '-b', this.bamUri, regArr.join(' ')];
+          args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' ')];
         }
         var cmd = new iobio.cmd(
               samtools_service,
@@ -449,7 +449,7 @@ var Bam = Class.extend({
       else {
 
           var rawHeader = ""
-          var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', this.bamUri], {ssl:this.ssl,})
+          var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
           cmd.on('error', function(error) {
             console.log(error);
           })
