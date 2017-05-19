@@ -335,7 +335,7 @@ var Bam = Class.extend({
       else if (me.sourceType == 'url') {
           var currentSequence;
           var indexUrl = this.baiUri || this.bamUri + ".bai";
-          var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', indexUrl], {ssl:this.ssl,})
+          var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
           cmd.on('error', function(e){ console.log(e); });
           cmd.on('data', function(data, options) {
              data = data.split("\n");
