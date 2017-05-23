@@ -17,6 +17,7 @@
         <script src="js/jquery.min.js"></script>
         <script src="js/class.js"></script>
         <script src="js/rdp.js"></script>
+        <script src="js/bootstrap/js/bootstrap.min.js"></script>
         <script src="js/d3.v3.min.js"></script>
         <script src="js/queue.min.js"></script>
         <script src="js/donut.d3.js"></script>
@@ -32,6 +33,7 @@
 
         <script src="js/iobio.viz.js"></script>
         <script src="js/iobio.js"></script>
+        <link rel="stylesheet" href="js/bootstrap/css/bootstrap.min.css">
         <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
         <link href='http://fonts.googleapis.com/css?family=Overlock+SC' rel='stylesheet' type='text/css'>
         <link href='css/nprogress.css' rel='stylesheet' type='text/css'>
@@ -67,6 +69,12 @@
                       clearTimeout(id);
                   };
                 }());
+                
+                $("#mapped_reads_help").click(function() {
+                  $("#mappedReadsModal").modal({
+                    show: true
+                  });
+                });
 
                 // $("#read-coverage-distribution input[type='checkbox']").change(function(){
                 //     if ($(this).parent().hasClass("checked"))
@@ -959,11 +967,41 @@
               </section>
               <section id="middle">
                   <div id="percents">
+
+                      <!-- Mapped reads chart -->
                       <div id="mapped_reads" class="percent panel">Mapped Reads
+                          <span class="glyphicon glyphicon-question-sign" style="color:#1A71B2" aria-hidden="true" id="mapped_reads_help"></span>
                           <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                           <div class='from-index'>* full data available in index</div>
                       </div>
+
+                      <!-- Mapped reads modal -->
+                      <div id="mappedReadsModal" class="modal fade" role="dialog">
+                        <div class="modal-dialog" style="width:1000px;">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <button type="button" class="close" data-dismiss="modal">&times;</button>
+                              <h4 class="modal-title">Mapped reads</h4>
+                            </div>
+                            <div class="modal-body">
+                              <p>The mapped reads chart shows how many of the reads in the sample were successfully mapped to the reference genome. Genetic variation, in particular structural variants, ensure that every sequenced sample is genetically different to the reference genome it was aligned to. If the sample differs only in a small number of single base pair changes (e.g. SNVs), the read will still likely map to the reference, but, for more significant variation, the read can fail to be placed. Therefore, it is not expected that the mapped reads rate will hit 100%, but it is expected to be high (usually >90%). This is an example of a human, whole exome:</p>
+                              <img title="Mapped Reads High" style="width:20%;margin-bottom:-3px;margin-left:-7px;"  src="images/mapped_reads_high.png"></img>
+                              <p>In this case, 99.7% of the sampled reads map to the reference, corresponding to 26,823 actual reads. It is important to note that when the wheel is blue, only reads that have been assigned to a reference sequence are included. This means that the 0.3% of reads that are unmapped have a mate pair that successfully maps to the reference genome. For the case that both mates from paired end sequencing are unmapped, they appear at the end of the BAM file. Usually, the number of such unmapped reads can be obtained from the index file. When this is possible, the wheel will appear in green, as shown below for a whole genome sample.</p>
+                              <img title="Mapped Reads High Green" style="width:20%;margin-bottom:-3px;margin-left:-7px;"  src="images/mapped_reads_high_green.png"></img>
+                              <p>If the rate of mapped reads is low (usually below 90%), questions need to be asked about the sample to understand why so many reads are unmapped. The last example only has 71.5% of reads mapping to the reference genome for a whole genome sample. This was caused as the sample was contaminated with a significant amount of bacterial DNA; the DNA sample was obtained from a saliva sample, rather than a blood draw.</p>
+			      <img title="Mapped Reads Low" style="width:20%;margin-bottom:-3px;margin-left:-7px;"  src="images/mapped_reads_low.png"></img>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                          </div>
+                      
+                        </div>
+                      </div>
+
+
+
                       <div id="forward_strands" class="percent panel">Forward Strand
                           <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                           <div class='chart'></div>

@@ -98,6 +98,7 @@ section#middle {
     border: 1px solid rgb(230,230,230);
     border-radius: 2pt;
     text-align: center;
+    box-sizing: content-box;
 }
 
 .panel > .title { font-size: 30px}
