@@ -1001,7 +1001,7 @@
                       </label> -->
                       <input type="file" name="files[]" id="bedfile"  multiple />
                       <div id="remove-bedfile-button" class="bedfile-button" onClick="removeBedFile()" style="visibility:hidden">Remove Bed</div>
-                      <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">Default Bed</div>
+                      <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">GRCh37 exonic regions</div>
                       <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
 
                       <!-- log toggle -->
@@ -1032,7 +1032,7 @@
 
                       <!-- Mapped reads chart -->
                       <div id="mapped_reads" class="percent panel">Mapped Reads
-                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="mapped_reads_help"></span>
+                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="mapped_reads_help" title="Expect a value >90%"></span>
                           <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                           <div class='from-index'>* full data available in index</div>
@@ -1086,7 +1086,7 @@
 
                       <!-- Strands chart -->
                       <div id="forward_strands" class="percent panel">Forward Strand
-                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="strands_help"></span>
+                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="strands_help" title="Expect a value of ~50%"></span>
                           <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
@@ -1113,7 +1113,7 @@
 
                       <!-- Proper pairs chart -->
                       <div id="proper_pairs" class="percent panel">Proper Pairs
-                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="proper_pairs_help"></span>
+                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="proper_pairs_help" title="Expect a value >90%"></span>
                           <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
@@ -1143,7 +1143,7 @@
 
                       <!-- Singletons chart -->
                       <div id="singletons" class="percent panel">Singletons
-                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="singletons_help"></span>
+                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="singletons_help" title="Expect a value <1%"></span>
                           <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
@@ -1170,7 +1170,7 @@
 
                       <!-- Both mates mapped chart -->
                       <div id="both_mates_mapped" class="percent panel">Both Mates Mapped
-                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="both_mapped_help"></span>
+                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="both_mapped_help" title="Expect a value >90%"></span>
                           <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
@@ -1197,7 +1197,7 @@
 
                       <!-- Duplicates chart -->
                       <div id="duplicates" class="percent panel">Duplicates
-                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="duplicates_help"></span>
+                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="duplicates_help" title="Value depends on depth"></span>
                           <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
@@ -1239,7 +1239,7 @@
                       <!-- Read coverage distribution chart -->
                       <div id="read-coverage-distribution" class="distribution panel">
                         <div>Read Coverage Distribution
-                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="read_coverage_distribution_help"></span>
+                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="read_coverage_distribution_help" title="Expect a Poisson distribution centred on the expected mean coverage"></span>
                         </div>
                         <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
                         <div id="read-coverage-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
