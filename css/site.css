@@ -308,7 +308,10 @@ section#middle {
 }
 .arrow_box button { font:300 28px quicksand;}
 
-.glyphicon.glyphicon-question-sign {cursor: pointer;}
+.glyphicon.glyphicon-info-sign {
+    cursor: pointer;
+    color: #828282;
+}
 
 .input-title {
     margin: 0px auto;
