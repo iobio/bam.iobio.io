@@ -28,6 +28,7 @@ header .iobio-project a:hover {color:#2d8fc1;}
     color: #fff;
     font-size:24px;
     cursor: pointer;
+    font-weight: 300;
 }
 .file label {
   float:left;
@@ -98,6 +99,7 @@ section#middle {
     border: 1px solid rgb(230,230,230);
     border-radius: 2pt;
     text-align: center;
+    box-sizing: content-box;
 }
 
 .panel > .title { font-size: 30px}
@@ -305,6 +307,8 @@ section#middle {
     font:300 30px quicksand;
 }
 .arrow_box button { font:300 28px quicksand;}
+
+.glyphicon.glyphicon-question-sign {cursor: pointer;}
 
 .input-title {
     margin: 0px auto;
