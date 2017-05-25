@@ -15,6 +15,21 @@ header .iobio-project {font-size:18px; letter-spacing:6px;margin-top:8px; margin
 header .iobio-project a {color: rgb(120,120,120)}
 header .iobio-project a:hover {color:#2d8fc1;}
 
+.modal-body {
+  font-family: 'Open Sans';
+  text-align: justify;
+  padding: 30px;
+}
+
+.modal-body .row {
+  margin-top: 30px;
+}
+
+.vertical-align {
+    display: flex;
+    align-items: center;
+}
+
 .file {
   width: 250px;
   text-align:center;
