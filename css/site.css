@@ -15,6 +15,21 @@ header .iobio-project {font-size:18px; letter-spacing:6px;margin-top:8px; margin
 header .iobio-project a {color: rgb(120,120,120)}
 header .iobio-project a:hover {color:#2d8fc1;}
 
+.modal-body {
+  font-family: 'Open Sans';
+  text-align: justify;
+  padding: 30px;
+}
+
+.modal-body .row {
+  margin-top: 30px;
+}
+
+.vertical-align {
+    display: flex;
+    align-items: center;
+}
+
 .file {
   width: 250px;
   text-align:center;
@@ -28,6 +43,7 @@ header .iobio-project a:hover {color:#2d8fc1;}
     color: #fff;
     font-size:24px;
     cursor: pointer;
+    font-weight: 300;
 }
 .file label {
   float:left;
@@ -98,6 +114,7 @@ section#middle {
     border: 1px solid rgb(230,230,230);
     border-radius: 2pt;
     text-align: center;
+    box-sizing: content-box;
 }
 
 .panel > .title { font-size: 30px}
@@ -305,6 +322,11 @@ section#middle {
     font:300 30px quicksand;
 }
 .arrow_box button { font:300 28px quicksand;}
+
+.glyphicon.glyphicon-info-sign {
+    cursor: pointer;
+    color: #828282;
+}
 
 .input-title {
     margin: 0px auto;
