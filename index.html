@@ -72,6 +72,12 @@
                 }());
 
                 // Help modals
+                $("#genome_coverage_help").click(function() {
+                  $("#genomeCoverageModal").modal({
+                    show: true
+                  });
+                });
+
                 $("#sampled_help").click(function() {
                   $("#sampledModal").modal({
                     show: true
@@ -999,7 +1005,10 @@
                   </div>
                   <div id="depth-distribution" class="panel">
 
-                      <div class="title">Read Coverage</div>
+                      <div class="title">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="genome_coverage_help" title="Coverage across the genome" style="font-size:0.45em;"></span>
+                        Read Coverage
+                      </div>
                       <div class="hint">(drag to select region)</div>
                       <!-- <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
                           <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
@@ -1023,6 +1032,27 @@
                       <div class='chart' style="width:98%; height:60%"></div>
                       <!-- <ul id="sequences"></ul> -->
                   </div>
+
+                  <!-- Read coverage modal -->
+                  <div id="genomeCoverageModal" class="modal fade" role="dialog">
+                    <div class="modal-dialog" style="width:700px;">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                          <h4 class="modal-title">Read coverage</h4>
+                        </div>
+                        <div class="modal-body" style="overflow:auto;">
+                          <div>
+                            The read coverage shows how the read coverage varies across the entire genome. The coloured numbers beneath represent chromosomes in the reference genome used and can be selected to view the read coverage in an individual chromosome. Selecting a different chromosome will cause all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only. Once a chromosome is selected, you can also focus on a smaller region by dragging over the region of interest; again, all other metrics will then be recalculated for that region only.
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div id="total-reads" class="panel">
                       <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="sampled_help" title="Number of reads sampled"></span>
                       <div class="title">
