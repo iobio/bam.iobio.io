@@ -18,7 +18,7 @@
         <script src="js/class.js"></script>
         <script src="js/rdp.js"></script>
         <script src="js/bootstrap/js/bootstrap.min.js"></script>
-        <script src="js/d3.v3.min.js"></script>
+        <script src="js/d3.min.js"></script>
         <script src="js/queue.min.js"></script>
         <script src="js/donut.d3.js"></script>
         <script src="js/histogram.d3.js"></script>
@@ -225,6 +225,7 @@
                     .radius(r)
                     .innerRadius(r*.5)
                     .padding(pieChooserPadding)
+                    // .transitionDuration(0)
                     .color( function(d,i) {
                       return color(d.data.name);
                     })
@@ -529,14 +530,20 @@
 
                      var start = region ? region.start : undefined;
                      var end = region ? region.end : undefined;
-                     if (region && region.chr == id ) {
-                         setSelectedSeq( id, start, end);
-                         //window.readDepthChart(selection, {selected:id});
-                     }
+                     // if (region && region.chr == id ) {
+                     //     window.pieChooserChart(pieSelection);
+                     //     setSelectedSeq( id, start, end);
+                     //     //window.readDepthChart(selection, {selected:id});
+                     // }
 
-                     if ( (done && !region) || (done && region && region.chr == 'all') ) {
+                     if ( done ) {
+                        window.pieChooserChart.on('end', function() {
+                          if (!region || (region && region.chr == 'all'))
+                            setSelectedSeq( 'all' , start, end );
+                          else
+                            setSelectedSeq( id, start, end);
+                        })
                         window.pieChooserChart(pieSelection);
-                        setSelectedSeq( 'all' , start, end );
                      }
 
                      var totalPoints = allPoints.reduce(function(acc,val) { return acc + val.data.length  },0)
@@ -579,15 +586,17 @@
                             if (window.bam.readDepth[key].length > 0)
                               return  true
                           })
-                  setTimeout(function() {
+                  // setTimeout(function() {
                     window.pieChooserChart.clickAllSlices(d3.selectAll('#piechooser .arc')[0]);
-                  }, 2000);
+                  // }, 2000);
                 }
                 else {
                   var seqDataIds = [selected];
                   $('#piechooser .arc').each(function(i,d) {
-                    if (d3.select(d).datum().data.name == selected)
-                      setTimeout(function() {window.pieChooserChart.clickSlice(i);}, 2000);
+                    if (d3.select(d).datum().data.name == selected) {
+                      // setTimeout(function() {window.pieChooserChart.clickSlice(i);}, 2000);
+                      window.pieChooserChart.clickSlice(i)
+                    }
 
                   });
 
