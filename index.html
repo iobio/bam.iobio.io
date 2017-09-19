@@ -515,7 +515,6 @@
                       draw = false;
                     }
 
-                    if(draw) (window.pieChooserChart(pieSelection));
                     if (region && region.chr != 'all') {
                       if(draw) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
                     }
@@ -536,6 +535,7 @@
                      }
 
                      if ( (done && !region) || (done && region && region.chr == 'all') ) {
+                        window.pieChooserChart(pieSelection);
                         setSelectedSeq( 'all' , start, end );
                      }
 
