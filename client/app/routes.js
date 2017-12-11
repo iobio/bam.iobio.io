@@ -18,7 +18,7 @@ const routes = [
     component: Home,
   },
   {
-    path: '/BamView',
+    path: '/bamview/:selectedFileURL',
     name: 'BamView',
     component: BamVue,
     props: true
