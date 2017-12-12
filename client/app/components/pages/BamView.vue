@@ -12,22 +12,31 @@
   .panel#depth-distribution {
     -webkit-flex: 1 1 auto;
     flex: 1 1 auto;
-    -webkit-order: 1;
-    order: 1;
+    -webkit-order: 2;
+    order: 2;
     height: 250px;
     position:relative;
-    width: 80%;
+    width: 65%;
+  }
 
+  .panel#depth-distribution .chart {
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    -webkit-order: 2;
+    order: 2;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .panel#total-reads {
     -webkit-flex: 1 1 150px;
     flex: 1 1 150px;
-    -webkit-order: 2;
-    order: 2;
+    -webkit-order: 3;
+    order: 3;
     margin-right:20px;
     width: 150px;
   }
+
 
   #percents {
     margin-right: 20px;
@@ -82,6 +91,21 @@
   #percents .percent svg { width: 100%; height:180px }
   #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:200px; position:relative; /*padding: 0px 15px 0px 15px*/}
 
+  .glyphicon.glyphicon-info-sign {
+    cursor: pointer;
+    color: #828282;
+  }
+
+  .panel#piechooser {
+    -webkit-flex: 1 1 250px;
+    flex: 1 1 250px;
+    -webkit-order: 1;
+    order: 1;
+    height: 250px;
+    position:relative;
+    width: 250px;
+  }
+
 </style>
 
 <template>
@@ -93,9 +117,18 @@
     </div>
 
     <section id="top">
+      <div id="piechooser" class="panel">
+        <select onchange='setSelectedSeq(this.value);' id="reference-select">
 
+          <option value="all">all</option>
+        </select>
+      </div>
       <div id="depth-distribution" class="panel">
-        <div class="title">Read Coverage</div>
+
+        <div class="title">
+          <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="genome_coverage_help" title="Coverage across the genome" style="font-size:0.45em;"></span>
+          Read Coverage
+        </div>
         <div class="hint">(drag to select region)</div>
         <!-- <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
             <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
