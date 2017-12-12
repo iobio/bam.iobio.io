@@ -89,7 +89,7 @@
     <app-header></app-header>
 
     <div>
-      {{ selectedFileURL }}
+      {{ selectedFileURL + ',' + selectedBaiURL }}
     </div>
 
     <section id="top">
@@ -105,7 +105,7 @@
         <div id="remove-bedfile-button" class="bedfile-button" @click="removeBedFile()" style="visibility:hidden">Remove Bed</div>
         <div id="default-bedfile-button" class="bedfile-button" @click="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">Default Bed</div>
         <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
-        <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="client/images/loading_dots.gif"/></div>
+        <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
         <!-- <ul id="sequences"></ul> -->
       </div>
 
@@ -118,33 +118,33 @@
     <section id="middle">
       <div id="percents">
         <div id="mapped_reads" class="percent panel">Mapped Reads
-          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
+          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="forward_strands" class="percent panel">Forward Strand
-          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
+          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="proper_pairs" class="percent panel">Proper Pairs
-          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
+          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="singletons" class="percent panel">Singletons
-          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
+          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="both_mates_mapped" class="percent panel">Both Pairs Mapped
-          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
+          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="duplicates" class="percent panel">Duplicates
-          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
+          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
       </div>
       <div id="distributions" >
         <div id="read-coverage-distribution" class="distribution panel"><div>Read Coverage Distribution</div>
-          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
+          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg id="read-coverage-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
         </div>
         <div id="length-distribution" class="distribution panel">
@@ -153,12 +153,12 @@
             <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
             Outliers
           </label>
-          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
+          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg id="length-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:85%"></svg>
         </div>
         <div id="mapping-quality-distribution" class="distribution panel">
           <div><div class="chart-chooser"><span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span></div></div>
-          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
+          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg id="mapping-quality-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
         </div>
       </div>
@@ -180,7 +180,7 @@
       BarChart,
       AppHeader
     },
-    props: ['selectedFileURL'],
+    props: ['selectedFileURL', 'selectedBaiURL'],
     data() {
       return {
       }

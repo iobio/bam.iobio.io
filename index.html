@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <!-- <link href="http://designmodo.github.io/Flat-UI/bootstrap/css/bootstrap.css" rel="stylesheet"> -->
-        <link href="css/flat-ui.css" rel="stylesheet">
+        <link href="assets/flat-ui.css" rel="stylesheet">
         <script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -37,9 +37,9 @@
         <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
         <link href='http://fonts.googleapis.com/css?family=Overlock+SC' rel='stylesheet' type='text/css'>
         <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-        <link href='css/nprogress.css' rel='stylesheet' type='text/css'>
-        <link href='css/site.css' rel='stylesheet' type='text/css'>
-        <link href='css/iobio.viz.min.css' rel='stylesheet' type='text/css'>
+        <link href='assets/nprogress.css' rel='stylesheet' type='text/css'>
+        <link href='assets/site.css' rel='stylesheet' type='text/css'>
+        <link href='assets/iobio.viz.min.css' rel='stylesheet' type='text/css'>
         <!-- <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'> -->
 
         <script>
@@ -981,9 +981,9 @@
                   <div id="info">
                       <ul>
                               <li><a href="http://www.nature.com/nmeth/journal/v11/n12/full/nmeth.3174.html">Publication</a></li>
-                              <li><a href="help.html">File Requirements</a></li>
-                              <li><a href="license.html">License</a></li>
-                              <li><a href="images/browserCompatability.png">Compatible Browsers</a></li>
+                              <li><a href="client/app/components/pages/help.html">File Requirements</a></li>
+                              <li><a href="client/app/components/pages/license.html">License</a></li>
+                              <li><a href="client/images/browserCompatability.png">Compatible Browsers</a></li>
                       </ul>
                   </div>
               </div>
@@ -999,8 +999,8 @@
               <div id="footer">
                   <div class="logos">
                       <div style="position:absolute; left: 100px; top:4px; font-size:50px;font-family:'Overlock SC', cursive;">Marthlab</div>
-                      <img src="images/ustar-ucgd-logo.jpg" style="height:60px;"/>
-                      <a href="http://www.genetics.utah.edu/"><img src="images/genetics_mainlogo3_lrg.png" style="height:50px;position:absolute;right:0px;top:7px"/></a>
+                      <img src="client/images/ustar-ucgd-logo.jpg" style="height:60px;"/>
+                      <a href="http://www.genetics.utah.edu/"><img src="client/images/genetics_mainlogo3_lrg.png" style="height:50px;position:absolute;right:0px;top:7px"/></a>
                   </div>
               </div>
           </div>
@@ -1034,7 +1034,7 @@
                               Power Scale
                       </label>
 
-                      <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="images/loading_dots.gif"/></div>
+                      <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="client/images/loading_dots.gif"/></div>
                       <div class='warning' id="not_enough_data">Bam file is too small to read coverage information</div>
                       <div class="warning too-many-refs">Too many references to display. Use the dropdown to the left to select the reference</div>
                       <!-- <div id="test-chart" style="width:100%"></div> -->
@@ -1070,7 +1070,7 @@
                       <div id="value" style="font-size:5.5vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
                       <div id="base" style="font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;">
                           <span id="number"></span>
-                          <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-7px;cursor:pointer" onClick="sampleMore()"  src="images/more_sampling.png"></img>
+                          <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-7px;cursor:pointer" onClick="sampleMore()"  src="client/images/more_sampling.png"></img>
                       </div>
 
                       <!-- Sampled reads modal -->
@@ -1101,7 +1101,7 @@
                       <!-- Mapped reads chart -->
                       <div id="mapped_reads" class="percent panel">Mapped Reads
                           <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="mapped_reads_help" title="Expect a value >90%"></span>
-                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                           <div class='from-index'>* full data available in index</div>
                       </div>
@@ -1140,7 +1140,7 @@
                               </div>
                               <div class="row vertical-align">
                                   <div class="col-xs-4">
-                                    <img title="Acceptable mapped reads rate" style="width:100%;"  src="images/mapped_reads_high.png"></img>
+                                    <img title="Acceptable mapped reads rate" style="width:100%;"  src="client/images/mapped_reads_high.png"></img>
                                   </div>
                                   <div class="col-xs-8">
                                     This is an example of a human, whole exome. In this case, 99.7% of the sampled reads map to the reference, corresponding to 93,385 actual reads. It is important to note that when the wheel is blue, only reads that have been assigned to a reference sequence are included. This means that the 0.3% of reads that are unmapped have a mate pair that successfully maps to the reference genome.
@@ -1149,7 +1149,7 @@
 
                               <div class="row vertical-align">
                                   <div class="col-xs-4">
-                                    <img title="Acceptable mapped reads rate" style="width:100%;" src="images/mapped_reads_high_green.png"></img>
+                                    <img title="Acceptable mapped reads rate" style="width:100%;" src="client/images/mapped_reads_high_green.png"></img>
                                   </div>
                                   <div class="col-xs-8">
                                     For the case that both mates from paired end sequencing are unmapped, they appear at the end of the BAM file. Usually, the number of such unmapped reads can be obtained from the index file. When this is possible, the wheel will appear in green, as shown for this whole genome sample.
@@ -1158,7 +1158,7 @@
 
                               <div class="row vertical-align">
                                   <div class="col-xs-4">
-                                    <img title="Acceptable mapped reads rate" style="width:100%;" src="images/mapped_reads_low.png"></img>
+                                    <img title="Acceptable mapped reads rate" style="width:100%;" src="client/images/mapped_reads_low.png"></img>
                                   </div>
                                   <div class="col-xs-8">
                                     If the rate of mapped reads is low (usually below 90%), questions need to be asked about the sample to understand why so many reads are unmapped. The last example only has 71.5% of reads mapping to the reference genome for a whole genome sample. This was caused as the sample was contaminated with a significant amount of bacterial DNA; the DNA sample was obtained from a saliva sample, rather than a blood draw.
@@ -1175,7 +1175,7 @@
                       <!-- Strands chart -->
                       <div id="forward_strands" class="percent panel">Forward Strand
                           <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="strands_help" title="Expect a value of ~50%"></span>
-                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
 
@@ -1202,7 +1202,7 @@
                       <!-- Proper pairs chart -->
                       <div id="proper_pairs" class="percent panel">Proper Pairs
                           <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="proper_pairs_help" title="Expect a value >90%"></span>
-                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
 
@@ -1233,7 +1233,7 @@
                       <!-- Singletons chart -->
                       <div id="singletons" class="percent panel">Singletons
                           <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="singletons_help" title="Expect a value <1%"></span>
-                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
 
@@ -1260,7 +1260,7 @@
                       <!-- Both mates mapped chart -->
                       <div id="both_mates_mapped" class="percent panel">Both Mates Mapped
                           <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="both_mapped_help" title="Expect a value >90%"></span>
-                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
 
@@ -1287,7 +1287,7 @@
                       <!-- Duplicates chart -->
                       <div id="duplicates" class="percent panel">Duplicates
                           <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="duplicates_help" title="Value depends on depth"></span>
-                          <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                          <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
                           <div class='chart'></div>
                       </div>
 
@@ -1305,7 +1305,7 @@
                               </div>
                               <div class="row vertical-align">
                                 <div class="col-xs-4">
-                                  <img title="Acceptable duplicate rate" style="width:100%; padding-bottom:15px;"  src="images/dup_good.png"></img>
+                                  <img title="Acceptable duplicate rate" style="width:100%; padding-bottom:15px;"  src="client/images/dup_good.png"></img>
                                 </div>
                                 <div class="col-xs-8">
                                   This is an example of the duplicate rate for a ~80X human whole genome. The expectation is that the duplicate rate is low (well below 10%), and consequently, this sample would be considered good.
@@ -1314,7 +1314,7 @@
 
                               <div class="row vertical-align">
                                 <div class="col-xs-4">
-                                  <img title="Acceptable duplicate rate" style="width:100%;padding-bottom:15px;"  src="images/dup_good_low_cov.png"></img>
+                                  <img title="Acceptable duplicate rate" style="width:100%;padding-bottom:15px;"  src="client/images/dup_good_low_cov.png"></img>
                                 </div>
                                 <div class="col-xs-8">
                                   If the median coverage drops to ~50X, the duplicate rate should be even lower.
@@ -1323,7 +1323,7 @@
 
                               <div class="row vertical-align">
                                 <div class="col-xs-4">
-			          <img title="Potentially problematic duplicate rate" style="width:100%;"  src="images/dup_bad.png"></img>
+			          <img title="Potentially problematic duplicate rate" style="width:100%;"  src="client/images/dup_bad.png"></img>
                                 </div>
                                 <div class="col-xs-8">
                                   This is a different sample with ~50X coverage, but now the duplicate rate is much higher. This sample could well have problems at the library prep stage and should potentially be resequenced.
@@ -1346,7 +1346,7 @@
                         <div>Read Coverage Distribution
                           <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="read_coverage_distribution_help" title="Expect a Poisson distribution centred on the expected mean coverage"></span>
                         </div>
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                        <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
                         <div id="read-coverage-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
                       </div>
 
@@ -1362,7 +1362,7 @@
                           <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
                             Outliers
                         </label>
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                        <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
                         <div id="length-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:85%"></div>
                       </div>
                       <div id="mapping-quality-distribution" class="distribution panel">
@@ -1372,7 +1372,7 @@
                             <span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span>
                           <span class="glyphicon glyphicon-info-sign" aria-hidden="true" id="base_qual_help" title="Expect most values >40"></span>
                         </div>
-                        <div class="samplingLoader">Sampling <img src="images/loading_dots.gif"/></div>
+                        <div class="samplingLoader">Sampling <img src="client/images/loading_dots.gif"/></div>
                         <div id="mapping-quality-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
                       </div>
 
@@ -1392,17 +1392,17 @@
                               <div><strong><i>Whole genome sequencing</i></strong></div>
                               <div>
                                 In a whole genome sequencing experiment, the expectation is that the read coverage follows a Poisson distribution centred about the requested sequencing depth. The following example shows a high quality read coverage distribution for a sample sequenced to ~50X coverage. The distribution shows a nice Poisson distribution, and is centred around ~53X. (Note that the second scale at the bottom of the chart can be used to zoom in on desired parts of the distribution).
-                                <img title="A good read coverage distribution" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="images/read_coverage_dist_zoomed.png"></img>
+                                <img title="A good read coverage distribution" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="client/images/read_coverage_dist_zoomed.png"></img>
                                   Alternatively, if the distribution shows multiple peaks, isn't Poisson distributed, or is not centred around the expected coverage, it may be necessary to consider resequencing the sample, or at least, being aware that problems may arise in analysing the data. While the following distribution shows a median coverage around that expected (~80X), but with a significant portion of the genome at zero coverage and the multiple peaks, this would not be considered a good sample.
-                                <img title="A bad read coverage distribution" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="images/read_coverage_dist_bad.png"></img>
+                                <img title="A bad read coverage distribution" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="client/images/read_coverage_dist_bad.png"></img>
                               </div>
                               <br>
                               <div><strong><i>Whole exome sequencing</i></strong></div>
                               <div>
                                 Exome sequencing relies on the targetted capture of DNA from the exome, followed by DNA amplification. This leads to large variation in the sequencing depth across exons, and consequently, the read coverage distribution is no longer expected to be Poisson distributed. When sampling across the entire genome, the majority of genomic regions will contain no sequencing reads as will are not exonic regions. This leads to a read coverage distribution overwhelmingly weighted to zero coverage as shown below.
-                                <img title="Exome sequencing" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="images/read_coverage_dist_exome.png"></img>
+                                <img title="Exome sequencing" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="client/images/read_coverage_dist_exome.png"></img>
                                 To restrict sampling to exonic regions, select the default bed file in the top 'Read Coverage' chart. It is also possible to select a custom bed file, if available. After selecting the default bed, the distribution above is updated to as shown below.
-                                <img title="Exome sequencing using default bed" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="images/read_coverage_dist_exome_bed.png"></img>
+                                <img title="Exome sequencing using default bed" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="client/images/read_coverage_dist_exome_bed.png"></img>
                                 This does not have a Poisson distribution and shows the wide distribution of coverage in the exonic regions. The sequenced depth appears to be centred around ~50X, so if this is consistent with the requested depth, this sample would be considered good.
                               </div>
                             </div>
@@ -1431,7 +1431,7 @@
                                 This is an example of the fragment length distribution for a high coverage (~80X) whole genome. The read lengths in this sample are 150bp, so a fragment can not be shorter than this value, consequently, we see a sharp cutoff at a fragment length of 150bp.
                               </div>
                               <div>
-                                <img title="WGS sequencing" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="images/fragment_wgs.png"></img>
+                                <img title="WGS sequencing" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="client/images/fragment_wgs.png"></img>
                               </div>
                               <br>
                               <div><strong><i>Whole exome sequencing</i></strong></div>
@@ -1439,7 +1439,7 @@
                                 Similarly, this is the fragment length distribution for a high coverage exome.
                               </div>
                               <div>
-                                <img title="Exome sequencing" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="images/fragment_exome.png"></img>
+                                <img title="Exome sequencing" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="client/images/fragment_exome.png"></img>
                               </div>
                             </div>
                             <div class="modal-footer">

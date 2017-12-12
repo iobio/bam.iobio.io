@@ -12,6 +12,7 @@
     color: #fff;
     font-size:24px;
     cursor: pointer;
+    font-weight: 300;
   }
   .file label {
     float:left;
@@ -55,8 +56,8 @@
     margin-left: -23px;
   }
   .arrow_box input {
-    border: none;
-    outline: none;
+    /*border: none;*/
+    /*outline: none;*/
     width:610px;
     margin: 8px;
     color: #2d8fc1;
@@ -76,6 +77,7 @@
     <div style="clear:both"></div>
     <div v-if="showUrl" id='bam-url' style="margin-top:18px;width:700px;margin-left:auto;margin-right:auto" class="arrow_box">
       <input id="url-input" value="http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam" ></input>
+      <input id="bai-url-input" placeholder="BAI URL (optional)" ></input>
       <button id="bam-url-go-button" @click="openBamURL">
         <!--<router-link :to="{name: 'BamView', props: { selectedFileURL: this.selectedFileURL }}">-->
           Go
@@ -91,6 +93,7 @@ export default {
   data() {
     return {
       selectedFileURL: '',
+      selectedBaiFileURL: '',
       showUrl: false
     }
   },
@@ -103,12 +106,20 @@ export default {
 
     openBamURL : function() {
       let self = this;
-      var url = $("#url-input").val();
+
+      var bamUrl = $("#url-input").val();
       // remove https if present
-      if (url.slice(0,5) == 'https')
-        url = 'http' + url.slice(5,url.length);
-      this.selectedFileURL = url;
-      self.$router.push({name: 'BamView', params: { selectedFileURL: this.selectedFileURL }});
+      if (bamUrl.slice(0,5) == 'https')
+        bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
+      this.selectedFileURL = bamUrl;
+
+      var baiUrl = $("#bai-url-input").val();
+      // remove https if present
+      if (baiUrl.slice(0,5) == 'https')
+        baiUrl = 'http' + baiUrl.slice(5,baiUrl.length);
+      this.selectedBaiFileURL = baiUrl;
+
+      self.$router.push({name: 'BamView', params: { selectedFileURL: this.selectedFileURL, selectedBaiURL: this.selectedBaiFileURL}});
     },
 
   }

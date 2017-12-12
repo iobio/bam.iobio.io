@@ -10,6 +10,7 @@
   }
   .logos {
     margin: 0px auto 10px auto;
+    width: 1200px;
     text-align:center;
     position:relative;
     height: 60px;

@@ -17,6 +17,6 @@ export default {
 
 <style lang="scss">
    @import '~bootstrap/dist/css/bootstrap.css';
-   @import url('http://fonts.googleapis.com/css?family=Quicksand');
+   @import url('http://fonts.googleapis.com/css?family=Quicksand:300');
    @import url('http://fonts.googleapis.com/css?family=Overlock+SC');
 </style>

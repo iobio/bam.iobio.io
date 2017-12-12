@@ -8,7 +8,7 @@
     font-size: 46px;
     color:#2d8fc1;
     text-align: left;
-    padding-left: 10px;
+    /*padding-left: 10px;*/
   }
   a:visited {
     color:none;
@@ -19,7 +19,7 @@
   }
   .iobio-project {
     float: right;
-    padding-top: 20px;
+    /*padding-top: 20px;*/
     font-size:18px;
     letter-spacing:6px;
     margin-top:8px;
@@ -29,6 +29,7 @@
   .iobio-project a {
     color: rgb(120,120,120)
   }
+
 </style>
 
 <template>
