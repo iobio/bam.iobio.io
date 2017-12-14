@@ -112,9 +112,9 @@
   <div >
     <app-header></app-header>
 
-    <div>
-      {{ selectedFileURL + ',' + selectedBaiURL }}
-    </div>
+    <!--<div>-->
+      <!--{{ selectedFileURL + ',' + selectedBaiURL }}-->
+    <!--</div>-->
 
     <section id="top">
       <div id="piechooser" class="panel">
@@ -126,7 +126,7 @@
       <div id="depth-distribution" class="panel">
 
         <div class="title" >
-          <help-button modalTitle="Read coverage"
+          <help-button style="font-size:0.45em;vertical-align: 30%" modalTitle="Read coverage"
                        body="The read coverage shows how the read coverage varies across the entire genome. The coloured numbers beneath represent chromosomes in the reference genome used and can be selected to view the read coverage in an individual chromosome. Selecting a different chromosome will cause all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only. Once a chromosome is selected, you can also focus on a smaller region by dragging over the region of interest; again, all other metrics will then be recalculated for that region only.">
           </help-button>
           Read Coverage
@@ -153,32 +153,55 @@
     <section id="middle">
       <div id="percents">
         <div id="mapped_reads" class="percent panel">Mapped Reads
+          <help-button modalTitle="Mapped reads"
+                       body="">
+          </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="forward_strands" class="percent panel">Forward Strand
+          <help-button modalTitle="Forward strand"
+                       body="">
+          </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="proper_pairs" class="percent panel">Proper Pairs
+          <help-button modalTitle="Proper Pairs"
+                       body="">
+          </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="singletons" class="percent panel">Singletons
+          <help-button modalTitle="Singletons"
+                       body="">
+          </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="both_mates_mapped" class="percent panel">Both Pairs Mapped
+          <help-button modalTitle="Both Pairs Mapped"
+                       body="">
+          </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="duplicates" class="percent panel">Duplicates
+          <help-button modalTitle="Duplicates"
+                       body="">
+          </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
       </div>
       <div id="distributions" >
-        <div id="read-coverage-distribution" class="distribution panel"><div>Read Coverage Distribution</div>
+        <div id="read-coverage-distribution" class="distribution panel"><div>
+          Read Coverage Distribution
+          <help-button modalTitle="Read Coverage Distribution"
+                       body="">
+          </help-button>
+        </div>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg id="read-coverage-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
         </div>
