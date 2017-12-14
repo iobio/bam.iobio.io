@@ -52,25 +52,6 @@
       </div>
     </transition>
 
-    <!--<div id="helpModalA" class="modal fade" role="dialog" v-show="showModal">-->
-      <!--<div class="modal-dialog" style="width:700px;">-->
-        <!--<div class="modal-content">-->
-          <!--<div class="modal-header">-->
-            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
-            <!--<h4 class="modal-title">{{modalTitle}}</h4>-->
-          <!--</div>-->
-          <!--<div class="modal-body" style="overflow:auto;">-->
-            <!--<div>-->
-              <!--{{body}}-->
-            <!--</div>-->
-          <!--</div>-->
-          <!--<div class="modal-footer">-->
-            <!--<button type="button" class="btn btn-default" data-dismiss="modal" @click="$emit('close')">Close</button>-->
-          <!--</div>-->
-        <!--</div>-->
-      <!--</div>-->
-    <!--</div>-->
-
 </template>
 
 <script>

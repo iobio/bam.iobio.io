@@ -112,10 +112,6 @@
   <div >
     <app-header></app-header>
 
-    <!--<div>-->
-      <!--{{ selectedFileURL + ',' + selectedBaiURL }}-->
-    <!--</div>-->
-
     <section id="top">
       <div id="piechooser" class="panel">
         <select onchange='setSelectedSeq(this.value);' id="reference-select">
