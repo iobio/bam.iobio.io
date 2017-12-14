@@ -12,8 +12,7 @@
 
 <template>
   <div id="total-reads" class="panel">
-    <help-button modalTitle="Sampled reads"
-                 body="Bam.iobio does not read the entire bam file, rather, it samples reads from across the entire genome. The number of reads that have been sampled are shown here, and should be at least in the tens of thousands to have confidence in the statistics. Click the arrow beneath the displayed number to increase the number of sampled reads.">
+    <help-button modalTitle="Sampled reads" tooltipText="Number of reads sampled" :body="helpBody">
     </help-button>
     <div class="title">Reads Sampled</div>
     <div id="value" style="font-size:5.5vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
@@ -39,6 +38,10 @@ export default {
   },
   data() {
     return {
+      helpBody: "Bam.iobio does not read the entire bam file, rather, it samples reads from across the entire genome. " +
+                "The number of reads that have been sampled are shown here, and should be at least in the tens of thousands " +
+                "to have confidence in the statistics. Click the arrow beneath the displayed number to increase the number " +
+                "of sampled reads."
     }
   },
   created: function() {
