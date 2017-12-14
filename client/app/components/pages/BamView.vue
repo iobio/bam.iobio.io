@@ -122,8 +122,13 @@
       <div id="depth-distribution" class="panel">
 
         <div class="title" >
-          <help-button style="font-size:0.45em;vertical-align: 30%" modalTitle="Read coverage"
-                       body="The read coverage shows how the read coverage varies across the entire genome. The coloured numbers beneath represent chromosomes in the reference genome used and can be selected to view the read coverage in an individual chromosome. Selecting a different chromosome will cause all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only. Once a chromosome is selected, you can also focus on a smaller region by dragging over the region of interest; again, all other metrics will then be recalculated for that region only.">
+          <help-button style="font-size:0.45em;vertical-align: 30%" modalTitle="Read coverage" tooltipText="Coverage across the genome"
+                       body="The read coverage shows how the read coverage varies across the entire genome. The coloured
+                            numbers beneath represent chromosomes in the reference genome used and can be selected to view
+                            the read coverage in an individual chromosome. Selecting a different chromosome will cause
+                            all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only.
+                            Once a chromosome is selected, you can also focus on a smaller region by dragging over the region
+                            of interest; again, all other metrics will then be recalculated for that region only.">
           </help-button>
           Read Coverage
         </div>
@@ -148,42 +153,42 @@
     <section id="middle">
       <div id="percents">
         <div id="mapped_reads" class="percent panel">Mapped Reads
-          <help-button modalTitle="Mapped reads"
+          <help-button modalTitle="Mapped reads" tooltipText="Expect a value >90%"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="forward_strands" class="percent panel">Forward Strand
-          <help-button modalTitle="Forward strand"
+          <help-button modalTitle="Forward strand" tooltipText="Expect a value ~50%"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="proper_pairs" class="percent panel">Proper Pairs
-          <help-button modalTitle="Proper Pairs"
+          <help-button modalTitle="Proper Pairs" tooltipText="Expect a value >90%"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="singletons" class="percent panel">Singletons
-          <help-button modalTitle="Singletons"
+          <help-button modalTitle="Singletons" tooltipText="Expect a value <1&"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
-        <div id="both_mates_mapped" class="percent panel">Both Pairs Mapped
-          <help-button modalTitle="Both Pairs Mapped"
+        <div id="both_mates_mapped" class="percent panel">Both Mates Mapped
+          <help-button modalTitle="Both Mates Mapped" tooltipText="Expect a value >90%"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
         </div>
         <div id="duplicates" class="percent panel">Duplicates
-          <help-button modalTitle="Duplicates"
+          <help-button modalTitle="Duplicates" tooltipText="Value depends on depth"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
@@ -193,7 +198,7 @@
       <div id="distributions" >
         <div id="read-coverage-distribution" class="distribution panel"><div>
           Read Coverage Distribution
-          <help-button modalTitle="Read Coverage Distribution"
+          <help-button modalTitle="Read Coverage Distribution" tooltipText="Expect a Poisson distribution centered on the expected mean coverage"
                        body="">
           </help-button>
         </div>
