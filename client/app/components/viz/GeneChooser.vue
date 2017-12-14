@@ -1,26 +1,21 @@
 <style type="text/css">
-
-  .panel#total-reads {
-    -webkit-flex: 1 1 150px;
-    flex: 1 1 150px;
-    -webkit-order: 2;
-    order: 2;
-    margin-right:20px;
-    width: 150px;
+  .panel#piechooser {
+    -webkit-flex: 1 1 250px;
+    flex: 1 1 250px;
+    -webkit-order: 1;
+    order: 1;
     height: 100%;
+    position:relative;
+    width: 175px;
   }
 </style>
 
 <template>
-  <div id="total-reads" class="panel">
-    <help-button modalTitle="Sampled reads" tooltipText="Number of reads sampled" :body="helpBody" >
-    </help-button>
-    <div class="title">Reads Sampled</div>
-    <div id="value" style="font-size:5.5vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
-    <div id="base" style="font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;">
-      <span id="number"></span>
-      <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-7px;cursor:pointer" @click="sampleMore()" src="../../../images/more_sampling.png"></img>
-    </div>
+  <div id="piechooser" class="panel">
+    <select onchange='setSelectedSeq(this.value);' id="reference-select">
+
+      <option value="all">all</option>
+    </select>
   </div>
 </template>
 
@@ -30,7 +25,7 @@ import HelpButton from "../partials/HelpButton.vue";
 
 export default {
   components: {HelpButton},
-  name: 'reads-sampled',
+  name: 'gene-chooser',
   props: {
     width: {
       type: Number,
@@ -39,10 +34,7 @@ export default {
   },
   data() {
     return {
-      helpBody: "Bam.iobio does not read the entire bam file, rather, it samples reads from across the entire genome. " +
-                "The number of reads that have been sampled are shown here, and should be at least in the tens of thousands " +
-                "to have confidence in the statistics. Click the arrow beneath the displayed number to increase the number " +
-                "of sampled reads."
+      helpBody: ""
     }
   },
   created: function() {

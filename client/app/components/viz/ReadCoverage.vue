@@ -1,10 +1,10 @@
 <style type="text/css">
-  panel#depth-distribution {
+  .panel#depth-distribution {
     -webkit-flex: 1 1 auto;
     flex: 1 1 auto;
     -webkit-order: 2;
     order: 2;
-    height: 250px;
+    height: 100%;
     position:relative;
     width: 65%;
   }

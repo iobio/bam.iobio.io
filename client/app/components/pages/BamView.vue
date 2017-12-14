@@ -9,7 +9,6 @@
 
   .panel > .title { font-size: 30px}
 
-
   #percents {
     margin-right: 20px;
     -webkit-flex: 1 1 auto;
@@ -38,6 +37,7 @@
 
   section#top {
     min-height: 225px;
+    height: 250px;
   }
 
   section#middle {
@@ -63,20 +63,6 @@
   #percents .percent svg { width: 100%; height:180px }
   #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:200px; position:relative; /*padding: 0px 15px 0px 15px*/}
 
-  .glyphicon.glyphicon-info-sign {
-    cursor: pointer;
-    color: #828282;
-  }
-
-  .panel#piechooser {
-    -webkit-flex: 1 1 250px;
-    flex: 1 1 250px;
-    -webkit-order: 1;
-    order: 1;
-    height: 250px;
-    position:relative;
-    width: 250px;
-  }
 
 </style>
 
@@ -85,15 +71,12 @@
     <app-header></app-header>
 
     <section id="top">
-      <div id="piechooser" class="panel">
-        <select onchange='setSelectedSeq(this.value);' id="reference-select">
 
-          <option value="all">all</option>
-        </select>
-      </div>
-      <read-coverage></read-coverage>
+        <gene-chooser></gene-chooser>
 
-      <reads-sampled></reads-sampled>
+        <read-coverage></read-coverage>
+
+        <reads-sampled></reads-sampled>
 
     </section>
 
@@ -178,10 +161,12 @@
   import ReadsSampled from "../viz/ReadsSampled.vue";
   import HelpButton from "../partials/HelpButton.vue";
   import ReadCoverage from "../viz/ReadCoverage.vue";
+  import GeneChooser from "../viz/GeneChooser.vue";
 
   export default {
     name: 'bamview',
     components: {
+      GeneChooser,
       ReadCoverage,
       HelpButton,
       ReadsSampled,
@@ -193,9 +178,6 @@
       }
     },
     methods: {
-
-
-
 
     }
   }
