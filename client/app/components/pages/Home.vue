@@ -1,36 +1,3 @@
-<template>
-  <div id="bodydiv">
-
-    <app-header></app-header>
-
-    <div id="selectData">
-      <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
-        <div style="margin-left:auto;margin-right:auto;font-size: 28px; color: rgb(110,110,110); margin-bottom:70px; text-align: center;">
-          examine your sequence alignment file in seconds
-        </div>
-
-        <file-select-button-bar></file-select-button-bar>
-        <div style="clear:both"></div>
-        <div id="info">
-          <ul>
-            <li><a href="http://www.nature.com/nmeth/journal/v11/n12/full/nmeth.3174.html">Publication</a></li>
-            <li><router-link :to="{name: 'help'}"><a >File Requirements</a> </router-link></li>
-            <li><router-link :to="{name: 'license'}"><a>License</a></router-link></li>
-            <li><a href="../../../images/browserCompatability.png">Compatible Browsers</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div style="margin: 50px auto 0px auto; font-size: 23px; width: 600px; text-align:center; color: rgb(110,110,110)">
-        <div>for variant files check out <a href="http://vcf.iobio.io">vcf.iobio</a></div>
-      </div>
-
-      <marth-lab-footer></marth-lab-footer>
-
-    </div>
-  </div>
-</template>
-
 <style>
   #bodydiv {
     font-family: Quicksand;
@@ -119,6 +86,39 @@
   #info ul{margin: 0px; padding: 0px; list-style-type: none; }
   #info li {display:inline; margin: 0px 0px 0px 50px;}
 </style>
+
+<template>
+  <div id="bodydiv">
+
+    <app-header></app-header>
+
+    <div id="selectData">
+      <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
+        <div style="margin-left:auto;margin-right:auto;font-size: 28px; color: rgb(110,110,110); margin-bottom:70px; text-align: center;">
+          examine your sequence alignment file in seconds
+        </div>
+
+        <file-select-button-bar></file-select-button-bar>
+        <div style="clear:both"></div>
+        <div id="info">
+          <ul>
+            <li><a href="http://www.nature.com/nmeth/journal/v11/n12/full/nmeth.3174.html">Publication</a></li>
+            <li><router-link :to="{name: 'help'}"><a >File Requirements</a> </router-link></li>
+            <li><router-link :to="{name: 'license'}"><a>License</a></router-link></li>
+            <li><a href="../../../images/browserCompatability.png">Compatible Browsers</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin: 50px auto 0px auto; font-size: 23px; width: 600px; text-align:center; color: rgb(110,110,110)">
+        <div>for variant files check out <a href="http://vcf.iobio.io">vcf.iobio</a></div>
+      </div>
+
+      <marth-lab-footer></marth-lab-footer>
+
+    </div>
+  </div>
+</template>
 
 <script>
   import AppHeader from "../partials/AppHeader.vue";
