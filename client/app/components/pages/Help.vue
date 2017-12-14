@@ -1,36 +1,44 @@
 <style>
-  #help-body header {
+  #help header {
     font-family: Quicksand;
+    font-size: 46px;
   }
-  #help-body h1, h2, h3, h4 {
+  #help h1, h2, h3, h4 {
     font-family: Muli;
 
   }
-  #help-body h1 {
+  #help h1 {
     font-size: 26px;
     font-weight: normal;
 
   }
-  #help-body h2 {
+  #help h2 {
     font-size: 24px;
   }
-  #help-body h3 {
+  #help h3 {
     font-size: 18px;
     margin-top: 40px;
   }
-  #help-body h4 {
+  #help h4 {
     margin-bottom: 5px;
   }
-  #help-body body {
+  #help body {
     margin: 20px;
     font-family: Open Sans;
     width: 900px;
     font-weight: 300;
   }
+  a:visited {
+    color:none;
+  }
+  a, a:hover {
+    text-decoration:none;
+    color:#2d8fc1;
+  }
 </style>
 
 <template>
-  <div id="help-body">
+  <div id="help">
 
     <body>
 
@@ -42,12 +50,12 @@
 
     <h3>Install Bamtools</h3>
 
-    Download and install bamtools using the instructions <a href="https://github.com/pezmaster31/bamtools/wiki/Building-and-installing">here</a>
+    Download and install bamtools using the instructions <a href="https://github.com/pezmaster31/bamtools/wiki/Building-and-installing">here</a>.
 
     <h3>Indexing your BAM</h3>
 
     Once you have successfully compiled bamtools, you can index your bam files with the following command:
-    <pre>
+    <pre style="border: none;background: none">
 	$ /path/to/bamtools index -in mybam.bam
     </pre>
     This commands will create a new file, the index file (.bam.bai).  Now you are ready to run <a href="../../../../index.html">bam.iobio</a>, selecting this file and your bam file when prompted.

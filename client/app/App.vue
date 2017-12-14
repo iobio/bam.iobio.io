@@ -19,4 +19,6 @@ export default {
    @import '~bootstrap/dist/css/bootstrap.css';
    @import url('http://fonts.googleapis.com/css?family=Quicksand:300');
    @import url('http://fonts.googleapis.com/css?family=Overlock+SC');
+   @import url('http://fonts.googleapis.com/css?family=Open+Sans');
+   @import url('http://fonts.googleapis.com/css?family=Muli');
 </style>
