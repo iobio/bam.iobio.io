@@ -56,8 +56,6 @@
     margin-left: -23px;
   }
   .arrow_box input {
-    /*border: none;*/
-    /*outline: none;*/
     width:610px;
     margin: 8px;
     color: #2d8fc1;
@@ -79,9 +77,7 @@
       <input id="url-input" value="http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam" ></input>
       <input id="bai-url-input" placeholder="BAI URL (optional)" ></input>
       <button id="bam-url-go-button" @click="openBamURL">
-        <!--<router-link :to="{name: 'BamView', props: { selectedFileURL: this.selectedFileURL }}">-->
           Go
-        <!--</router-link>-->
       </button>
     </div>
   </div>
