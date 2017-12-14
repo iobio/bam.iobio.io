@@ -141,7 +141,6 @@
       </div>
 
       <reads-sampled>
-
       </reads-sampled>
 
     </section>
