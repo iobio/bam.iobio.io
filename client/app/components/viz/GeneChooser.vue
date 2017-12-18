@@ -21,10 +21,9 @@
 
 <script>
 
-import HelpButton from "../partials/HelpButton.vue";
 
 export default {
-  components: {HelpButton},
+  components: {},
   name: 'gene-chooser',
   props: {
     width: {
@@ -34,48 +33,35 @@ export default {
   },
   data() {
     return {
-      helpBody: ""
+      window.pieChooserChart = iobio.viz.pieChooser()
+      .radius(r)
+      .innerRadius(r*.5)
+      .padding(pieChooserPadding)
+      .transitionDuration(0)
+      .color( function(d,i) {
+        return color(d.data.name);
+      })
+      .on("click", function(d,i) {
+        setSelectedSeq(d.data.name);
+      })
+      .on("clickall", function(d,i) {
+        window.readDepthChart.trigger('click', 'all');
+      })
+      .tooltip( function(d) {
+        return d.data.name;
+      });
     }
   },
-  created: function() {
+
+  methods: {
+
 
   },
-  mounted: function() {
-    // this.width = this.width || $(this.$el).width();
-      this.draw();
-  },
-  methods: {
-    sampleMore : function() {
-      if (window.sampleMultiplier >= window.sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
-      window.sampleMultiplier += 1;
-      var options = {
-        sequenceNames : [ getSelectedSeqId() ],
-        binNumber : window.binNumber + parseInt(window.binNumber/4 * window.sampleMultiplier),
-        binSize : window.binSize + parseInt(window.binSize/4 * window.sampleMultiplier)
-      }
-      if (window.depthChart.brush().extent().length != 0 && window.depthChart.brush().extent().toString() != "0,0") {
-        options.start = parseInt(window.depthChart.brush().extent()[0]);
-        options.end = parseInt(window.depthChart.brush().extent()[1]);
-      }
-      goSampling(options);
-    }
-  },
   computed: {
-    svgWidth: function() {
-      return this.width || $(this.$el).width();
-    },
-    finalMargin: function() {
-      var m = this.margin;
-      return m;
-    }
+
   },
   watch: {
-    data: function() {
-      this.update();
-    },
-    width: function() {
-      this.update();
-    }
+
   }
 }
 
