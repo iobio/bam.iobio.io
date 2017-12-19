@@ -57,11 +57,11 @@ export default {
   },
   data() {
     return {
-      helpBody: "The read coverage shows how the read coverage varies across the entire genome. The coloured" +
-                "numbers beneath represent chromosomes in the reference genome used and can be selected to view" +
-                "the read coverage in an individual chromosome. Selecting a different chromosome will cause" +
-                "all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only." +
-                "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region" +
+      helpBody: "The read coverage shows how the read coverage varies across the entire genome. The coloured " +
+                "numbers beneath represent chromosomes in the reference genome used and can be selected to view " +
+                "the read coverage in an individual chromosome. Selecting a different chromosome will cause " +
+                "all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only. " +
+                "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
                 "of interest; again, all other metrics will then be recalculated for that region only."
     }
   },
