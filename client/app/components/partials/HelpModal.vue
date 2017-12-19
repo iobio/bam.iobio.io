@@ -1,5 +1,9 @@
 <style type="text/css">
 
+  .modal {
+    transition: all .3s ease;
+  }
+
   .modal-header {
     text-align: left;
   }
