@@ -29,8 +29,8 @@
       Read Coverage
     </div>
     <div class="hint">(drag to select region)</div>
-     <label class="checkbox" for="checkbox2" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
-        <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
+     <label class="checkbox" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">
+        <input type="checkbox" v-model="exomeSampling" class="outlier" data-toggle="checkbox" >
         Exome
     </label>
     <input type="file" name="files[]" id="bedfile"  multiple />
@@ -59,7 +59,8 @@ export default {
                 "the read coverage in an individual chromosome. Selecting a different chromosome will cause " +
                 "all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only. " +
                 "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
-                "of interest; again, all other metrics will then be recalculated for that region only."
+                "of interest; again, all other metrics will then be recalculated for that region only.",
+      exomeSampling: false,
     }
   },
   created: function() {
