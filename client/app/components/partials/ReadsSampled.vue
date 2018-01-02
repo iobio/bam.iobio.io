@@ -82,8 +82,8 @@ export default {
 
   },
   watch: {
-    totalReads: function() {
-      this.updateTotalReads(this.totalReads);
+    totalReads: function(newTotal) {
+      this.updateTotalReads(newTotal);
     },
   }
 }
