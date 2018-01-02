@@ -20,11 +20,15 @@
       </help-button>
       Reads Sampled
     </div>
-    <div id="value" style="font-size:5.5vw; color:#2687BE; text-align:center;padding-left:8px;">0</div>
-    <div id="base" style="font-size:1.4vw;padding-left:28px; letter-spacing:3px; color:#2687BE; text-align:center;">
-      <span id="number"></span>
-      <img title="Sample More" style="width:20px;margin-bottom:-3px;margin-left:-17px;cursor:pointer"
+    <div style="font-size:5.5vw;color:#2687BE;text-align:center;margin-bottom:-11px;margin-top:-11px">
+      {{totalReadsValue}}
+    </div>
+    <div style="font-size:1.4vw;color:#2687BE;text-align:center;">
+      {{base}}
+      <div >
+      <img title="Sample More" style="width:20px;margin-bottom:-3px;cursor:pointer;"
            @click="sampleMore()" src="../../../images/more_sampling.png"></img>
+      </div>
     </div>
   </div>
 </template>
@@ -37,33 +41,50 @@ export default {
   components: {HelpButton},
   name: 'reads-sampled',
   props: {
-
-
-
-
+    totalReads : 0,
+    parentBamView : undefined,
   },
   data() {
     return {
       helpBody: "Bam.iobio does not read the entire bam file, rather, it samples reads from across the entire genome. " +
                 "The number of reads that have been sampled are shown here, and should be at least in the tens of thousands " +
                 "to have confidence in the statistics. Click the arrow beneath the displayed number to increase the number " +
-                "of sampled reads."
+                "of sampled reads.",
+
+      totalReadsValue : 0,
+      base : "",
     }
   },
   methods: {
 
+    updateTotalReads : function(totalReads) {
+      // update total reads
+      var reads = shortenNumber( totalReads );
+      this.totalReadsValue =  reads[0] ;
+      this.base = reads[1] || "" ;
+    },
+
+    shortenNumber : function(num) {
+      if(num.toString().length <= 3)
+        return [num];
+      else if (num.toString().length <= 6)
+        return [Math.round(num/1000), "thousand"];
+      else
+        return [Math.round(num/1000000), "million"];
+    },
+
+    sampleMore : function() {
+      this.parentBamView.sampleMore();
+    }
 
   },
   computed: {
 
   },
   watch: {
-    data: function() {
-      this.update();
+    totalReads: function() {
+      this.updateTotalReads(this.totalReads);
     },
-    width: function() {
-      this.update();
-    }
   }
 }
 
