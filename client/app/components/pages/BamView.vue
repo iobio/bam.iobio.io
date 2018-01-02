@@ -87,7 +87,7 @@
         </select>
       </div>
 
-      <read-coverage></read-coverage>
+      <read-coverage :exomeSampling="exomeSampling"></read-coverage>
 
       <reads-sampled :parentBamView="this" :totalReads="totalReads"></reads-sampled>
 
@@ -174,7 +174,7 @@
   import ReadsSampled from "../partials/ReadsSampled.vue";
   import HelpButton from "../partials/HelpButton.vue";
   import ReadCoverage from "../partials/ReadCoverage.vue";
-  import Bam from "../../../js/IobioBam.js";
+  import Bam from "../../models/Bam.js";
   import NProgress from "../../../js/nprogress";
 
 
@@ -201,7 +201,8 @@
         sampleMultiplierLimit: 4,
         bam: new Bam().init( this.selectedFileURL ),
         bed: undefined,
-        totalReads: 0
+        totalReads: 0,
+        exomeSampling: false,
 
       }
     },
@@ -211,7 +212,7 @@
       goSampling : function(options) {
         // add default options
         options = $.extend({
-          exomeSampling : 'checked' == $("#depth-distribution input").attr("checked"),
+          exomeSampling :  this.exomeSampling, //'checked' == $("#depth-distribution input").attr("checked"),
           bed : this.bed,
           onEnd:function(){NProgress.done();}
         },options);
