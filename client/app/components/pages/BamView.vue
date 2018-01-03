@@ -89,7 +89,7 @@
 
       <read-coverage :exomeSampling="exomeSampling"></read-coverage>
 
-      <reads-sampled :parentBamView="this" :totalReads="totalReads"></reads-sampled>
+      <reads-sampled v-on:sampleMore="sampleMore()" :totalReads="totalReads"></reads-sampled>
 
     </section>
 
@@ -248,12 +248,12 @@
       },
 
       sampleMore : function() {
-        if (sampleMultiplier >= sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
-        sampleMultiplier += 1;
+        if (this.sampleMultiplier >= this.sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
+        this.sampleMultiplier += 1;
         var options = {
           sequenceNames : [ getSelectedSeqId() ],
-          binNumber : binNumber + parseInt(binNumber/4 * sampleMultiplier),
-          binSize : binSize + parseInt(binSize/4 * sampleMultiplier)
+          binNumber : binNumber + parseInt(binNumber/4 * this.sampleMultiplier),
+          binSize : binSize + parseInt(binSize/4 * this.sampleMultiplier)
         }
         if (this.depthChart.brush().extent().length != 0 && this.depthChart.brush().extent().toString() != "0,0") {
           options.start = parseInt(this.depthChart.brush().extent()[0]);

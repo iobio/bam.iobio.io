@@ -42,7 +42,6 @@ export default {
   name: 'reads-sampled',
   props: {
     totalReads : 0,
-    parentBamView : undefined,
   },
   data() {
     return {
@@ -74,7 +73,7 @@ export default {
     },
 
     sampleMore : function() {
-      this.parentBamView.sampleMore();
+      this.$emit('sampleMore');
     }
 
   },
