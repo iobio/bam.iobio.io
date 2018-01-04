@@ -87,7 +87,7 @@
         </select>
       </div>
 
-      <read-coverage :exomeSampling="exomeSampling"></read-coverage>
+      <read-coverage v-on:removeBedFile="removeBedFile()" v-on:addDefaultBedFile="addDefaultBedFile()"></read-coverage>
 
       <reads-sampled v-on:sampleMore="sampleMore()" :totalReads="totalReads"></reads-sampled>
 
@@ -220,7 +220,9 @@
         // turn on sampling message and off svg
         $("section#middle svg").css("display", "none");
         $(".samplingLoader").css("display", "block");
-//        updateTotalReads(0);
+
+//        this.totalReads = 0;
+
         NProgress.start();
         NProgress.set(0);
         // update selected stats
@@ -241,8 +243,9 @@
           if (NProgress.status < percentDone) NProgress.set(percentDone);
           // update charts
           updatePercentCharts(data, this.sampleDonutChart)
-//          updateTotalReads(data.total_reads);
+
           this.totalReads = data.total_reads;
+
           updateHistogramCharts(data, undefined, "sampleBar")
         },options);
       },
@@ -251,7 +254,7 @@
         if (this.sampleMultiplier >= this.sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
         this.sampleMultiplier += 1;
         var options = {
-          sequenceNames : [ getSelectedSeqId() ],
+          sequenceNames : [ this.getSelectedSeqId() ],
           binNumber : binNumber + parseInt(binNumber/4 * this.sampleMultiplier),
           binSize : binSize + parseInt(binSize/4 * this.sampleMultiplier)
         }
@@ -259,23 +262,25 @@
           options.start = parseInt(this.depthChart.brush().extent()[0]);
           options.end = parseInt(this.depthChart.brush().extent()[1]);
         }
-        goSampling(options);
+        this.goSampling(options);
       },
 
-      shortenNumber : function(num){
-        if(num.toString().length <= 3)
-          return [num];
-        else if (num.toString().length <= 6)
-          return [Math.round(num/1000), "thousand"];
-        else
-          return [Math.round(num/1000000), "million"];
+      getSelectedSeqId : function() {
+        return window.readDepthChart.getSelected();
       },
 
-      updateTotalReads : function(totalReads) {
-        // update total reads
-        var reads = shortenNumber( totalReads );
-        $("#total-reads>#value").html( reads[0] );
-        $("#total-reads>#base>#number").html( reads[1] || "" );
+      getSelectedSeqIds : function() {
+        var selected = window.readDepthChart.getSelected();
+        if (selected == 'all') {
+          return Object.keys(window.bam.readDepth)
+            .filter(function(key) {
+              if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
+                return false
+              if (window.bam.readDepth[key].length > 0)
+                return  true
+            })
+        } else
+          return [selected];
       },
 
       setSelectedSeq: function(selected, start, end) {
@@ -318,6 +323,14 @@
         } else {
           goSampling({ sequenceNames:seqDataIds});
         }
+      },
+
+      removeBedFile : function() {
+        $("#remove-bedfile-button").css('visibility', 'hidden');
+        $("#default-bedfile-button").css('visibility', 'visible');
+        $("#add-bedfile-button").css('visibility', 'visible');
+        this.bed = undefined;
+        goSampling({sequenceNames :  getSelectedSeqIds() });
       },
 
       addDefaultBedFile : function() {
