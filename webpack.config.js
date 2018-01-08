@@ -59,6 +59,10 @@ module.exports = {
             }
           }
         ]
+      },
+      {
+        test: /\.bed$/,
+        use: 'raw-loader'
       }
     ]
   },
