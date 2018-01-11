@@ -10,8 +10,6 @@
 
 <script>
 
-  import  "../../../js/iobio.viz.js";
-
 export default {
     name: 'pie-chooser',
     props: {
@@ -44,6 +42,7 @@ export default {
     data() {
       return {
         radius: this.width/2 - this.padding,
+        pieChooser: {}
       }
     },
     created: function() {
@@ -82,6 +81,7 @@ export default {
           });
 
         this.pieChooser(this.pieSelection);
+        this.setPieChooserChart();
 
       },
       update: function() {
@@ -90,7 +90,7 @@ export default {
         this.setPieChooserChart();
       },
       setPieChooserChart: function() {
-        this.$emit('setPieChooserChart',this.pieChooser);
+        this.$emit('updatePieChooserChart', this.pieChooser);
       }
     },
     watch: {
