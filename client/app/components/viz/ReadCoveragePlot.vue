@@ -11,7 +11,7 @@
 <script>
 
 export default {
-    name: 'multi-line',
+    name: 'read-coverage-plot',
     props: {
       data: {},
       selection: undefined,

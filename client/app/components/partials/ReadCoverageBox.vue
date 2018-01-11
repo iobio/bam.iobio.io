@@ -126,7 +126,7 @@
     <!-- <div id="test-chart" style="width:100%"></div> -->
     <div class='chart' style="width:98%; height:60%"></div>
 
-    <multi-line @setLineChart="updateReadDepthChart" :selection="readDepthSelection" :width="depthChartWidth"></multi-line>
+    <read-coverage-plot @setLineChart="updateReadDepthChart" :selection="readDepthSelection" :width="depthChartWidth"></read-coverage-plot>
     <!-- <ul id="sequences"></ul> -->
   </div>
 </template>
@@ -134,11 +134,11 @@
 <script>
 
 import HelpButton from "./HelpButton.vue";
-import MultiLine from "../viz/MultiLine.vue";
+import ReadCoveragePlot from "../viz/ReadCoveragePlot.vue";
 
 export default {
   components: {
-    MultiLine,
+    ReadCoveragePlot,
     HelpButton
   },
   name: 'read-coverage-box',
