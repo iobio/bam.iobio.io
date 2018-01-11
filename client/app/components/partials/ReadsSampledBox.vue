@@ -39,7 +39,7 @@ import HelpButton from "./HelpButton.vue";
 
 export default {
   components: {HelpButton},
-  name: 'reads-sampled',
+  name: 'reads-sampled-box',
   props: {
     totalReads : 0,
   },

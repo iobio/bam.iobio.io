@@ -175,7 +175,7 @@
                          @updateSelection="updateReadDepthSelection"
                          :readDepthSelection="readDepthSelection"></read-coverage-box>
 
-      <reads-sampled @sampleMore="sampleMore()" :totalReads="totalReads"></reads-sampled>
+      <reads-sampled-box @sampleMore="sampleMore()" :totalReads="totalReads"></reads-sampled-box>
 
     </section>
 
@@ -257,7 +257,7 @@
 <script>
 
   import AppHeader from "../partials/AppHeader.vue";
-  import ReadsSampled from "../partials/ReadsSampled.vue";
+  import ReadsSampledBox from "../partials/ReadsSampledBox.vue";
   import HelpButton from "../partials/HelpButton.vue";
   import ReadCoverageBox from "../partials/ReadCoverageBox.vue";
 
@@ -273,7 +273,7 @@
       PieChooser,
       ReadCoverageBox,
       HelpButton,
-      ReadsSampled,
+      ReadsSampledBox,
       AppHeader
     },
 
