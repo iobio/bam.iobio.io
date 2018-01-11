@@ -72,6 +72,88 @@
 
   #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:200px; position:relative; /*padding: 0px 15px 0px 15px*/}
 
+
+  /* Make clicks pass-through */
+  #nprogress {
+    pointer-events: none;
+    -webkit-pointer-events: none;
+  }
+
+  #nprogress .bar {
+    background: #29d;
+
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 2px;
+  }
+
+  /* Fancy blur effect */
+  #nprogress .peg {
+    display: block;
+    position: absolute;
+    right: 0px;
+    width: 100px;
+    height: 100%;
+    box-shadow: 0 0 10px #29d, 0 0 5px #29d;
+    opacity: 1.0;
+
+    -webkit-transform: rotate(3deg) translate(0px, -4px);
+    -moz-transform: rotate(3deg) translate(0px, -4px);
+    -ms-transform: rotate(3deg) translate(0px, -4px);
+    -o-transform: rotate(3deg) translate(0px, -4px);
+    transform: rotate(3deg) translate(0px, -4px);
+  }
+
+  /* Remove these to get rid of the spinner */
+  #nprogress .spinner {
+    display: block;
+    position: fixed;
+    z-index: 100;
+    top: 15px;
+    right: 15px;
+  }
+
+  #nprogress .spinner-icon {
+    width: 14px;
+    height: 14px;
+
+    border:  solid 2px transparent;
+    border-top-color:  #29d;
+    border-left-color: #29d;
+    border-radius: 10px;
+
+    -webkit-animation: nprogress-spinner 400ms linear infinite;
+    -moz-animation:    nprogress-spinner 400ms linear infinite;
+    -ms-animation:     nprogress-spinner 400ms linear infinite;
+    -o-animation:      nprogress-spinner 400ms linear infinite;
+    animation:         nprogress-spinner 400ms linear infinite;
+  }
+
+  @-webkit-keyframes nprogress-spinner {
+    0%   { -webkit-transform: rotate(0deg);   transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
+  }
+  @-moz-keyframes nprogress-spinner {
+    0%   { -moz-transform: rotate(0deg);   transform: rotate(0deg); }
+    100% { -moz-transform: rotate(360deg); transform: rotate(360deg); }
+  }
+  @-o-keyframes nprogress-spinner {
+    0%   { -o-transform: rotate(0deg);   transform: rotate(0deg); }
+    100% { -o-transform: rotate(360deg); transform: rotate(360deg); }
+  }
+  @-ms-keyframes nprogress-spinner {
+    0%   { -ms-transform: rotate(0deg);   transform: rotate(0deg); }
+    100% { -ms-transform: rotate(360deg); transform: rotate(360deg); }
+  }
+  @keyframes nprogress-spinner {
+    0%   { transform: rotate(0deg);   transform: rotate(0deg); }
+    100% { transform: rotate(360deg); transform: rotate(360deg); }
+  }
+
 </style>
 
 <template>
@@ -81,13 +163,17 @@
     <section id="top">
 
       <div id="piechooser" class="panel">
-        <pie-chooser @setPieChooserChart="updatePieChooserChart" :pieSelection="pieSelection"></pie-chooser>
+        <pie-chooser @updatePieChooserChart="updatePieChooserChart" :pieSelection="pieSelection"></pie-chooser>
         <select onchange='setSelectedSeq(this.value);' id="reference-select">
           <option value="all">all</option>
         </select>
       </div>
 
-      <read-coverage @removeBedFile="removeBedFile()" @addDefaultBedFile="addDefaultBedFile()"></read-coverage>
+      <read-coverage-box @removeBedFile="removeBedFile()"
+                         @addDefaultBedFile="addDefaultBedFile()"
+                         @updateReadDepthChart="updateReadDepthChart"
+                         @updateSelection="updateReadDepthSelection"
+                         :readDepthSelection="readDepthSelection"></read-coverage-box>
 
       <reads-sampled @sampleMore="sampleMore()" :totalReads="totalReads"></reads-sampled>
 
@@ -173,19 +259,19 @@
   import AppHeader from "../partials/AppHeader.vue";
   import ReadsSampled from "../partials/ReadsSampled.vue";
   import HelpButton from "../partials/HelpButton.vue";
-  import ReadCoverage from "../partials/ReadCoverage.vue";
-  import Bam from "../../models/Bam.js";
-  import NProgress from "../../../js/nprogress";
+  import ReadCoverageBox from "../partials/ReadCoverageBox.vue";
+
   import PieChooser from "../viz/PieChooser.vue";
 
   import DefaultBed from '../../../static/20130108.exome.targets.bed'
+
 
   export default {
     name: 'bamview',
 
     components: {
       PieChooser,
-      ReadCoverage,
+      ReadCoverageBox,
       HelpButton,
       ReadsSampled,
       AppHeader
@@ -203,14 +289,20 @@
         sampleMultiplier: 1,
         sampleMultiplierLimit: 4,
         totalReads: 0,
+        sampling: '',
 
-        bam: new Bam().init( this.selectedFileURL ),
-        bed: undefined,
+//        bam: new Bam( this.selectedFileURL ),
+        bed: {},
 
         exomeSampling: false,
 
-        pieChooserChart: undefined,
-        pieSelection: undefined,
+        pieChooserChart: {},
+        pieSelection: {},
+
+        readDepthChart: {},
+        readDepthSelection: {},
+
+        draw: false,
 
       }
     },
@@ -234,7 +326,7 @@
         NProgress.start();
         NProgress.set(0);
         // update selected stats
-        this.bam.sampleStats( function(data){
+        window.bam.sampleStats( function(data){
           // turn off sampling message
           $(".samplingLoader").css("display", "none");
           $("section#middle svg").css("display", "block");
@@ -244,7 +336,7 @@
             var length = options.end - options.start;
             var percentDone = Math.max(Math.round( ((data.last_read_position-options.start) / length) * 100) / 100,0);
           } else {
-            var length = this.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
+            var length = window.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
             var percentDone = Math.round( (data.last_read_position / length) * 100) / 100;
           }
 
@@ -280,11 +372,11 @@
       getSelectedSeqIds : function() {
         var selected = 'all'; // this.readDepthChart.getSelected();
         if (selected == 'all') {
-          return Object.keys(this.bam.readDepth)
+          return Object.keys(window.bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
                 return false
-              if (this.bam.readDepth[key].length > 0)
+              if (window.bam.readDepth[key].length > 0)
                 return  true
             })
         } else
@@ -293,11 +385,11 @@
 
       setSelectedSeq: function(selected, start, end) {
         if (selected == 'all') {
-          var seqDataIds = Object.keys(this.bam.readDepth)
+          var seqDataIds = Object.keys(window.bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
                 return false
-              if (this.bam.readDepth[key].length > 0)
+              if (window.bam.readDepth[key].length > 0)
                 return  true
             })
           // setTimeout(function() {
@@ -317,7 +409,7 @@
         }
 
         // this.readDepthChart.trigger('click', selected);
-        if(draw) this.readDepthChart.setSelected(selected);
+        if(this.draw) this.readDepthChart.setSelected(selected);
 
         $("#reference-select").val(selected);
 
@@ -380,7 +472,7 @@
           alert('must select both a .bam and .bai file');
         }
 
-        this.bam = new Bam( bamFile, { bai: baiFile });
+        window.bam = new Bam( bamFile, { bai: baiFile });
         this.goBam();
       },
 
@@ -389,10 +481,10 @@
         $("#showData").css("visibility", "visible");
 
         // get read depth
-        this.bam.estimateBaiReadDepth(function(id,points, done){
+        window.bam.estimateBaiReadDepth(function(id,points, done){
           // setup first time and sample
 
-          if ( Object.keys(this.bam.readDepth).length == 1) {
+          if ( Object.keys(window.bam.readDepth).length == 1) {
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
             // turn on sampling message
@@ -400,38 +492,38 @@
 
           }
 
-          var allPoints = Object.keys(this.bam.readDepth)
+          var allPoints = Object.keys(window.bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
                 return false
-              if (this.bam.readDepth[key].length > 0)
+              if (window.bam.readDepth[key].length > 0)
                 return  true
             })
             .map(function(key) {
-              return {"name" : key, "data" : this.bam.readDepth[key] }
+              return {"name" : key, "data" : window.bam.readDepth[key] }
             })
 
-          draw = true;
+          this.draw = true;
 
-          var selection = d3.select('#depth-distribution .chart').datum(allPoints);
+          this.readDepthSelection = d3.select('#depth-distribution .chart').datum(allPoints);
 
           var pie = d3.layout.pie()
             .sort(null)
             .value(function(d,i) {return d.data.length });
 
-          this.pieSelection = d3.select('#piechooser').datum( pie(allPoints) )
+          this.pieSelection = d3.select('#piechooser').datum( pie(allPoints) );
 
           if (allPoints.length > 50) {
             $('#piechooser svg').css('visibility', 'hidden');
-            $('.too-many-refs').css('display', 'block')
-            draw = false;
+            $('.too-many-refs').css('display', 'block');
+            this.draw = false;
           }
 
           if (region && region.chr != 'all') {
-            if(draw) this.readDepthChart(selection, {selected:region.chr, noLine:!done});
+            if(this.draw) this.readDepthChart(this.readDepthSelection, {selected:region.chr, noLine:!done});
           }
           else {
-            if(draw) this.readDepthChart(selection, {noLine:!done});
+            if(this.draw) this.readDepthChart(this.readDepthSelection, {noLine:!done});
           }
 
           $('#reference-select')
@@ -454,7 +546,7 @@
               else
                 setSelectedSeq( id, start, end);
             })
-            this.pieChooserChart(pieSelection);
+            this.pieChooserChart(this.pieSelection);
           }
 
           var totalPoints = allPoints.reduce(function(acc,val) { return acc + val.data.length  },0)
@@ -465,8 +557,16 @@
 
       },
 
-      updatePieChooserChart: function(newChart) {
-        this.pieChooserChart = newChart;
+      updatePieChooserChart: function(updatedChart) {
+        this.pieChooserChart = updatedChart;
+      },
+
+      updateReadDepthChart: function(newChart) {
+        this.readDepthChart = newChart;
+      },
+
+      updateReadDepthSelection: function(newSelection) {
+        this.readDepthSelection = newSelection;
       }
 
 
@@ -474,6 +574,7 @@
 
     created: function() {
 
+      window.bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
       this.goBam(undefined);
       this.addDefaultBedFile();
 

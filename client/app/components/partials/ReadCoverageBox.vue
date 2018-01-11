@@ -125,6 +125,8 @@
     <div class="warning too-many-refs">Too many references to display. Use the dropdown to the left to select the reference</div>
     <!-- <div id="test-chart" style="width:100%"></div> -->
     <div class='chart' style="width:98%; height:60%"></div>
+
+    <multi-line @setLineChart="updateReadDepthChart" :selection="readDepthSelection" :width="depthChartWidth"></multi-line>
     <!-- <ul id="sequences"></ul> -->
   </div>
 </template>
@@ -132,12 +134,16 @@
 <script>
 
 import HelpButton from "./HelpButton.vue";
+import MultiLine from "../viz/MultiLine.vue";
 
 export default {
-  components: {HelpButton},
-  name: 'read-coverage',
+  components: {
+    MultiLine,
+    HelpButton
+  },
+  name: 'read-coverage-box',
   props: {
-
+    readDepthSelection: {},
   },
   data() {
     return {
@@ -148,6 +154,8 @@ export default {
                 "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
                 "of interest; again, all other metrics will then be recalculated for that region only.",
       powerScale: false,
+      readDepthChart: {},
+      depthChartWidth: $("#depth-distribution .chart").width(),
     }
   },
   created: function() {
@@ -163,14 +171,19 @@ export default {
 
     addDefaultBedFile : function() {
       this.$emit('addDefaultBedFile');
-    }
-
+    },
+    updateReadDepthChart: function(newChart) {
+      this.readDepthChart = newChart;
+      this.$emit('updateReadDepthChart',this.readDepthChart);
+    },
   },
   computed: {
 
   },
   watch: {
-
+    readDepthChart: function() {
+      this.setReadDepthChart();
+    }
   }
 }
 
