@@ -53,10 +53,11 @@ export default {
     methods: {
       draw: function() {
         var self = this;
+        var color = d3.scale.category20b();
 
         var yscale = d3.scale.pow().exponent(1);
 
-        this.lineChart = iobio.viz.multiLine()
+        window.readDepthChart = iobio.viz.multiLine()
           .nameValue(function(d) { return d.name; })
           .dataValue(function(d) { return d.data; })
           .xValue(function(d,i) { return d.pos; })
@@ -80,15 +81,15 @@ export default {
               setSelectedSeq( window.readDepthChart.getSelected() );
           });
 
-        this.lineChart.lineChart().y(yscale);
+        window.readDepthChart.lineChart().y(yscale);
 
-        this.lineChart(selection);
+        window.readDepthChart(selection);
 
       },
       update: function() {
-        this.lineChart(selection);
+        window.readDepthChart(selection);
 
-        this.$emit('setLineChart',this.lineChart);
+        this.$emit('setLineChart',window.readDepthChart);
         this.$emit('setSelection',this.selection);
       },
     },
