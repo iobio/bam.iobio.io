@@ -325,7 +325,7 @@
         NProgress.start();
         NProgress.set(0);
         // update selected stats
-        bam.sampleStats( function(data){
+        window.bam.sampleStats( function(data){
           // turn off sampling message
           $(".samplingLoader").css("display", "none");
           $("section#middle svg").css("display", "block");
@@ -335,7 +335,7 @@
             var length = options.end - options.start;
             var percentDone = Math.max(Math.round( ((data.last_read_position-options.start) / length) * 100) / 100,0);
           } else {
-            var length = bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
+            var length = window.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
             var percentDone = Math.round( (data.last_read_position / length) * 100) / 100;
           }
 
@@ -371,11 +371,11 @@
       getSelectedSeqIds : function() {
         var selected = 'all'; // this.readDepthChart.getSelected();
         if (selected == 'all') {
-          return Object.keys(bam.readDepth)
+          return Object.keys(window.bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
                 return false
-              if (bam.readDepth[key].length > 0)
+              if (window.bam.readDepth[key].length > 0)
                 return  true
             })
         } else
@@ -384,11 +384,11 @@
 
       setSelectedSeq: function(selected, start, end) {
         if (selected == 'all') {
-          var seqDataIds = Object.keys(bam.readDepth)
+          var seqDataIds = Object.keys(window.bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
                 return false
-              if (bam.readDepth[key].length > 0)
+              if (window.bam.readDepth[key].length > 0)
                 return  true
             })
           // setTimeout(function() {
@@ -471,7 +471,7 @@
           alert('must select both a .bam and .bai file');
         }
 
-        bam = new Bam( bamFile, { bai: baiFile });
+        window.bam = new Bam( bamFile, { bai: baiFile });
         this.goBam();
       },
 
@@ -480,10 +480,10 @@
         $("#showData").css("visibility", "visible");
 
         // get read depth
-        bam.estimateBaiReadDepth(function(id,points, done){
+        window.bam.estimateBaiReadDepth(function(id,points, done){
           // setup first time and sample
 
-          if ( Object.keys(bam.readDepth).length == 1) {
+          if ( Object.keys(window.bam.readDepth).length == 1) {
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
             // turn on sampling message
@@ -491,15 +491,15 @@
 
           }
 
-          var allPoints = Object.keys(bam.readDepth)
+          var allPoints = Object.keys(window.bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
                 return false
-              if (bam.readDepth[key].length > 0)
+              if (window.bam.readDepth[key].length > 0)
                 return  true
             })
             .map(function(key) {
-              return {"name" : key, "data" : bam.readDepth[key] }
+              return {"name" : key, "data" : window.bam.readDepth[key] }
             })
 
           var draw = true;
@@ -573,7 +573,7 @@
 
     created: function() {
 
-      bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
+      window.bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
       this.goBam(undefined);
       this.addDefaultBedFile();
 
