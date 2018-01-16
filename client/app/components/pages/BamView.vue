@@ -163,7 +163,7 @@
     <section id="top">
 
       <div id="piechooser" class="panel">
-        <pie-chooser @updatePieChooserChart="updatePieChooserChart" :pieSelection="pieSelection"></pie-chooser>
+        <pie-chooser :pieSelection="pieSelection"></pie-chooser>
         <select onchange='setSelectedSeq(this.value);' id="reference-select">
           <option value="all">all</option>
         </select>
@@ -171,7 +171,6 @@
 
       <read-coverage-box @removeBedFile="removeBedFile()"
                          @addDefaultBedFile="addDefaultBedFile()"
-                         @updateReadDepthChart="updateReadDepthChart"
                          @updateSelection="updateReadDepthSelection"
                          :readDepthSelection="readDepthSelection"></read-coverage-box>
 
@@ -263,7 +262,7 @@
 
   import PieChooser from "../viz/PieChooser.vue";
 
-  import DefaultBed from '../../../static/20130108.exome.targets.bed'
+  import DefaultBed from '../../../../data/20130108.exome.targets.bed'
 
 
   export default {
@@ -296,10 +295,10 @@
 
         exomeSampling: false,
 
-        pieChooserChart: {},
+//        pieChooserChart: {},
         pieSelection: {},
 
-        readDepthChart: {},
+//        readDepthChart: {},
         readDepthSelection: {},
 
         draw: false,
@@ -326,7 +325,7 @@
         NProgress.start();
         NProgress.set(0);
         // update selected stats
-        window.bam.sampleStats( function(data){
+        bam.sampleStats( function(data){
           // turn off sampling message
           $(".samplingLoader").css("display", "none");
           $("section#middle svg").css("display", "block");
@@ -336,7 +335,7 @@
             var length = options.end - options.start;
             var percentDone = Math.max(Math.round( ((data.last_read_position-options.start) / length) * 100) / 100,0);
           } else {
-            var length = window.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
+            var length = bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
             var percentDone = Math.round( (data.last_read_position / length) * 100) / 100;
           }
 
@@ -366,17 +365,17 @@
       },
 
       getSelectedSeqId : function() {
-        return this.readDepthChart.getSelected();
+        return window.readDepthChart.getSelected();
       },
 
       getSelectedSeqIds : function() {
         var selected = 'all'; // this.readDepthChart.getSelected();
         if (selected == 'all') {
-          return Object.keys(window.bam.readDepth)
+          return Object.keys(bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
                 return false
-              if (window.bam.readDepth[key].length > 0)
+              if (bam.readDepth[key].length > 0)
                 return  true
             })
         } else
@@ -385,15 +384,15 @@
 
       setSelectedSeq: function(selected, start, end) {
         if (selected == 'all') {
-          var seqDataIds = Object.keys(window.bam.readDepth)
+          var seqDataIds = Object.keys(bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
                 return false
-              if (window.bam.readDepth[key].length > 0)
+              if (bam.readDepth[key].length > 0)
                 return  true
             })
           // setTimeout(function() {
-          this.pieChooserChart.clickAllSlices(d3.selectAll('#piechooser .arc')[0]);
+          window.pieChooserChart.clickAllSlices(d3.selectAll('#piechooser .arc')[0]);
           // }, 2000);
         }
         else {
@@ -401,7 +400,7 @@
           $('#piechooser .arc').each(function(i,d) {
             if (d3.select(d).datum().data.name == selected) {
               // setTimeout(function() {this.pieChooserChart.clickSlice(i);}, 2000);
-              this.pieChooserChart.clickSlice(i)
+              window.pieChooserChart.clickSlice(i)
             }
 
           });
@@ -409,7 +408,7 @@
         }
 
         // this.readDepthChart.trigger('click', selected);
-        if(this.draw) this.readDepthChart.setSelected(selected);
+        if(this.draw) window.readDepthChart.setSelected(selected);
 
         $("#reference-select").val(selected);
 
@@ -472,7 +471,7 @@
           alert('must select both a .bam and .bai file');
         }
 
-        window.bam = new Bam( bamFile, { bai: baiFile });
+        bam = new Bam( bamFile, { bai: baiFile });
         this.goBam();
       },
 
@@ -481,10 +480,10 @@
         $("#showData").css("visibility", "visible");
 
         // get read depth
-        window.bam.estimateBaiReadDepth(function(id,points, done){
+        bam.estimateBaiReadDepth(function(id,points, done){
           // setup first time and sample
 
-          if ( Object.keys(window.bam.readDepth).length == 1) {
+          if ( Object.keys(bam.readDepth).length == 1) {
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
             // turn on sampling message
@@ -492,38 +491,38 @@
 
           }
 
-          var allPoints = Object.keys(window.bam.readDepth)
+          var allPoints = Object.keys(bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
                 return false
-              if (window.bam.readDepth[key].length > 0)
+              if (bam.readDepth[key].length > 0)
                 return  true
             })
             .map(function(key) {
-              return {"name" : key, "data" : window.bam.readDepth[key] }
+              return {"name" : key, "data" : bam.readDepth[key] }
             })
 
-          this.draw = true;
+          var draw = true;
 
-          this.readDepthSelection = d3.select('#depth-distribution .chart').datum(allPoints);
+          var selection = d3.select('#depth-distribution .chart').datum(allPoints);
 
           var pie = d3.layout.pie()
             .sort(null)
             .value(function(d,i) {return d.data.length });
 
-          this.pieSelection = d3.select('#piechooser').datum( pie(allPoints) );
+          var pieSelection = d3.select('#piechooser').datum( pie(allPoints) );
 
           if (allPoints.length > 50) {
             $('#piechooser svg').css('visibility', 'hidden');
             $('.too-many-refs').css('display', 'block');
-            this.draw = false;
+            draw = false;
           }
 
           if (region && region.chr != 'all') {
-            if(this.draw) this.readDepthChart(this.readDepthSelection, {selected:region.chr, noLine:!done});
+            if(draw) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
           }
           else {
-            if(this.draw) this.readDepthChart(this.readDepthSelection, {noLine:!done});
+            if(draw) window.readDepthChart(selection, {noLine:!done});
           }
 
           $('#reference-select')
@@ -536,17 +535,17 @@
           // if (region && region.chr == id ) {
           //     this.pieChooserChart(pieSelection);
           //     setSelectedSeq( id, start, end);
-          //     //this.readDepthChart(selection, {selected:id});
+          //     //readDepthChart(selection, {selected:id});
           // }
 
           if ( done ) {
-            this.pieChooserChart.on('end', function() {
+            window.pieChooserChart.on('end', function() {
               if (!region || (region && region.chr == 'all'))
                 setSelectedSeq( 'all' , start, end );
               else
                 setSelectedSeq( id, start, end);
             })
-            this.pieChooserChart(this.pieSelection);
+            window.pieChooserChart(pieSelection);
           }
 
           var totalPoints = allPoints.reduce(function(acc,val) { return acc + val.data.length  },0)
@@ -557,13 +556,13 @@
 
       },
 
-      updatePieChooserChart: function(updatedChart) {
-        this.pieChooserChart = updatedChart;
-      },
+//      updatePieChooserChart: function(updatedChart) {
+//        this.pieChooserChart = updatedChart;
+//      },
 
-      updateReadDepthChart: function(newChart) {
-        this.readDepthChart = newChart;
-      },
+//      updateReadDepthChart: function(newChart) {
+//        this.readDepthChart = newChart;
+//      },
 
       updateReadDepthSelection: function(newSelection) {
         this.readDepthSelection = newSelection;
@@ -574,7 +573,7 @@
 
     created: function() {
 
-      window.bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
+      bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
       this.goBam(undefined);
       this.addDefaultBedFile();
 
@@ -582,7 +581,7 @@
   }
 
   function setBrush(start,end) {
-//    var brush = this.readDepthChart.brush();
+//    var brush = window.readDepthChart.brush();
     // // set brush region
 //    d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
   }

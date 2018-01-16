@@ -126,7 +126,9 @@
     <!-- <div id="test-chart" style="width:100%"></div> -->
     <div class='chart' style="width:98%; height:60%"></div>
 
-    <read-coverage-plot @setLineChart="updateReadDepthChart" :selection="readDepthSelection" :width="depthChartWidth"></read-coverage-plot>
+    <read-coverage-plot @setLineChart="updateReadDepthChart"
+                        @setSelection="updateReadDepthSelection"
+                        :selection="readDepthSelection" :width="depthChartWidth"></read-coverage-plot>
     <!-- <ul id="sequences"></ul> -->
   </div>
 </template>
@@ -143,7 +145,6 @@ export default {
   },
   name: 'read-coverage-box',
   props: {
-    readDepthSelection: {},
   },
   data() {
     return {
@@ -154,7 +155,8 @@ export default {
                 "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
                 "of interest; again, all other metrics will then be recalculated for that region only.",
       powerScale: false,
-      readDepthChart: {},
+//      readDepthChart: {},
+      readDepthSelection: {},
       depthChartWidth: $("#depth-distribution .chart").width(),
     }
   },
@@ -173,8 +175,12 @@ export default {
       this.$emit('addDefaultBedFile');
     },
     updateReadDepthChart: function(newChart) {
-      this.readDepthChart = newChart;
-      this.$emit('updateReadDepthChart',this.readDepthChart);
+      window.readDepthChart = newChart;
+//      this.$emit('updateSelection',this.readDepthChart);
+    },
+    updateReadDepthSelection: function(newSelection) {
+      this.readDepthSelection = newSelection;
+      this.$emit('updateSelection',this.readDepthSelection);
     },
   },
   computed: {
@@ -182,7 +188,10 @@ export default {
   },
   watch: {
     readDepthChart: function() {
-      this.setReadDepthChart();
+//      this.$emit('updateSelection',this.readDepthChart);
+    },
+    readDepthSelection: function() {
+      this.$emit('updateSelection',this.readDepthSelection);
     }
   }
 }
