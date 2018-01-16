@@ -62,7 +62,7 @@ export default {
 
         var color = d3.scale.category20b();
 
-        this.pieChooser = iobio.viz.pieChooser()
+        window.pieChooserChart = iobio.viz.pieChooser()
           .radius(this.radius)
           .innerRadius(this.radius*.5)
           .padding(this.padding)
@@ -80,17 +80,17 @@ export default {
             return d.data.name;
           });
 
-        this.pieChooser(this.pieSelection);
+        window.pieChooserChart(this.pieSelection);
         this.setPieChooserChart();
 
       },
       update: function() {
         var selection = d3.select(this.$el).datum( self.data );
-        this.pieChooser(selection);
+        window.pieChooserChart(selection);
         this.setPieChooserChart();
       },
       setPieChooserChart: function() {
-        this.$emit('updatePieChooserChart', this.pieChooser);
+//        this.$emit('updatePieChooserChart', this.pieChooser);
       }
     },
     watch: {
