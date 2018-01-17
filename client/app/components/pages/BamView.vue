@@ -172,6 +172,7 @@
       <read-coverage-box @removeBedFile="removeBedFile()"
                          @addDefaultBedFile="addDefaultBedFile()"
                          @updateSelection="updateReadDepthSelection"
+                         @setSelectedSeq="setSelectedSeq"
                          :readDepthSelection="readDepthSelection"></read-coverage-box>
 
       <reads-sampled-box @sampleMore="sampleMore()" :totalReads="totalReads"></reads-sampled-box>
@@ -369,7 +370,7 @@
       },
 
       getSelectedSeqIds : function() {
-        var selected = 'all'; // this.readDepthChart.getSelected();
+        var selected = window.readDepthChart.getSelected();
         if (selected == 'all') {
           return Object.keys(window.bam.readDepth)
             .filter(function(key) {
@@ -556,14 +557,6 @@
 
       },
 
-//      updatePieChooserChart: function(updatedChart) {
-//        this.pieChooserChart = updatedChart;
-//      },
-
-//      updateReadDepthChart: function(newChart) {
-//        this.readDepthChart = newChart;
-//      },
-
       updateReadDepthSelection: function(newSelection) {
         this.readDepthSelection = newSelection;
       }
@@ -581,9 +574,9 @@
   }
 
   function setBrush(start,end) {
-//    var brush = window.readDepthChart.brush();
-    // // set brush region
-//    d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
+    var brush = window.readDepthChart.brush();
+     // set brush region
+    d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
   }
 
   function resetBrush() { setBrush(0,0); }

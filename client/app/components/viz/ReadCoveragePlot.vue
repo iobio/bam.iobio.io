@@ -25,7 +25,7 @@ export default {
         type: Number
       },
       width:{
-        default: 100,
+        default: 875,
         type: Number
       },
       labelFormat: {
@@ -41,7 +41,7 @@ export default {
     },
     data() {
       return {
-        lineChart: {}
+
       }
     },
     created: function() {
@@ -57,6 +57,8 @@ export default {
 
         var yscale = d3.scale.pow().exponent(1);
 
+        var w = this.svgWidth;
+
         window.readDepthChart = iobio.viz.multiLine()
           .nameValue(function(d) { return d.name; })
           .dataValue(function(d) { return d.data; })
@@ -68,17 +70,17 @@ export default {
           .margin({top: 10, right: 0, bottom: 30, left:0})
           .height(150)
           .color(function(d,i) {return color(d.name); })
-          .width(this.width)
+          .width(w)
           .on('click', function(d) {
             var name = d ? d.name : 'all';
-            setSelectedSeq(name);
+            this.setSelectedSeq(name);
           })
           .brush('brushend', function(b) {
             var start = parseInt(b.extent()[0]), end = parseInt(b.extent()[1]);
             if (start != end)
-              setSelectedSeq( window.readDepthChart.getSelected(), start, end );
+              this.setSelectedSeq( window.readDepthChart.getSelected(), start, end );
             else
-              setSelectedSeq( window.readDepthChart.getSelected() );
+              this.setSelectedSeq( window.readDepthChart.getSelected() );
           });
 
         window.readDepthChart.lineChart().y(yscale);
@@ -86,11 +88,20 @@ export default {
         window.readDepthChart(selection);
 
       },
+      setSelectedSeq: function( selected, start, end) {
+        this.$emit('setSelectionSeq', selected, start, end);
+      },
       update: function() {
-        window.readDepthChart(selection);
+        window.readDepthChart.width(this.width);
+        this.selection = d3.select(this.$el).datum(this.data);
+        window.readDepthChart(this.selection);
 
-        this.$emit('setLineChart',window.readDepthChart);
         this.$emit('setSelection',this.selection);
+      },
+    },
+    computed: {
+      svgWidth: function() {
+        return this.width || $(this.$el).width();
       },
     },
     watch: {
@@ -98,6 +109,9 @@ export default {
         this.update();
       },
       selection: function() {
+        this.update();
+      },
+      width: function() {
         this.update();
       }
     }

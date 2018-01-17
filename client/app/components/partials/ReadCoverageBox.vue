@@ -104,11 +104,6 @@
     </div>
     <div class="hint">(drag to select region)</div>
 
-    <!--<label class="checkbox" style="position:absolute;right:15px;top:21px;cursor:pointer" title="Turn on Exome Sampling - use the read coverage data to sample only regions with non-zero read depth">-->
-        <!--<input type="checkbox" v-model="exomeSampling" >-->
-        <!--Exome-->
-    <!--</label>-->
-
     <input type="file" name="files[]" id="bedfile"  multiple />
     <div id="remove-bedfile-button" class="bedfile-button" onClick="removeBedFile()" style="visibility:hidden">Remove Bed</div>
     <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">GRCh37 exonic regions</div>
@@ -123,13 +118,14 @@
     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
     <div class='warning' id="not_enough_data">Bam file is too small to read coverage information</div>
     <div class="warning too-many-refs">Too many references to display. Use the dropdown to the left to select the reference</div>
-    <!-- <div id="test-chart" style="width:100%"></div> -->
+
     <div class='chart' style="width:98%; height:60%"></div>
 
     <read-coverage-plot @setLineChart="updateReadDepthChart"
                         @setSelection="updateReadDepthSelection"
-                        :selection="readDepthSelection" :width="depthChartWidth"></read-coverage-plot>
-    <!-- <ul id="sequences"></ul> -->
+                        @setSelectedSeq="setSelectedSeq"
+                        :selection="readDepthSelection"
+                        :width="depthChartWidth"></read-coverage-plot>
   </div>
 </template>
 
@@ -155,9 +151,7 @@ export default {
                 "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
                 "of interest; again, all other metrics will then be recalculated for that region only.",
       powerScale: false,
-//      readDepthChart: {},
       readDepthSelection: {},
-      depthChartWidth: $("#depth-distribution .chart").width(),
     }
   },
   created: function() {
@@ -174,22 +168,26 @@ export default {
     addDefaultBedFile : function() {
       this.$emit('addDefaultBedFile');
     },
+
     updateReadDepthChart: function(newChart) {
       window.readDepthChart = newChart;
-//      this.$emit('updateSelection',this.readDepthChart);
     },
+
     updateReadDepthSelection: function(newSelection) {
       this.readDepthSelection = newSelection;
       this.$emit('updateSelection',this.readDepthSelection);
     },
+
+    setSelectedSeq: function( selected, start, end) {
+      this.$emit('setSelectionSeq', selected, start, end);
+    },
   },
   computed: {
-
+    depthChartWidth: function() {
+      return $("#depth-distribution .chart").width() ;
+    },
   },
   watch: {
-    readDepthChart: function() {
-//      this.$emit('updateSelection',this.readDepthChart);
-    },
     readDepthSelection: function() {
       this.$emit('updateSelection',this.readDepthSelection);
     }

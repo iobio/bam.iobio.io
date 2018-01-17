@@ -21,11 +21,11 @@ export default {
       },
       labels: {},
       height:{
-        default: 100,
+        default: 250,
         type: Number
       },
       width:{
-        default: 100,
+        default: 250,
         type: Number
       },
       labelFormat: {
@@ -81,18 +81,14 @@ export default {
           });
 
         window.pieChooserChart(this.pieSelection);
-        this.setPieChooserChart();
 
       },
       update: function() {
         var selection = d3.select(this.$el).datum( self.data );
         window.pieChooserChart(selection);
-        this.setPieChooserChart();
       },
-      setPieChooserChart: function() {
-//        this.$emit('updatePieChooserChart', this.pieChooser);
-      }
     },
+
     watch: {
       data: function() {
           this.update();
