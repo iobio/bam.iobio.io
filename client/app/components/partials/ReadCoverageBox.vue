@@ -105,8 +105,8 @@
     <div class="hint">(drag to select region)</div>
 
     <input type="file" name="files[]" id="bedfile"  multiple />
-    <div id="remove-bedfile-button" class="bedfile-button" onClick="removeBedFile()" style="visibility:hidden">Remove Bed</div>
-    <div id="default-bedfile-button" class="bedfile-button" onClick="addDefaultBedFile()" title="1000G human exome targets file " style="right:110px">GRCh37 exonic regions</div>
+    <div id="remove-bedfile-button" class="bedfile-button" onClick="$emit('removeBedFile')" style="visibility:hidden">Remove Bed</div>
+    <div id="default-bedfile-button" class="bedfile-button" onClick="$emit('addDefaultBedFile')" title="1000G human exome targets file " style="right:110px">GRCh37 exonic regions</div>
     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
 
     <!-- log toggle -->
@@ -161,14 +161,6 @@ export default {
   },
   methods: {
 
-    removeBedFile : function() {
-      this.$emit('removeBedFile');
-    },
-
-    addDefaultBedFile : function() {
-      this.$emit('addDefaultBedFile');
-    },
-
     updateReadDepthChart: function(newChart) {
       window.readDepthChart = newChart;
     },
@@ -180,7 +172,8 @@ export default {
 
     setSelectedSeq: function( selected, start, end) {
       this.$emit('setSelectionSeq', selected, start, end);
-    },
+    }
+
   },
   computed: {
     depthChartWidth: function() {
