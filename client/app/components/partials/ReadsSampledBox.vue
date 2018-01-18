@@ -48,20 +48,10 @@ export default {
       helpBody: "Bam.iobio does not read the entire bam file, rather, it samples reads from across the entire genome. " +
                 "The number of reads that have been sampled are shown here, and should be at least in the tens of thousands " +
                 "to have confidence in the statistics. Click the arrow beneath the displayed number to increase the number " +
-                "of sampled reads.",
-
-      totalReadsValue : 0,
-      base : "",
+                "of sampled reads."
     }
   },
   methods: {
-
-    updateTotalReads : function(totalReads) {
-      // update total reads
-      var reads = shortenNumber( totalReads );
-      this.totalReadsValue =  reads[0] ;
-      this.base = reads[1] || "" ;
-    },
 
     shortenNumber : function(num) {
       if(num.toString().length <= 3)
@@ -78,12 +68,16 @@ export default {
 
   },
   computed: {
-
+    totalReadsValue: function() {
+      var reads = this.shortenNumber( this.totalReads );
+      return reads[0];
+    },
+    base: function() {
+      var reads = this.shortenNumber( this.totalReads );
+      return reads[1] || "";
+    },
   },
   watch: {
-    totalReads: function(newTotal) {
-      this.updateTotalReads(newTotal);
-    },
   }
 }
 
