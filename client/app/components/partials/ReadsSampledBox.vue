@@ -27,7 +27,8 @@
       {{base}}
       <div >
       <img title="Sample More" style="width:20px;margin-bottom:-3px;cursor:pointer;"
-           @click="sampleMore()" src="../../../images/more_sampling.png"></img>
+           @click="$emit('sampleMore')"
+           src="../../../images/more_sampling.png"></img>
       </div>
     </div>
   </div>
@@ -51,36 +52,26 @@ export default {
                 "of sampled reads."
     }
   },
-  methods: {
-
-    shortenNumber : function(num) {
-      if(num.toString().length <= 3)
-        return [num];
-      else if (num.toString().length <= 6)
-        return [Math.round(num/1000), "thousand"];
-      else
-        return [Math.round(num/1000000), "million"];
-    },
-
-    sampleMore : function() {
-      this.$emit('sampleMore');
-    }
-
-  },
   computed: {
     totalReadsValue: function() {
-      var reads = this.shortenNumber( this.totalReads );
+      var reads = shortenNumber( this.totalReads );
       return reads[0];
     },
     base: function() {
-      var reads = this.shortenNumber( this.totalReads );
+      var reads = shortenNumber( this.totalReads );
       return reads[1] || "";
     },
-  },
-  watch: {
   }
 }
 
+function shortenNumber(num) {
+  if(num.toString().length <= 3)
+    return [num];
+  else if (num.toString().length <= 6)
+    return [Math.round(num/1000), "thousand"];
+  else
+    return [Math.round(num/1000000), "million"];
+}
 
 </script>
 
