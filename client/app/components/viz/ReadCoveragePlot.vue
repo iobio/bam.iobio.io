@@ -85,11 +85,11 @@ export default {
 
         window.readDepthChart.lineChart().y(yscale);
 
-        window.readDepthChart(selection);
+        window.readDepthChart(this.selection);
 
       },
       setSelectedSeq: function( selected, start, end) {
-        this.$emit('setSelectionSeq', selected, start, end);
+        this.$emit('setSelectedSeq', selected, start, end);
       },
       update: function() {
         window.readDepthChart.width(this.width);
