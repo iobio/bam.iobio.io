@@ -71,8 +71,8 @@ export default {
             return color(d.data.name);
           })
           .on("click", function(d,i) {
-            setSelectedSeq(d.data.name);
-          })
+            this.setSelectedSeq(d.data.name);
+          }.bind(this))
           .on("clickall", function(d,i) {
             window.readDepthChart.trigger('click', 'all');
           })

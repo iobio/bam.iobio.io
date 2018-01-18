@@ -321,7 +321,7 @@
         $("section#middle svg").css("display", "none");
         $(".samplingLoader").css("display", "block");
 
-//        this.totalReads = 0;
+        this.totalReads = 0;
 
         NProgress.start();
         NProgress.set(0);
@@ -330,7 +330,7 @@
           // turn off sampling message
           $(".samplingLoader").css("display", "none");
           $("section#middle svg").css("display", "block");
-          this.sampleStats = data;
+          window.sampleStats = data;
           // update progress bar
           if (options.start != null && options.end != null) {
             var length = options.end - options.start;
@@ -344,10 +344,10 @@
           // update charts
           updatePercentCharts(data, this.sampleDonutChart)
 
-          this.totalReads = data.total_reads;
+          this.totalReads = data.total_reads; // TODO: Anonymous function doesn't know what 'this' is.
 
           updateHistogramCharts(data, undefined, "sampleBar")
-        },options);
+        }.bind(this),options);
       },
 
       sampleMore : function() {
@@ -414,14 +414,32 @@
         $("#reference-select").val(selected);
 
         // reset brush
-        resetBrush();
-        setUrlRegion({chr:selected, 'start':start, 'end':end });
+        this.resetBrush();
+        this.setUrlRegion({chr:selected, 'start':start, 'end':end });
         // start sampling
         if(start!= undefined && end!=undefined) {
           this.goSampling({ sequenceNames:seqDataIds, 'start':start, 'end':end });
-          setTimeout(function() { setBrush(start,end)}, 200);
+          setTimeout(function() { this.setBrush(start,end)}, 200);
         } else {
           this.goSampling({ sequenceNames:seqDataIds});
+        }
+      },
+
+      setUrlRegion: function(region) {
+        if (window.bam.sourceType == 'url' && region != undefined) {
+          if (region.start != undefined && region.end != undefined) {
+            var regionStr = region.chr + ':' + region.start + '-' + region.end;
+          } else {
+            var regionStr = region.chr;
+          }
+          var extraParams = '';
+          if (window.sampling) extraParams += '&sampling=' + window.sampling
+          if (window.bam.baiUri != undefined) {
+            window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
+
+          } else {
+            window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&region=" + regionStr + extraParams);
+          }
         }
       },
 
@@ -435,7 +453,7 @@
 
       addDefaultBedFile : function() {
         // clear brush on read coverage chart
-        resetBrush();
+        this.resetBrush();
 
         // hide add bed / show remove bed buttons
         $("#add-bedfile-button").css('visibility', 'hidden');
@@ -533,19 +551,14 @@
 
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
-          // if (region && region.chr == id ) {
-          //     this.pieChooserChart(pieSelection);
-          //     setSelectedSeq( id, start, end);
-          //     //readDepthChart(selection, {selected:id});
-          // }
 
           if ( done ) {
             window.pieChooserChart.on('end', function() {
               if (!region || (region && region.chr == 'all'))
-                setSelectedSeq( 'all' , start, end );
+                this.setSelectedSeq( 'all' , start, end ); // TODO: anonymous function doesn't know what 'this' is.
               else
-                setSelectedSeq( id, start, end);
-            })
+                this.setSelectedSeq( id, start, end);
+            }.bind(this))
             window.pieChooserChart(pieSelection);
           }
 
@@ -553,33 +566,33 @@
           if (done && totalPoints <= 1) {
             $('#not_enough_data').css('display','block');
           }
-        });
+        }.bind(this));
 
       },
 
       updateReadDepthSelection: function(newSelection) {
         this.readDepthSelection = newSelection;
-      }
+      },
 
+      setBrush: function (start, end){
+        var brush = window.readDepthChart.brush();
+        // set brush region
+        d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
+      },
+
+      resetBrush: function(){
+        this.setBrush(0,0);
+      }
 
     },
 
     created: function() {
-
       window.bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
+      var defaultBed = DefaultBed.replace(/chr/g, '');
+      this.bed = defaultBed;
       this.goBam(undefined);
-      this.addDefaultBedFile();
-
     }
+
   }
-
-  function setBrush(start,end) {
-    var brush = window.readDepthChart.brush();
-     // set brush region
-    d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
-  }
-
-  function resetBrush() { setBrush(0,0); }
-
 
 </script>

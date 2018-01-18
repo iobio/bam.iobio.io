@@ -74,14 +74,14 @@ export default {
           .on('click', function(d) {
             var name = d ? d.name : 'all';
             this.setSelectedSeq(name);
-          })
+          }.bind(this))
           .brush('brushend', function(b) {
             var start = parseInt(b.extent()[0]), end = parseInt(b.extent()[1]);
             if (start != end)
               this.setSelectedSeq( window.readDepthChart.getSelected(), start, end );
             else
               this.setSelectedSeq( window.readDepthChart.getSelected() );
-          });
+          }.bind(this));
 
         window.readDepthChart.lineChart().y(yscale);
 
