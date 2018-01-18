@@ -163,7 +163,8 @@
     <section id="top">
 
       <div id="piechooser" class="panel">
-        <pie-chooser :pieSelection="pieSelection"></pie-chooser>
+        <pie-chooser :pieSelection="pieSelection"
+                     @setSelectedSeq="setSelectedSeq"></pie-chooser>
         <select onchange='setSelectedSeq(this.value);' id="reference-select">
           <option value="all">all</option>
         </select>
@@ -302,7 +303,7 @@
 //        readDepthChart: {},
         readDepthSelection: {},
 
-        draw: false,
+        draw: true,
 
       }
     },
@@ -325,6 +326,7 @@
 
         NProgress.start();
         NProgress.set(0);
+
         // update selected stats
         window.bam.sampleStats( function(data){
           // turn off sampling message
@@ -342,12 +344,21 @@
 
           if (NProgress.status < percentDone) NProgress.set(percentDone);
           // update charts
-          updatePercentCharts(data, this.sampleDonutChart)
+          this.updatePercentCharts(data, this.sampleDonutChart);
 
-          this.totalReads = data.total_reads; // TODO: Anonymous function doesn't know what 'this' is.
+          this.totalReads = data.total_reads;
 
-          updateHistogramCharts(data, undefined, "sampleBar")
+          this.updateHistogramCharts(data, undefined, "sampleBar");
+
         }.bind(this),options);
+      },
+
+      updatePercentCharts : function() {
+//        console.log("Update percent charts");
+      },
+
+      updateHistogramCharts : function(){
+//        console.log("Update histogram charts");
       },
 
       sampleMore : function() {
@@ -355,8 +366,8 @@
         this.sampleMultiplier += 1;
         var options = {
           sequenceNames : [ this.getSelectedSeqId() ],
-          binNumber : binNumber + parseInt(binNumber/4 * this.sampleMultiplier),
-          binSize : binSize + parseInt(binSize/4 * this.sampleMultiplier)
+          binNumber : this.binNumber + parseInt(this.binNumber/4 * this.sampleMultiplier),
+          binSize : this.binSize + parseInt(this.binSize/4 * this.sampleMultiplier)
         }
         if (this.depthChart.brush().extent().length != 0 && this.depthChart.brush().extent().toString() != "0,0") {
           options.start = parseInt(this.depthChart.brush().extent()[0]);
@@ -470,6 +481,35 @@
         this.goSampling({sequenceNames : this.getSelectedSeqIds() });
       },
 
+      openBedFile : function(event) {
+        if (event.target.files.length != 1) {
+          alert('must select a .bed file');
+          return;
+        }
+
+        // check file extension
+        var fileType = /[^.]+$/.exec(event.target.files[0].name)[0];
+        if (fileType != 'bed')  {
+          alert('must select a .bed file');
+          return;
+        }
+        // clear brush on read coverage chart
+        resetBrush();
+
+        // hide add bed / show remove bed buttons
+        $("#add-bedfile-button").css('visibility', 'hidden');
+        $("#default-bedfile-button").css('visibility', 'hidden');
+        $("#remove-bedfile-button").css('visibility', 'visible')
+
+        // read bed file and store
+        var reader = new FileReader();
+        reader.onload = function(theFile) {
+          window.bed = this.result;
+          goSampling({sequenceNames : getSelectedSeqIds() });
+        }
+        reader.readAsText(event.target.files[0])
+      },
+
       openBamFile : function(event) {
 
         if (event.target.files.length != 2) {
@@ -521,7 +561,7 @@
               return {"name" : key, "data" : window.bam.readDepth[key] }
             })
 
-          var draw = true;
+          this.draw = true;
 
           var selection = d3.select('#depth-distribution .chart').datum(allPoints);
 
@@ -534,14 +574,14 @@
           if (allPoints.length > 50) {
             $('#piechooser svg').css('visibility', 'hidden');
             $('.too-many-refs').css('display', 'block');
-            draw = false;
+            this.draw = false;
           }
 
           if (region && region.chr != 'all') {
-            if(draw) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
+            if(this.draw) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
           }
           else {
-            if(draw) window.readDepthChart(selection, {noLine:!done});
+            if(this.draw) window.readDepthChart(selection, {noLine:!done});
           }
 
           $('#reference-select')

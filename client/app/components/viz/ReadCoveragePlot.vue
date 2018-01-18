@@ -88,9 +88,11 @@ export default {
         window.readDepthChart(this.selection);
 
       },
+
       setSelectedSeq: function( selected, start, end) {
         this.$emit('setSelectedSeq', selected, start, end);
       },
+
       update: function() {
         window.readDepthChart.width(this.width);
         this.selection = d3.select(this.$el).datum(this.data);

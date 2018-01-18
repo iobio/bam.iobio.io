@@ -53,8 +53,6 @@ export default {
     },
     methods: {
       draw: function() {
-        var self = this;
-
 //          var pie = d3.layout.pie()
 //            .sort(null)
 //            .value(function(d,i) {return d.data.length });
@@ -83,7 +81,11 @@ export default {
         window.pieChooserChart(this.pieSelection);
 
       },
+      setSelectedSeq: function( selected) {
+        this.$emit('setSelectedSeq', selected );
+      },
       update: function() {
+        var self = this;
         var selection = d3.select(this.$el).datum( self.data );
         window.pieChooserChart(selection);
       },
