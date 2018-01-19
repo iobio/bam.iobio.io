@@ -53,6 +53,7 @@ export default {
     methods: {
       draw: function() {
         var self = this;
+
         var color = d3.scale.category20b();
 
         var yscale = d3.scale.pow().exponent(1);

@@ -121,10 +121,7 @@
 
     <div class='chart' style="width:98%; height:60%"></div>
 
-    <read-coverage-plot @setLineChart="updateReadDepthChart"
-                        @setSelection="updateReadDepthSelection"
-                        @setSelectedSeq="setSelectedSeq"
-                        :selection="readDepthSelection"
+    <read-coverage-plot @setSelectedSeq="setSelectedSeq"
                         :width="depthChartWidth"></read-coverage-plot>
   </div>
 </template>
@@ -151,39 +148,27 @@ export default {
                 "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
                 "of interest; again, all other metrics will then be recalculated for that region only.",
       powerScale: false,
-      readDepthSelection: {},
     }
   },
-  created: function() {
 
-  },
   mounted: function() {
   },
+
   methods: {
 
-    updateReadDepthChart: function(newChart) {
-      window.readDepthChart = newChart;
-    },
-
-    updateReadDepthSelection: function(newSelection) {
-      this.readDepthSelection = newSelection;
-      this.$emit('updateSelection',this.readDepthSelection);
-    },
-
     setSelectedSeq: function( selected, start, end) {
-      this.$emit('setSelectionSeq', selected, start, end);
+      this.$emit('setSelectedSeq', selected, start, end);
     }
 
   },
+
   computed: {
     depthChartWidth: function() {
       return $("#depth-distribution .chart").width() ;
     },
   },
+
   watch: {
-    readDepthSelection: function() {
-      this.$emit('updateSelection',this.readDepthSelection);
-    }
   }
 }
 

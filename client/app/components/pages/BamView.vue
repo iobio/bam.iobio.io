@@ -172,11 +172,9 @@
 
       <read-coverage-box @removeBedFile="removeBedFile()"
                          @addDefaultBedFile="addDefaultBedFile()"
-                         @updateSelection="updateReadDepthSelection"
-                         @setSelectedSeq="setSelectedSeq"
-                         :readDepthSelection="readDepthSelection"></read-coverage-box>
+                         @setSelectedSeq="setSelectedSeq"></read-coverage-box>
 
-      <reads-sampled-box @sampleMore="sampleMore()" :totalReads="totalReads"></reads-sampled-box>
+      <reads-sampled-box @sampleMore="sampleMore" :totalReads="totalReads"></reads-sampled-box>
 
     </section>
 
@@ -301,7 +299,6 @@
         pieSelection: {},
 
 //        readDepthChart: {},
-        readDepthSelection: {},
 
         draw: true,
 
@@ -369,7 +366,7 @@
           binNumber : this.binNumber + parseInt(this.binNumber/4 * this.sampleMultiplier),
           binSize : this.binSize + parseInt(this.binSize/4 * this.sampleMultiplier)
         }
-        if (this.depthChart.brush().extent().length != 0 && this.depthChart.brush().extent().toString() != "0,0") {
+        if (window.readDepthChart.brush().extent().length != 0 && window.readDepthChart.brush().extent().toString() != "0,0") {
           options.start = parseInt(this.depthChart.brush().extent()[0]);
           options.end = parseInt(this.depthChart.brush().extent()[1]);
         }
@@ -403,15 +400,13 @@
               if (window.bam.readDepth[key].length > 0)
                 return  true
             })
-          // setTimeout(function() {
+
           window.pieChooserChart.clickAllSlices(d3.selectAll('#piechooser .arc')[0]);
-          // }, 2000);
         }
         else {
           var seqDataIds = [selected];
           $('#piechooser .arc').each(function(i,d) {
             if (d3.select(d).datum().data.name == selected) {
-              // setTimeout(function() {this.pieChooserChart.clickSlice(i);}, 2000);
               window.pieChooserChart.clickSlice(i)
             }
 
@@ -419,7 +414,6 @@
 
         }
 
-        // this.readDepthChart.trigger('click', selected);
         if(this.draw) window.readDepthChart.setSelected(selected);
 
         $("#reference-select").val(selected);
@@ -608,10 +602,6 @@
           }
         }.bind(this));
 
-      },
-
-      updateReadDepthSelection: function(newSelection) {
-        this.readDepthSelection = newSelection;
       },
 
       setBrush: function (start, end){
