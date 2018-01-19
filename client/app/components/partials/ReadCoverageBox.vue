@@ -122,6 +122,7 @@
     <div class='chart' style="width:98%; height:60%"></div>
 
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
+                        :powerScale="powerScale"
                         :width="depthChartWidth"></read-coverage-plot>
   </div>
 </template>

@@ -16,7 +16,7 @@ export default {
       data: {},
       selection: undefined,
       transitionDuration: {
-        default: 50,
+        default: 400,
         type: Number
       },
       labels: {},
@@ -38,6 +38,9 @@ export default {
         default: 30,
         type: Number
       },
+      powerScale:{
+        type: Boolean,
+      }
     },
     data() {
       return {
@@ -48,17 +51,15 @@ export default {
 
     },
     mounted: function() {
-      this.draw();
+      this.setup();
     },
     methods: {
-      draw: function() {
+      setup: function() {
         var self = this;
 
         var color = d3.scale.category20b();
 
-        var yscale = d3.scale.pow().exponent(1);
-
-        var w = this.svgWidth;
+        var w = self.svgWidth;
 
         window.readDepthChart = iobio.viz.multiLine()
           .nameValue(function(d) { return d.name; })
@@ -66,7 +67,7 @@ export default {
           .xValue(function(d,i) { return d.pos; })
           .yValue(function(d,i) { return d.depth; })
           .wValue(function() { return 1; })
-          .transitionDuration(400)
+          .transitionDuration(self.transitionDuration)
           .epsilonRate(0.3)
           .margin({top: 10, right: 0, bottom: 30, left:0})
           .height(150)
@@ -74,19 +75,17 @@ export default {
           .width(w)
           .on('click', function(d) {
             var name = d ? d.name : 'all';
-            this.setSelectedSeq(name);
-          }.bind(this))
+            self.setSelectedSeq(name);
+          })
           .brush('brushend', function(b) {
             var start = parseInt(b.extent()[0]), end = parseInt(b.extent()[1]);
             if (start != end)
-              this.setSelectedSeq( window.readDepthChart.getSelected(), start, end );
+              self.setSelectedSeq( window.readDepthChart.getSelected(), start, end );
             else
-              this.setSelectedSeq( window.readDepthChart.getSelected() );
-          }.bind(this));
+              self.setSelectedSeq( window.readDepthChart.getSelected() );
+          });
 
-        window.readDepthChart.lineChart().y(yscale);
-
-        window.readDepthChart(this.selection);
+        window.readDepthChart.lineChart().y(d3.scale.pow().exponent(self.yscale));
 
       },
 
@@ -95,9 +94,10 @@ export default {
       },
 
       update: function() {
-        window.readDepthChart.width(this.width);
-        this.selection = d3.select(this.$el).datum(this.data);
-        window.readDepthChart(this.selection);
+        window.readDepthChart.width(this.svgWidth);
+        window.readDepthChart.lineChart().y(window.readDepthChart.lineChart().y().exponent(this.yscale));
+
+        window.readDepthChart(d3.select('#depth-distribution .chart')); //TODO: ,{ selected: getSelectedSeqId()});
 
         this.$emit('setSelection',this.selection);
       },
@@ -106,6 +106,9 @@ export default {
       svgWidth: function() {
         return this.width || $(this.$el).width();
       },
+      yscale: function() {
+        return this.powerScale ? 0.5 : 1;
+      }
     },
     watch: {
       data: function() {
@@ -115,6 +118,9 @@ export default {
         this.update();
       },
       width: function() {
+        this.update();
+      },
+      powerScale: function() {
         this.update();
       }
     }
