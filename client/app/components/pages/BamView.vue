@@ -163,8 +163,7 @@
     <section id="top">
 
       <div id="piechooser" class="panel">
-        <pie-chooser :pieSelection="pieSelection"
-                     @setSelectedSeq="setSelectedSeq"></pie-chooser>
+        <pie-chooser @setSelectedSeq="setSelectedSeq"></pie-chooser>
         <select onchange='setSelectedSeq(this.value);' id="reference-select">
           <option value="all">all</option>
         </select>
@@ -296,8 +295,6 @@
         exomeSampling: false,
 
 //        pieChooserChart: {},
-        pieSelection: {},
-
 //        readDepthChart: {},
 
         draw: true,

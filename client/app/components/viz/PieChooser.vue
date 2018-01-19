@@ -15,7 +15,6 @@ export default {
 
   props: {
     data: {},
-    pieSelection: undefined,
     transitionDuration: {
       default: 50,
       type: Number
@@ -42,15 +41,12 @@ export default {
   },
 
   mounted: function() {
-    this.draw();
+    this.setup();
   },
 
   methods: {
-    draw: function() {
-//          var pie = d3.layout.pie()
-//            .sort(null)
-//            .value(function(d,i) {return d.data.length });
-//          var selection = d3.select(this.$el).datum( pie(allPoints) );
+    setup: function() {
+      var self = this;
 
       var color = d3.scale.category20b();
 
@@ -63,16 +59,14 @@ export default {
           return color(d.data.name);
         })
         .on("click", function(d,i) {
-          this.setSelectedSeq(d.data.name);
-        }.bind(this))
+          self.setSelectedSeq(d.data.name);
+        })
         .on("clickall", function(d,i) {
           window.readDepthChart.trigger('click', 'all');
         })
         .tooltip( function(d) {
           return d.data.name;
         });
-
-      window.pieChooserChart(this.pieSelection);
 
     },
 
@@ -93,9 +87,6 @@ export default {
     data: function() {
         this.update();
     },
-    pieSelection: function() {
-        this.update();
-    }
   }
 }
 
