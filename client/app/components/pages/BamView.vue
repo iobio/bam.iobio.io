@@ -359,7 +359,7 @@
         if (this.sampleMultiplier >= this.sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
         this.sampleMultiplier += 1;
         var options = {
-          sequenceNames : [ this.getSelectedSeqId() ],
+          sequenceNames : this.getSelectedSeqIds(),
           binNumber : this.binNumber + parseInt(this.binNumber/4 * this.sampleMultiplier),
           binSize : this.binSize + parseInt(this.binSize/4 * this.sampleMultiplier)
         }
