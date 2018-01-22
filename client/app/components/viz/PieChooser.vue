@@ -75,8 +75,7 @@ export default {
     },
 
     update: function() {
-      var self = this;
-      var selection = d3.select(this.$el).datum( self.data );
+      var selection = d3.select(this.$el).datum( this.data );
       this.pieSelection = selection;
       window.pieChooserChart(this.pieSelection);
     }
