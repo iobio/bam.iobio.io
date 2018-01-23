@@ -71,8 +71,30 @@
     width: 60%;
   }
 
+  #distributions {
+    width: 100%;
+  }
+
   #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:200px; position:relative; /*padding: 0px 15px 0px 15px*/}
 
+  .panel#depth-distribution {
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    -webkit-order: 2;
+    order: 2;
+    height: 250px;
+    position:relative;
+    width: 65%;
+  }
+
+  .panel#depth-distribution .chart {
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    -webkit-order: 2;
+    order: 2;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
   /* Make clicks pass-through */
   #nprogress {
@@ -157,6 +179,11 @@
   .iobio-bar-1 .instruction {
     font-size: 10px;
   }
+
+  .iobio-axis line,.iobio-axis path{fill:none;stroke:#000;shape-rendering:crispEdges}.iobio-tooltip{position:fixed;top:0;text-align:center;z-index:20;color:#fff;padding:4px 6px;font:11px arial;background:#505050;border:0;border-radius:4px;pointer-events:none}.iobio-brush .extent{stroke:#000;fill-opacity:.125;shape-rendering:crispEdges}
+  .iobio-gene .cds,.iobio-gene .utr{fill:#2d8fc1;stroke:#2d8fc1}.iobio-gene .reference{stroke:#969696}.iobio-gene .name{font-size:10px;fill:#787878}.iobio-gene .arrow{stroke:#969696;fill:none}.iobio-gene .iobio-axis line,.iobio-gene .iobio-axis path{fill:none;stroke:#d2d2d2;stroke-width:2px;shape-rendering:crispEdges}.iobio-gene .iobio-axis line{stroke-width:4px}.iobio-gene .iobio-axis text{font-size:11px;fill:#828282}
+  .iobio-multi-line #back-ctrl:hover,.iobio-multi-line .button rect:hover{cursor:pointer}.iobio-multi-line .tick text{font-size:10px}.iobio-multi-line .button rect{height:20px}.iobio-multi-line .button text{font-size:10px;pointer-events:none}.iobio-multi-line #back-ctrl{font-size:15px;fill:#1E7DB3}
+  path.link{fill:none;stroke:#ccc;stroke-width:1.5px}.above-variant{stroke:red;fill:none}.below-variant{stroke:#00f;fill:none}.reference{fill:gray}
 
   .iobio-center-text .iobio-percent {
     fill : rgb(100,100,100);
@@ -474,8 +501,34 @@
         }.bind(this));
       },
 
-      updateHistogramCharts : function(){
-//        console.log("Update histogram charts");
+      updateHistogramCharts : function(histograms, otherMinMax, klass){
+
+        // check if coverage is zero
+        if (Object.keys(histograms.coverage_hist).length == 0) histograms.coverage_hist[0] = '1.0';
+        // update read coverage histogram
+        var d = Object.keys(histograms.coverage_hist).filter(function(i){return histograms.coverage_hist[i] != "0"}).map(function(k) { return [+k, +histograms.coverage_hist[k]] });
+        var selection = d3.select("#read-coverage-distribution-chart").datum(d);
+        window.readCoverageChart(selection);
+
+        // update read length distribution
+        if ($("#length-distribution .selected").attr("data-id") == "frag_hist")
+          var d = Object.keys(histograms.frag_hist).filter(function(i){return histograms.frag_hist[i] != "0"}).map(function(k) { return  [+k, +histograms.frag_hist[k]] });
+        else
+          var d = Object.keys(histograms.length_hist).map(function(k) { return  [+k, +histograms.length_hist[k]] });
+        // remove outliers if outliers checkbox isn't explicity checked
+        var outliers = $("#length-distribution .checkbox").hasClass("checked");
+        if (!outliers) d = iobio.viz.layout.outlier()(d);
+        var selection = d3.select("#length-distribution-chart").datum(d);
+        window.lengthChart( selection );
+
+        // update map quality distribution
+        if ($("#mapping-quality-distribution .selected").attr("data-id") == "mapq_hist")
+          var d = Object.keys(histograms.mapq_hist).map(function(k) { return  [+k, +histograms.mapq_hist[k]] });
+        else
+          var d = Object.keys(histograms.baseq_hist).map(function(k) { return  [+k, +histograms.baseq_hist[k]] });
+        var selection = d3.select("#mapping-quality-distribution-chart").datum(d);
+        window.qualityChart(selection);
+
       },
 
       sampleMore : function() {
@@ -750,6 +803,43 @@
         .innerRadius(50)
         .color( function(d,i) { if (i==0) return '#2d8fc1'; else return 'rgba(45,143,193,0.2)'; });
 
+      // HISTOGRAM CHARTS
+      var width = 800;//$("#read-coverage-distribution-chart").width();
+      var height = 150;//$("#read-coverage-distribution-chart").height();
+
+      // setup read coverage histogram chart
+      window.readCoverageChart = iobio.viz.barViewer()
+        .xValue(function(d) { return d[0]; })
+        .yValue(function(d) { return d[1]; })
+        .wValue(function() { return 1; })
+        .height(height)
+        .width(width)
+        .margin({top: 5, right: 20, bottom: 20, left: 50})
+        .sizeRatio(0.8);
+      window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
+
+      window.lengthChart = iobio.viz.barViewer()
+        .xValue(function(d) { return d[0]; })
+        .yValue(function(d) { return d[1]; })
+        .wValue(function() { return 1; })
+        .height(height)
+        .width(width)
+        .margin({top: 5, right: 20, bottom: 20, left: 50})
+        .sizeRatio(0.8);
+      window.lengthChart.xAxis().tickFormat(tickFormatter);
+      window.lengthChart.yAxis().tickFormat(tickFormatter);
+
+      // setup quality histogram chart
+      window.qualityChart = iobio.viz.barViewer()
+        .xValue(function(d) { return d[0]; })
+        .yValue(function(d) { return d[1]; })
+        .wValue(function() { return 1; })
+        .height(height)
+        .width(width)
+        .margin({top: 5, right: 20, bottom: 20, left: 50})
+        .sizeRatio(0.8);
+      window.qualityChart.xAxis().tickFormat(tickFormatter);
+      window.qualityChart.yAxis().tickFormat(tickFormatter);
 
       window.bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
       var defaultBed = DefaultBed.replace(/chr/g, '');
@@ -757,6 +847,14 @@
       this.goBam(undefined);
     }
 
+  }
+
+  function tickFormatter (d) {
+    if ((d / 1000000) >= 1)
+      d = d / 1000000 + "M";
+    else if ((d / 1000) >= 1)
+      d = d / 1000 + "K";
+    return d;
   }
 
 </script>
