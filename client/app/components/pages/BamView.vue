@@ -264,9 +264,7 @@
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <!--<div class='chart'>-->
-            <donut-chart id="mapped_reads_chart" :data="mappedReadsData" ></donut-chart>
-          <!--</div>-->
+          <donut-chart id="mapped_reads_chart" :data="mappedReadsData" ></donut-chart>
           <div class='from-index'>* full data available in index</div>
         </div>
 
@@ -275,7 +273,7 @@
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <div class='chart'></div>
+          <donut-chart :data="forwardStrandsData" ></donut-chart>
         </div>
 
         <div id="proper_pairs" class="percent panel">Proper Pairs
@@ -283,7 +281,7 @@
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <div class='chart'></div>
+          <donut-chart :data="properPairsData" ></donut-chart>
         </div>
 
         <div id="singletons" class="percent panel">Singletons
@@ -291,7 +289,7 @@
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <div class='chart'></div>
+          <donut-chart :data="singletonsData" ></donut-chart>
         </div>
 
         <div id="both_mates_mapped" class="percent panel">Both Mates Mapped
@@ -299,7 +297,7 @@
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <div class='chart'></div>
+          <donut-chart :data="bothMatesData" ></donut-chart>
         </div>
 
         <div id="duplicates" class="percent panel">Duplicates
@@ -307,7 +305,7 @@
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <div class='chart'></div>
+          <donut-chart :data="duplicatesData" ></donut-chart>
         </div>
 
       </div>
@@ -398,6 +396,11 @@
         draw: true,
 
         mappedReadsData: [],
+        forwardStrandsData: [],
+        properPairsData: [],
+        singletonsData: [],
+        bothMatesData: [],
+        duplicatesData: []
 
       }
     },
@@ -447,8 +450,6 @@
       },
 
       updatePercentCharts : function(stats, donutChart) {
-        var pie = d3.layout.pie()
-          .sort(null);
 
         var selected = this.getSelectedSeqId();
         var unmappedReads, mappedReads;
@@ -493,9 +494,16 @@
           }
           if ( key == 'mapped_reads') {
             this.mappedReadsData = data;
-          } else {
-            var selection = d3.select('#' + key + ' .chart').datum(pie(data));
-            donutChart(selection);
+          } else if (key == 'forward_strands') {
+            this.forwardStrandsData = data;
+          } else if ( key == 'proper_pairs') {
+            this.properPairsData = data;
+          } else if ( key == 'singletons') {
+            this.singletonsData = data;
+          } else if ( key == 'both_mates_mapped') {
+            this.bothMatesData = data;
+          } else if ( key == 'duplicates') {
+            this.duplicatesData = data;
           }
 
         }.bind(this));
@@ -797,11 +805,6 @@
 
       // hold onto stats
       window.sampleStats = undefined;
-
-      window.sampleDonutChart = iobio.viz.pie()
-        .radius(61)
-        .innerRadius(50)
-        .color( function(d,i) { if (i==0) return '#2d8fc1'; else return 'rgba(45,143,193,0.2)'; });
 
       // HISTOGRAM CHARTS
       var width = 800;//$("#read-coverage-distribution-chart").width();
