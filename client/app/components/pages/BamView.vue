@@ -33,10 +33,6 @@
     width: 40%;
   }
 
-  #percents .percent {-webkit-flex: 1 1 30%; flex: 1 1 30%; position:relative;}
-  #percents .percent svg { width: 100%; height:180px }
-  #percents .percent .from-index { font-size: 10px; color: rgb(160,160,160); font-style: italic; margin-top: -17px; visibility: hidden;}
-
   section {
     margin: 0px;
     padding: 0px;
@@ -185,20 +181,6 @@
   .iobio-multi-line #back-ctrl:hover,.iobio-multi-line .button rect:hover{cursor:pointer}.iobio-multi-line .tick text{font-size:10px}.iobio-multi-line .button rect{height:20px}.iobio-multi-line .button text{font-size:10px;pointer-events:none}.iobio-multi-line #back-ctrl{font-size:15px;fill:#1E7DB3}
   path.link{fill:none;stroke:#ccc;stroke-width:1.5px}.above-variant{stroke:red;fill:none}.below-variant{stroke:#00f;fill:none}.reference{fill:gray}
 
-  .iobio-center-text .iobio-percent {
-    fill : rgb(100,100,100);
-    color: rgb(100,100,100);
-    font-size: 23px;
-  }
-
-  .iobio-center-text .iobio-count {
-    font-size: 10px;
-    letter-spacing: 3px;
-    font-weight: 400;
-    fill : rgb(200,200,200);
-    color: rgb(200,200,200);
-  }
-
   .samplingLoader {
     font-size:14px;
     color:#2687BE;
@@ -259,55 +241,48 @@
     <section id="middle">
       <div id="percents">
 
-        <div id="mapped_reads" class="percent panel">Mapped Reads
-          <help-button modalTitle="Mapped reads" tooltipText="Expect a value >90%"
-                       body="">
-          </help-button>
-          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <donut-chart id="mapped_reads_chart" :data="mappedReadsData" ></donut-chart>
-          <div class='from-index'>* full data available in index</div>
-        </div>
+        <percent-chart-box id="mapped_reads"
+                           title="Mapped Reads"
+                           modal-title="Mapped reads"
+                           modal-body=""
+                           help-tooltip="Expect a value >90%"
+                           :chart-data="mappedReadsData"
+                           index-footnote="* full data available in index"></percent-chart-box>
 
-        <div id="forward_strands" class="percent panel">Forward Strand
-          <help-button modalTitle="Forward strand" tooltipText="Expect a value ~50%"
-                       body="">
-          </help-button>
-          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <donut-chart :data="forwardStrandsData" ></donut-chart>
-        </div>
+        <percent-chart-box id="forward_strands"
+                           title="Forward Strand"
+                           modal-title="Forward strand"
+                           modal-body=""
+                           help-tooltip="Expect a value ~50%"
+                           :chart-data="forwardStrandsData"></percent-chart-box>
 
-        <div id="proper_pairs" class="percent panel">Proper Pairs
-          <help-button modalTitle="Proper Pairs" tooltipText="Expect a value >90%"
-                       body="">
-          </help-button>
-          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <donut-chart :data="properPairsData" ></donut-chart>
-        </div>
+        <percent-chart-box id="proper_pairs"
+                           title="Proper Pairs"
+                           modal-title="Proper pairs"
+                           modal-body=""
+                           help-tooltip="Expect a value >90%"
+                           :chart-data="properPairsData"></percent-chart-box>
 
-        <div id="singletons" class="percent panel">Singletons
-          <help-button modalTitle="Singletons" tooltipText="Expect a value <1&"
-                       body="">
-          </help-button>
-          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <donut-chart :data="singletonsData" ></donut-chart>
-        </div>
+        <percent-chart-box id="singletons"
+                           title="Singletons"
+                           modal-title="Singletons"
+                           modal-body=""
+                           help-tooltip="Expect a value <1%"
+                           :chart-data="singletonsData"></percent-chart-box>
 
-        <div id="both_mates_mapped" class="percent panel">Both Mates Mapped
-          <help-button modalTitle="Both Mates Mapped" tooltipText="Expect a value >90%"
-                       body="">
-          </help-button>
-          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <donut-chart :data="bothMatesData" ></donut-chart>
-        </div>
+        <percent-chart-box id="both_mates_mapped"
+                           title="Both Mates Mapped"
+                           modal-title="Both mates mapped"
+                           modal-body=""
+                           help-tooltip="Expect a value >90%"
+                           :chart-data="bothMatesData"></percent-chart-box>
 
-        <div id="duplicates" class="percent panel">Duplicates
-          <help-button modalTitle="Duplicates" tooltipText="Value depends on depth"
-                       body="">
-          </help-button>
-          <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <donut-chart :data="duplicatesData" ></donut-chart>
-        </div>
-
+        <percent-chart-box id="duplicates"
+                           title="Duplicates"
+                           modal-title="Duplicates"
+                           modal-body=""
+                           help-tooltip="Value depends on depth"
+                           :chart-data="duplicatesData"></percent-chart-box>
       </div>
 
       <div id="distributions" >
@@ -355,14 +330,16 @@
 
   import PieChooser from "../viz/PieChooser.vue";
 
-  import DefaultBed from '../../../../data/20130108.exome.targets.bed'
+  import DefaultBed from '../../../../data/20130108.exome.targets.bed';
   import DonutChart from "../viz/DonutChart.vue";
+  import PercentChartBox from "../partials/PercentChartBox.vue";
 
 
   export default {
     name: 'bamview',
 
     components: {
+      PercentChartBox,
       DonutChart,
       PieChooser,
       ReadCoverageBox,
