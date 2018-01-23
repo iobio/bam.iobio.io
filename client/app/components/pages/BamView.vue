@@ -35,6 +35,7 @@
 
   #percents .percent {-webkit-flex: 1 1 30%; flex: 1 1 30%; position:relative;}
   #percents .percent svg { width: 100%; height:180px }
+  #percents .percent .from-index { font-size: 10px; color: rgb(160,160,160); font-style: italic; margin-top: -17px; visibility: hidden;}
 
   section {
     margin: 0px;
@@ -133,6 +134,57 @@
     animation:         nprogress-spinner 400ms linear infinite;
   }
 
+  .chart rect {
+    fill: #2d8fc1;
+    shape-rendering: crispEdges;
+  }
+
+  .chart rect.unselected {
+    fill: #9C9E9F;
+  }
+
+  .chart text {
+    fill: 'black';
+  }
+
+  .iobio-multi-line.line-panel text { fill: black; }
+  .iobio-multi-line.button-panel text { fill: white; }
+
+  .iobio-multi-line #iobio-button-all { display: none; }
+
+  .iobio-bar-1 { font-size: 9px;}
+
+  .iobio-bar-1 .instruction {
+    font-size: 10px;
+  }
+
+  .iobio-center-text .iobio-percent {
+    fill : rgb(100,100,100);
+    color: rgb(100,100,100);
+    font-size: 23px;
+  }
+
+  .iobio-center-text .iobio-count {
+    font-size: 10px;
+    letter-spacing: 3px;
+    font-weight: 400;
+    fill : rgb(200,200,200);
+    color: rgb(200,200,200);
+  }
+
+  .samplingLoader {
+    font-size:14px;
+    color:#2687BE;
+    position:absolute;
+    width:100%;
+    margin-top: 70px;
+    margin-left:-6px;
+    display:none;
+  }
+  .samplingLoader img {
+    height:9px;
+  }
+
   @-webkit-keyframes nprogress-spinner {
     0%   { -webkit-transform: rotate(0deg);   transform: rotate(0deg); }
     100% { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
@@ -179,72 +231,89 @@
 
     <section id="middle">
       <div id="percents">
+
         <div id="mapped_reads" class="percent panel">Mapped Reads
           <help-button modalTitle="Mapped reads" tooltipText="Expect a value >90%"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+          <!--<div class='chart'>-->
+            <donut-chart id="mapped_reads_chart" :data="mappedReadsData" ></donut-chart>
+          <!--</div>-->
+          <div class='from-index'>* full data available in index</div>
         </div>
+
         <div id="forward_strands" class="percent panel">Forward Strand
           <help-button modalTitle="Forward strand" tooltipText="Expect a value ~50%"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+          <div class='chart'></div>
         </div>
+
         <div id="proper_pairs" class="percent panel">Proper Pairs
           <help-button modalTitle="Proper Pairs" tooltipText="Expect a value >90%"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+          <div class='chart'></div>
         </div>
+
         <div id="singletons" class="percent panel">Singletons
           <help-button modalTitle="Singletons" tooltipText="Expect a value <1&"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+          <div class='chart'></div>
         </div>
+
         <div id="both_mates_mapped" class="percent panel">Both Mates Mapped
           <help-button modalTitle="Both Mates Mapped" tooltipText="Expect a value >90%"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+          <div class='chart'></div>
         </div>
+
         <div id="duplicates" class="percent panel">Duplicates
           <help-button modalTitle="Duplicates" tooltipText="Value depends on depth"
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <svg viewBox="0 0 225 149" preserveAspectRatio="xMidYMid"></svg>
+          <div class='chart'></div>
         </div>
+
       </div>
+
       <div id="distributions" >
-        <div id="read-coverage-distribution" class="distribution panel"><div>
+
+        <div id="read-coverage-distribution" class="distribution panel">
           Read Coverage Distribution
           <help-button modalTitle="Read Coverage Distribution" tooltipText="Expect a Poisson distribution centered on the expected mean coverage"
                        body="">
           </help-button>
-        </div>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <svg id="read-coverage-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
+          <div id="read-coverage-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
         </div>
+
         <div id="length-distribution" class="distribution panel">
-          <div><div class="chart-chooser"><span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Insert Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span></div></div>
-          <label class="checkbox" style="position:absolute;right:10px;top:24px;cursor:pointer" >
+          <div>
+            <span class="chart-chooser">
+              <span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Fragment Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span>
+            </span>
+          </div>
+            <label class="checkbox" style="position:absolute;right:10px;top:24px;cursor:pointer" >
             <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
             Outliers
           </label>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <svg id="length-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:85%"></svg>
-        </div>
+            <div id="length-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:85%"></div>
+          </div>
+
         <div id="mapping-quality-distribution" class="distribution panel">
           <div><div class="chart-chooser"><span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span></div></div>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <svg id="mapping-quality-distribution-chart" class="focus" preserveAspectRatio="none" style="width:98%;height:90%"></svg>
+          <div id="mapping-quality-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
         </div>
       </div>
     </section>
@@ -262,12 +331,14 @@
   import PieChooser from "../viz/PieChooser.vue";
 
   import DefaultBed from '../../../../data/20130108.exome.targets.bed'
+  import DonutChart from "../viz/DonutChart.vue";
 
 
   export default {
     name: 'bamview',
 
     components: {
+      DonutChart,
       PieChooser,
       ReadCoverageBox,
       HelpButton,
@@ -298,6 +369,8 @@
 //        readDepthChart: {},
 
         draw: true,
+
+        mappedReadsData: [],
 
       }
     },
@@ -337,18 +410,68 @@
           }
 
           if (NProgress.status < percentDone) NProgress.set(percentDone);
+
           // update charts
-          this.updatePercentCharts(data, this.sampleDonutChart);
-
+          this.updatePercentCharts(data, window.sampleDonutChart);
           this.totalReads = data.total_reads;
-
           this.updateHistogramCharts(data, undefined, "sampleBar");
 
         }.bind(this),options);
       },
 
-      updatePercentCharts : function() {
-//        console.log("Update percent charts");
+      updatePercentCharts : function(stats, donutChart) {
+        var pie = d3.layout.pie()
+          .sort(null);
+
+        var selected = this.getSelectedSeqId();
+        var unmappedReads, mappedReads;
+
+        if (selected == 'all') {
+          if (window.bam.readDepth[Object.keys(window.bam.readDepth)[0]].mapped != undefined) {
+            mappedReads = unmappedReads = 0;
+            for ( var id  in window.bam.readDepth) {
+              mappedReads += window.bam.readDepth[id].mapped;
+              unmappedReads += window.bam.readDepth[id].unmapped;
+            }
+            unmappedReads = window.bam.n_no_coor;
+          }
+        } else {
+          mappedReads = window.bam.readDepth[selected].mapped;
+          unmappedReads = window.bam.readDepth[selected].unmapped;
+        }
+
+        var showMappedDataFromIndex = false;
+        var brushRange = window.readDepthChart.brush().extent();
+        if ( (brushRange == undefined || brushRange.toString() == '0,0' ) && mappedReads != undefined && unmappedReads != undefined) {
+          showMappedDataFromIndex = true;
+          d3.select("#mapped_reads_chart").selectAll('path')
+            .attr('fill', function(d,i) { return i==0 ? 'rgb(9,176,135)' : 'rgba(9,176,135,0.5)' });
+          d3.select('.percent .from-index').style('visibility', 'visible');
+        } else {
+          d3.select('.percent .from-index').style('visibility', 'hidden');
+        }
+
+        //update percent charts
+        var keys = ['mapped_reads', "proper_pairs", "forward_strands", "singletons", "both_mates_mapped", "duplicates"]
+
+        keys.forEach( function(key,i) {
+          var stat = stats[key];
+          if (key == 'mapped_reads' && showMappedDataFromIndex) {
+            var data = [mappedReads, unmappedReads];
+          } else {
+            if (stats['total_reads'] == 0)
+              var data = [0, 100];
+            else
+              var data = [stat, stats['total_reads'] - stat];
+          }
+          if ( key == 'mapped_reads') {
+            this.mappedReadsData = data;
+          } else {
+            var selection = d3.select('#' + key + ' .chart').datum(pie(data));
+            donutChart(selection);
+          }
+
+        }.bind(this));
       },
 
       updateHistogramCharts : function(){
@@ -614,6 +737,16 @@
     },
 
     created: function() {
+
+      // hold onto stats
+      window.sampleStats = undefined;
+
+      window.sampleDonutChart = iobio.viz.pie()
+        .radius(61)
+        .innerRadius(50)
+        .color( function(d,i) { if (i==0) return '#2d8fc1'; else return 'rgba(45,143,193,0.2)'; });
+
+
       window.bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
       var defaultBed = DefaultBed.replace(/chr/g, '');
       this.bed = defaultBed;
