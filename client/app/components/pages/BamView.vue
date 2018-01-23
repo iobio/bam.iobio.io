@@ -244,7 +244,7 @@
         <percent-chart-box id="mapped_reads"
                            title="Mapped Reads"
                            modal-title="Mapped reads"
-                           modal-body=""
+                           :modal-body="mappedReadsHelpBody"
                            help-tooltip="Expect a value >90%"
                            :chart-data="mappedReadsData"
                            index-footnote="* full data available in index"></percent-chart-box>
@@ -252,35 +252,35 @@
         <percent-chart-box id="forward_strands"
                            title="Forward Strand"
                            modal-title="Forward strand"
-                           modal-body=""
+                           :modal-body="forwardStrandsHelpBody"
                            help-tooltip="Expect a value ~50%"
                            :chart-data="forwardStrandsData"></percent-chart-box>
 
         <percent-chart-box id="proper_pairs"
                            title="Proper Pairs"
                            modal-title="Proper pairs"
-                           modal-body=""
+                           :modal-body="properPairsHelpBody"
                            help-tooltip="Expect a value >90%"
                            :chart-data="properPairsData"></percent-chart-box>
 
         <percent-chart-box id="singletons"
                            title="Singletons"
                            modal-title="Singletons"
-                           modal-body=""
+                           :modal-body="singletonsHelpBody"
                            help-tooltip="Expect a value <1%"
                            :chart-data="singletonsData"></percent-chart-box>
 
         <percent-chart-box id="both_mates_mapped"
                            title="Both Mates Mapped"
                            modal-title="Both mates mapped"
-                           modal-body=""
+                           :modal-body="bothMatesHelpBody"
                            help-tooltip="Expect a value >90%"
                            :chart-data="bothMatesData"></percent-chart-box>
 
         <percent-chart-box id="duplicates"
                            title="Duplicates"
                            modal-title="Duplicates"
-                           modal-body=""
+                           :modal-body="duplicatesHelpBody"
                            help-tooltip="Value depends on depth"
                            :chart-data="duplicatesData"></percent-chart-box>
       </div>
@@ -377,8 +377,85 @@
         properPairsData: [],
         singletonsData: [],
         bothMatesData: [],
-        duplicatesData: []
+        duplicatesData: [],
 
+        // Help Modal Bodies
+        mappedReadsHelpBody:
+          "<div>\n" +
+          "  The mapped reads chart shows how many of the reads in the sample were successfully mapped to the reference genome. Genetic variation, in particular structural variants, ensure that every sequenced sample is genetically different to the reference genome it was aligned to. If the sample differs only in a small number of single base pair changes (e.g. SNVs), the read will still likely map to the reference, but, for more significant variation, the read can fail to be placed. Therefore, it is not expected that the mapped reads rate will hit 100%, but it is expected to be high (usually >90%).\n" +
+          "</div>\n" +
+          "<div class=\"row vertical-align\">\n" +
+          "  <div class=\"col-xs-4\">\n" +
+          "    <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\"  src=\"../../../images/mapped_reads_high.png\"></img>\n" +
+          "  </div>\n" +
+          "  <div class=\"col-xs-8\">\n" +
+          "    This is an example of a human, whole exome. In this case, 99.7% of the sampled reads map to the reference, corresponding to 93,385 actual reads. It is important to note that when the wheel is blue, only reads that have been assigned to a reference sequence are included. This means that the 0.3% of reads that are unmapped have a mate pair that successfully maps to the reference genome.\n" +
+          "  </div>\n" +
+          "</div>\n" +
+          "\n" +
+          "<div class=\"row vertical-align\">\n" +
+          "    <div class=\"col-xs-4\">\n" +
+          "      <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\" src=\"../../../images/mapped_reads_high_green.png\"></img>\n" +
+          "    </div>\n" +
+          "    <div class=\"col-xs-8\">\n" +
+          "      For the case that both mates from paired end sequencing are unmapped, they appear at the end of the BAM file. Usually, the number of such unmapped reads can be obtained from the index file. When this is possible, the wheel will appear in green, as shown for this whole genome sample.\n" +
+          "    </div>\n" +
+          "</div>\n" +
+          "\n" +
+          "<div class=\"row vertical-align\">\n" +
+          "    <div class=\"col-xs-4\">\n" +
+          "      <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\" src=\"../../../images/mapped_reads_low.png\"></img>\n" +
+          "    </div>\n" +
+          "    <div class=\"col-xs-8\">\n" +
+          "      If the rate of mapped reads is low (usually below 90%), questions need to be asked about the sample to understand why so many reads are unmapped. The last example only has 71.5% of reads mapping to the reference genome for a whole genome sample. This was caused as the sample was contaminated with a significant amount of bacterial DNA; the DNA sample was obtained from a saliva sample, rather than a blood draw.\n" +
+          "    </div>\n" +
+          "</div>",
+
+        forwardStrandsHelpBody: "The forward strand chart shows the fraction of reads that map to the forward DNA strand. The general expectation is that the DNA library preparation step will generate DNA from the forward and reverse strands in equal amounts. After mapping the reads to the reference genome, approximately 50% of the reads will consequently map to the forward strand. If the observed rate is significantly different to 50%, this may be indicative of problems with the library preparation step.",
+
+        properPairsHelpBody:
+          "<div>\n" +
+          "  A fragment consisting of two <i>mates</i> is called a proper pair if both <i>mates</i> map to the reference genome in a manner consistent with expectations. In particular, if the DNA library consists of fragments ~500 base pairs in length, and 100 base pair reads are sequenced from either end, the expectation would be that the two reads map to the reference genome separated by ~300 base pairs. If the sequenced sample contains large structural variants, e.g. a large insertion, reads mapping with a large separation would be a signal for this variant, and the reads would not be proper pairs. Based on the sequencing technology, there is also an expectation on the orientation of each read in the fragment.\n" +
+          "</div>\n" +
+          "<br>\n" +
+          "<div>\n" +
+          "  <i><strong>When calculating the proper pair rate, pairs where both mates are unmapped are not included in the analysis.</strong></i> As a consequence, the rate of proper pairs is expected to be well over 90%; even if the mapping rate itself is low as a result of bacterial contamination, for example.\n" +
+          "</div>",
+
+        singletonsHelpBody: "When working with paired-end sequencing, each DNA fragment is sequenced from both ends, creating two <i>mates</i> for each pair. If one <i>mate</i> in the pair successfully maps to the reference genome, but the other is unmapped, the mapped mate is a <i>singleton</i>. One way in which a singleton could occur would be if the sample has a large insertion compared with the reference genome; one <i>mate</i> can fall in sequence flanking the insertion and will be mapped, but the other falls in the inserted sequence and so cannot map to the reference genome. There are unlikely to many such structural variants in the sample, or sequencing errors that would could cause a read to not be able to map. Consequently, the singleton rate is expected to be very low (<1%).",
+
+        bothMatesHelpBody: "When working with paired-end sequencing, each DNA fragment is sequenced from both ends, creating two <i>mates</i> for each pair. This chart shows the fraction of reads in pairs where both of the <i>mates</i> successfully map to the reference genome. <i><strong>When calculating this metric, pairs where both mates are unmapped are not included.</strong></i>.",
+
+        duplicatesHelpBody:
+          "<div>\n" +
+          "  PCR duplicates are two (or more) reads that originate from the same DNA fragment. When sequencing data is analysed, it is assumed that each observation (i.e. each read) is independent; an assumption that fails in the presence of duplicate reads. Typically, algorithms look for reads that map to the same genomic coordinate, and whose mates also map to identical genomic coordinates. It is important to note that as the sequencing depth increases, more reads are sampled from the DNA library, and consequently it is increasingly likely that duplicate reads will be sampled. As a result, the true duplicate rate is not independent of the depth, and they should both be considered when looking at the duplicate rate. Additionally, as the sequencing depth in increases, it is also increasingly likely that reads will map to the same location and be marked as duplicates, even when they are not. As such, as the sequencing depth approaches and surpasses the read length, the duplicate rate starts to become less indicative of problems.\n" +
+          "</div>\n" +
+          "<div class=\"row vertical-align\">\n" +
+          "  <div class=\"col-xs-4\">\n" +
+          "    <img title=\"Acceptable duplicate rate\" style=\"width:100%; padding-bottom:15px;\"  src=\"../../../images/dup_good.png\"></img>\n" +
+          "  </div>\n" +
+          "  <div class=\"col-xs-8\">\n" +
+          "    This is an example of the duplicate rate for a ~80X human whole genome. The expectation is that the duplicate rate is low (well below 10%), and consequently, this sample would be considered good.\n" +
+          "  </div>\n" +
+          "</div>\n" +
+          "\n" +
+          "<div class=\"row vertical-align\">\n" +
+          "  <div class=\"col-xs-4\">\n" +
+          "    <img title=\"Acceptable duplicate rate\" style=\"width:100%;padding-bottom:15px;\"  src=\"../../../images/dup_good_low_cov.png\"></img>\n" +
+          "  </div>\n" +
+          "  <div class=\"col-xs-8\">\n" +
+          "    If the median coverage drops to ~50X, the duplicate rate should be even lower.\n" +
+          "  </div>\n" +
+          "</div>\n" +
+          "\n" +
+          "<div class=\"row vertical-align\">\n" +
+          "  <div class=\"col-xs-4\">\n" +
+          "\t\t\t          <img title=\"Potentially problematic duplicate rate\" style=\"width:100%;\"  src=\"../../../images/dup_bad.png\"></img>\n" +
+          "  </div>\n" +
+          "  <div class=\"col-xs-8\">\n" +
+          "    This is a different sample with ~50X coverage, but now the duplicate rate is much higher. This sample could well have problems at the library prep stage and should potentially be resequenced.\n" +
+          "  </div>\n" +
+          "</div>"
       }
     },
 

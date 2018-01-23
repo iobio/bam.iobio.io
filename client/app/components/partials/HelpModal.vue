@@ -11,12 +11,17 @@
   .modal-body {
     text-align: justify;
     padding: 30px;
-    overflow: scroll;
-    font-size: 12pt;
+    overflow: auto;
+    font-size: 11pt;
+    max-height: 500px;
+  }
+
+  .modal-body .row {
+    margin-top: 30px;
   }
 
   .modal-mask {
-    position: fixed;
+    position: absolute;
     z-index: 9998;
     top: 0;
     left: 0;
@@ -62,7 +67,7 @@
 
                 <div class="modal-body">
                   <slot name="body">
-                    {{body}}
+                    <span v-html="body"></span>
                   </slot>
                 </div>
 
