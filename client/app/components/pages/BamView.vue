@@ -14,7 +14,7 @@
     order: 1;
     height: 100%;
     position:relative;
-    width: 175px;
+    width: 250px;
   }
 
   #percents {
@@ -216,7 +216,7 @@
 
       <div id="piechooser" class="panel">
         <pie-chooser @setSelectedSeq="setSelectedSeq"></pie-chooser>
-        <select onchange='setSelectedSeq(this.value);' id="reference-select">
+        <select @change="seqSelected" id="reference-select">
           <option value="all">all</option>
         </select>
       </div>
@@ -509,6 +509,10 @@
             })
         } else
           return [selected];
+      },
+
+      seqSelected: function (event){
+        this.setSelectedSeq(event.target.value);
       },
 
       setSelectedSeq: function(selected, start, end) {

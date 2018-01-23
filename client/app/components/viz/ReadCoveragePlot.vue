@@ -25,7 +25,7 @@ export default {
         type: Number
       },
       width:{
-        default: 875,
+        default: 850,
         type: Number
       },
       labelFormat: {
