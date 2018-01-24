@@ -27,10 +27,12 @@ export default {
         type: Number
       },
       xTickFormatter: {
-        default: tickFormatter()
+        default: tickFormatter(),
+        type: Function
       },
       yTickFormatter: {
-        default: tickFormatter()
+        default: tickFormatter(),
+        type: Function
       },
       margin: {
         default: {top: 5, right: 20, bottom: 20, left: 50}
