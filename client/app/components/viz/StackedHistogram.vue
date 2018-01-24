@@ -4,6 +4,12 @@
     .iobio-bar-1 .instruction {
       font-size: 10px;
     }
+
+    rect {
+      fill: #2d8fc1;
+      shape-rendering: crispEdges;
+    }
+
 </style>
 
 <template>
