@@ -25,7 +25,7 @@ export default {
     props: {
       data: {},
       width: {
-        default: 800,
+        default: 750,
         type: Number
       },
       height: {
@@ -41,7 +41,15 @@ export default {
         type: Function
       },
       margin: {
-        default: {top: 5, right: 20, bottom: 20, left: 50}
+        default () {
+          return {
+            top: 5,
+            right: 20,
+            bottom: 20,
+            left: 50
+          }
+        },
+        type: Object
       },
       sizeRatio: {
         default: 0.8,
