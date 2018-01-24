@@ -18,22 +18,6 @@
     width: 250px;
   }
 
-  #percents {
-    margin-right: 20px;
-    -webkit-flex: 1 1 auto;
-    flex: 1 1 auto;
-    -webkit-order: 1;
-    order: 1;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-direction: row;
-    flex-direction: row;
-    -webkit-flex-wrap: wrap;
-    flex-wrap: wrap;
-    flex-flow: row wrap;
-    width: 40%;
-  }
-
   section {
     margin: 0px;
     padding: 0px;
@@ -52,6 +36,22 @@
   section#middle {
     margin-top: 25px;
     min-height: 600px;
+  }
+
+  #percents {
+    margin-right: 20px;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    -webkit-order: 1;
+    order: 1;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+    flex-flow: row wrap;
+    width: 40%;
   }
 
   #distributions {
@@ -146,10 +146,6 @@
   .iobio-multi-line.line-panel text { fill: black; }
   .iobio-multi-line.button-panel text { fill: white; }
   .iobio-multi-line #iobio-button-all { display: none; }
-  .iobio-bar-1 { font-size: 9px;}
-  .iobio-bar-1 .instruction {
-    font-size: 10px;
-  }
   .iobio-axis line,.iobio-axis path{fill:none;stroke:#000;shape-rendering:crispEdges}
   .iobio-tooltip{position:fixed;top:0;text-align:center;z-index:20;color:#fff;padding:4px 6px;font:11px arial;background:#505050;border:0;border-radius:4px;pointer-events:none}
   .iobio-brush .extent{stroke:#000;fill-opacity:.125;shape-rendering:crispEdges}
@@ -180,6 +176,16 @@
   .samplingLoader img {
     height:9px;
   }
+
+  .chart-chooser {
+    /*                font-size: 16px;*/
+    color: rgb(180,180,180);
+    font-weight: 400;
+    /*                text-align: right;*/
+  }
+
+  .chart-chooser .selected {color:#2d8fc1; border-bottom: 1px solid #2d8fc1}
+  .chart-chooser span { margin: 0px 5px 0px 5px; padding-bottom: 3px; cursor:pointer;}
 
   @-webkit-keyframes nprogress-spinner {
     0%   { -webkit-transform: rotate(0deg);   transform: rotate(0deg); }
@@ -280,7 +286,7 @@
                        body="">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <div id="read-coverage-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
+          <stacked-histogram :data="readCoverageData" :y-tick-formatter="function(d) { return d*100 + '%'}"></stacked-histogram>
         </div>
 
         <div id="length-distribution" class="distribution panel">
@@ -294,13 +300,13 @@
             Outliers
           </label>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-            <div id="length-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:85%"></div>
+            <stacked-histogram :data="lengthData" ></stacked-histogram>
           </div>
 
         <div id="mapping-quality-distribution" class="distribution panel">
           <div><div class="chart-chooser"><span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span></div></div>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <div id="mapping-quality-distribution-chart" class="chart focus" preserveAspectRatio="none" style="width:98%;height:90%"></div>
+          <stacked-histogram :data="qualityData" ></stacked-histogram>
         </div>
       </div>
     </section>
@@ -320,12 +326,14 @@
   import DefaultBed from '../../../../data/20130108.exome.targets.bed';
   import DonutChart from "../viz/DonutChart.vue";
   import PercentChartBox from "../partials/PercentChartBox.vue";
+  import StackedHistogram from "../viz/StackedHistogram.vue";
 
 
   export default {
     name: 'bamview',
 
     components: {
+      StackedHistogram,
       PercentChartBox,
       DonutChart,
       PieChooser,
@@ -349,22 +357,27 @@
         totalReads: 0,
         sampling: '',
 
+        exomeSampling: false,
+        draw: true,
+
 //        bam: new Bam( this.selectedFileURL ),
         bed: {},
-
-        exomeSampling: false,
 
 //        pieChooserChart: {},
 //        readDepthChart: {},
 
-        draw: true,
-
+        // Percent Chart Data
         mappedReadsData: [],
         forwardStrandsData: [],
         properPairsData: [],
         singletonsData: [],
         bothMatesData: [],
         duplicatesData: [],
+
+        // Histogram Chart Data
+        readCoverageData: [],
+        lengthData: [],
+        qualityData: [],
 
         // Help Modal Bodies
         mappedReadsHelpBody:
@@ -556,8 +569,7 @@
         if (Object.keys(histograms.coverage_hist).length == 0) histograms.coverage_hist[0] = '1.0';
         // update read coverage histogram
         var d = Object.keys(histograms.coverage_hist).filter(function(i){return histograms.coverage_hist[i] != "0"}).map(function(k) { return [+k, +histograms.coverage_hist[k]] });
-        var selection = d3.select("#read-coverage-distribution-chart").datum(d);
-        window.readCoverageChart(selection);
+        this.readCoverageData = d;
 
         // update read length distribution
         if ($("#length-distribution .selected").attr("data-id") == "frag_hist")
@@ -567,17 +579,14 @@
         // remove outliers if outliers checkbox isn't explicity checked
         var outliers = $("#length-distribution .checkbox").hasClass("checked");
         if (!outliers) d = iobio.viz.layout.outlier()(d);
-        var selection = d3.select("#length-distribution-chart").datum(d);
-        window.lengthChart( selection );
+        this.lengthData = d;
 
         // update map quality distribution
         if ($("#mapping-quality-distribution .selected").attr("data-id") == "mapq_hist")
           var d = Object.keys(histograms.mapq_hist).map(function(k) { return  [+k, +histograms.mapq_hist[k]] });
         else
           var d = Object.keys(histograms.baseq_hist).map(function(k) { return  [+k, +histograms.baseq_hist[k]] });
-        var selection = d3.select("#mapping-quality-distribution-chart").datum(d);
-        window.qualityChart(selection);
-
+        this.qualityData = d;
       },
 
       sampleMore : function() {
@@ -830,6 +839,27 @@
 
       },
 
+      toggleChart: function(elem, chartID) {
+        if ($(elem).hasClass("selected")) return;
+        // toggle selected
+        var pair = [elem, $(elem).siblings()[0]];
+        $(pair).toggleClass('selected');
+
+        // redraw chart
+        var dataId = elem.getAttribute("data-id")
+        // var outlier = elem.getAttribute('data-outlier') === 'true' || elem.getAttribute('data-outlier') == null;
+        var h = window.sampleStats[dataId];
+        var d = Object.keys(h).map(function(k) { return  [+k, +h[k]] });
+        var chartDiv = $(elem).parent().parent().parent();
+        var selection = d3.select(chartDiv.find('.chart')[0])
+        if ( chartDiv.find(".selected").attr("data-id") == "frag_hist" ) {
+          var outlier = chartDiv.find('.checkbox').hasClass('checked')
+          if (!outlier) d = iobio.viz.layout.outlier()(d);
+        }
+        selection.datum(d);
+        window[chartId](selection);
+      },
+
       setBrush: function (start, end){
         var brush = window.readDepthChart.brush();
         // set brush region
@@ -843,47 +873,8 @@
     },
 
     created: function() {
-
       // hold onto stats
       window.sampleStats = undefined;
-
-      // HISTOGRAM CHARTS
-      var width = 800;//$("#read-coverage-distribution-chart").width();
-      var height = 150;//$("#read-coverage-distribution-chart").height();
-
-      // setup read coverage histogram chart
-      window.readCoverageChart = iobio.viz.barViewer()
-        .xValue(function(d) { return d[0]; })
-        .yValue(function(d) { return d[1]; })
-        .wValue(function() { return 1; })
-        .height(height)
-        .width(width)
-        .margin({top: 5, right: 20, bottom: 20, left: 50})
-        .sizeRatio(0.8);
-      window.readCoverageChart.yAxis().tickFormat(function(d) { return d*100 + '%'});
-
-      window.lengthChart = iobio.viz.barViewer()
-        .xValue(function(d) { return d[0]; })
-        .yValue(function(d) { return d[1]; })
-        .wValue(function() { return 1; })
-        .height(height)
-        .width(width)
-        .margin({top: 5, right: 20, bottom: 20, left: 50})
-        .sizeRatio(0.8);
-      window.lengthChart.xAxis().tickFormat(tickFormatter);
-      window.lengthChart.yAxis().tickFormat(tickFormatter);
-
-      // setup quality histogram chart
-      window.qualityChart = iobio.viz.barViewer()
-        .xValue(function(d) { return d[0]; })
-        .yValue(function(d) { return d[1]; })
-        .wValue(function() { return 1; })
-        .height(height)
-        .width(width)
-        .margin({top: 5, right: 20, bottom: 20, left: 50})
-        .sizeRatio(0.8);
-      window.qualityChart.xAxis().tickFormat(tickFormatter);
-      window.qualityChart.yAxis().tickFormat(tickFormatter);
 
       window.bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
       var defaultBed = DefaultBed.replace(/chr/g, '');
@@ -891,14 +882,6 @@
       this.goBam(undefined);
     }
 
-  }
-
-  function tickFormatter (d) {
-    if ((d / 1000000) >= 1)
-      d = d / 1000000 + "M";
-    else if ((d / 1000) >= 1)
-      d = d / 1000 + "K";
-    return d;
   }
 
 </script>
