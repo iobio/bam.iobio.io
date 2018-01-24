@@ -50,7 +50,7 @@
   }
 
   section#middle {
-    margin-top: 15px;
+    margin-top: 25px;
     min-height: 600px;
   }
 
@@ -69,25 +69,6 @@
   }
 
   #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:200px; position:relative; /*padding: 0px 15px 0px 15px*/}
-
-  .panel#depth-distribution {
-    -webkit-flex: 1 1 auto;
-    flex: 1 1 auto;
-    -webkit-order: 2;
-    order: 2;
-    height: 250px;
-    position:relative;
-    width: 65%;
-  }
-
-  .panel#depth-distribution .chart {
-    -webkit-flex: 1 1 auto;
-    flex: 1 1 auto;
-    -webkit-order: 2;
-    order: 2;
-    margin-left: auto;
-    margin-right: auto;
-  }
 
   /* Make clicks pass-through */
   #nprogress {
