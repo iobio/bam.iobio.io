@@ -38,6 +38,8 @@
     min-height: 600px;
   }
 
+  svg { width: 100%;}
+
   #percents {
     margin-right: 20px;
     -webkit-flex: 1 1 auto;
@@ -283,7 +285,7 @@
         <div id="read-coverage-distribution" class="distribution panel">
           Read Coverage Distribution
           <help-button modalTitle="Read Coverage Distribution" tooltipText="Expect a Poisson distribution centered on the expected mean coverage"
-                       body="">
+                       :body="readCoverageHelpBody">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <stacked-histogram :data="readCoverageData" :y-tick-formatter="function(d) { return d*100 + '%'}"></stacked-histogram>
@@ -455,7 +457,31 @@
           "  <div class=\"col-xs-8\">\n" +
           "    This is a different sample with ~50X coverage, but now the duplicate rate is much higher. This sample could well have problems at the library prep stage and should potentially be resequenced.\n" +
           "  </div>\n" +
-          "</div>"
+          "</div>",
+
+        readCoverageHelpBody:
+        "<div>\n" +
+        "  This chart shows how read coverage is distributed, and the expected distribution is dependent on the type of sequencing data being visualized.\n" +
+        "</div>\n" +
+        "<br>\n" +
+        "<div><strong><i>Whole genome sequencing</i></strong></div>\n" +
+        "<div>\n" +
+        "  In a whole genome sequencing experiment, the expectation is that the read coverage follows a Poisson distribution centred about the requested sequencing depth. The following example shows a high quality read coverage distribution for a sample sequenced to ~50X coverage. The distribution shows a nice Poisson distribution, and is centred around ~53X. (Note that the second scale at the bottom of the chart can be used to zoom in on desired parts of the distribution).\n" +
+        "  <img title=\"A good read coverage distribution\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/read_coverage_dist_zoomed.png\"></img>\n" +
+        "    Alternatively, if the distribution shows multiple peaks, isn't Poisson distributed, or is not centred around the expected coverage, it may be necessary to consider resequencing the sample, or at least, being aware that problems may arise in analysing the data. While the following distribution shows a median coverage around that expected (~80X), but with a significant portion of the genome at zero coverage and the multiple peaks, this would not be considered a good sample.\n" +
+        "  <img title=\"A bad read coverage distribution\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/read_coverage_dist_bad.png\"></img>\n" +
+        "</div>\n" +
+        "<br>\n" +
+        "<div><strong><i>Whole exome sequencing</i></strong></div>\n" +
+        "<div>\n" +
+        "  Exome sequencing relies on the targetted capture of DNA from the exome, followed by DNA amplification. This leads to large variation in the sequencing depth across exons, and consequently, the read coverage distribution is no longer expected to be Poisson distributed. When sampling across the entire genome, the majority of genomic regions will contain no sequencing reads as will are not exonic regions. This leads to a read coverage distribution overwhelmingly weighted to zero coverage as shown below.\n" +
+        "  <img title=\"Exome sequencing\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/read_coverage_dist_exome.png\"></img>\n" +
+        "  To restrict sampling to exonic regions, select the default bed file in the top 'Read Coverage' chart. It is also possible to select a custom bed file, if available. After selecting the default bed, the distribution above is updated to as shown below.\n" +
+        "  <img title=\"Exome sequencing using default bed\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/read_coverage_dist_exome_bed.png\"></img>\n" +
+        "  This does not have a Poisson distribution and shows the wide distribution of coverage in the exonic regions. The sequenced depth appears to be centred around ~50X, so if this is consistent with the requested depth, this sample would be considered good.\n" +
+        "</div>",
+
+
       }
     },
 
