@@ -122,8 +122,7 @@
     <div class='chart' style="width:98%; height:60%"></div>
 
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
-                        :powerScale="powerScale"
-                        :width="depthChartWidth"></read-coverage-plot>
+                        :powerScale="powerScale"></read-coverage-plot>
   </div>
 </template>
 
@@ -161,12 +160,6 @@ export default {
       this.$emit('setSelectedSeq', selected, start, end);
     }
 
-  },
-
-  computed: {
-    depthChartWidth: function() {
-      return $("#depth-distribution .chart").width() ;
-    },
   },
 
   watch: {

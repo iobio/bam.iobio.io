@@ -21,11 +21,11 @@ export default {
       },
       labels: {},
       height:{
-        default: 100,
+        default: 150,
         type: Number
       },
       width:{
-        default: 850,
+        default: 800,
         type: Number
       },
       labelFormat: {
@@ -59,8 +59,6 @@ export default {
 
         var color = d3.scale.category20b();
 
-        var w = self.svgWidth;
-
         window.readDepthChart = iobio.viz.multiLine()
           .nameValue(function(d) { return d.name; })
           .dataValue(function(d) { return d.data; })
@@ -70,9 +68,9 @@ export default {
           .transitionDuration(self.transitionDuration)
           .epsilonRate(0.3)
           .margin({top: 10, right: 0, bottom: 30, left:0})
-          .height(150)
+          .height(this.height)
           .color(function(d,i) {return color(d.name); })
-          .width(w)
+          .width(this.width)
           .on('click', function(d) {
             var name = d ? d.name : 'all';
             self.setSelectedSeq(name);
@@ -94,7 +92,7 @@ export default {
       },
 
       update: function() {
-        window.readDepthChart.width(this.svgWidth);
+        window.readDepthChart.width(this.width);
         window.readDepthChart.lineChart().y(window.readDepthChart.lineChart().y().exponent(this.yscale));
 
         window.readDepthChart(d3.select('#depth-distribution .chart')); //TODO: ,{ selected: getSelectedSeqId()});
@@ -103,9 +101,6 @@ export default {
       },
     },
     computed: {
-      svgWidth: function() {
-        return this.width || $(this.$el).width();
-      },
       yscale: function() {
         return this.powerScale ? 0.5 : 1;
       }
