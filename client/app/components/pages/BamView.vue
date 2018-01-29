@@ -362,6 +362,8 @@
         exomeSampling: false,
         draw: true,
 
+        sampleStats: {},
+
 //        bam: new Bam( this.selectedFileURL ),
         bed: {},
 
@@ -509,7 +511,7 @@
           // turn off sampling message
           $(".samplingLoader").css("display", "none");
           $("section#middle svg").css("display", "block");
-          window.sampleStats = data;
+          this.sampleStats = data;
           // update progress bar
           if (options.start != null && options.end != null) {
             var length = options.end - options.start;
@@ -874,7 +876,7 @@
         // redraw chart
         var dataId = elem.getAttribute("data-id")
         // var outlier = elem.getAttribute('data-outlier') === 'true' || elem.getAttribute('data-outlier') == null;
-        var h = window.sampleStats[dataId];
+        var h = this.sampleStats[dataId];
         var d = Object.keys(h).map(function(k) { return  [+k, +h[k]] });
         var chartDiv = $(elem).parent().parent().parent();
         var selection = d3.select(chartDiv.find('.chart')[0])
@@ -899,9 +901,6 @@
     },
 
     created: function() {
-      // hold onto stats
-      window.sampleStats = undefined;
-
       window.bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
       var defaultBed = DefaultBed.replace(/chr/g, '');
       this.bed = defaultBed;
