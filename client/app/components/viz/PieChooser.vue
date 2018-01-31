@@ -72,7 +72,6 @@ export default {
         })
         .on("clickall", function(d,i) {
           self.setSelectedSeq('all');
-          // window.readDepthChart.trigger('click', 'all');
         })
         .tooltip( function(d) {
           return d.data.name;
