@@ -528,14 +528,14 @@
           if (NProgress.status < percentDone) NProgress.set(percentDone);
 
           // update charts
-          this.updatePercentCharts(data, window.sampleDonutChart);
+          this.updatePercentCharts(data);
           this.totalReads = data.total_reads;
           this.updateHistogramCharts(data, undefined, "sampleBar");
 
         }.bind(this),options);
       },
 
-      updatePercentCharts : function(stats, donutChart) {
+      updatePercentCharts : function(stats) {
 
         var unmappedReads, mappedReads;
 
