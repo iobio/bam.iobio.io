@@ -219,7 +219,9 @@
     <section id="top">
 
       <div id="piechooser" class="panel">
-        <pie-chooser @setSelectedSeq="setSelectedSeq"></pie-chooser>
+        <pie-chooser @setSelectedSeq="setSelectedSeq"
+                     :selected-item="selectedSeqId"
+                     :data="readDepthData"></pie-chooser>
         <select @change="seqSelected" id="reference-select">
           <option value="all">all</option>
         </select>
@@ -554,6 +556,7 @@
         }
 
         var showMappedDataFromIndex = false;
+        // TODO: Deal with brush
         var brushRange = undefined;// window.readDepthChart.brush().extent();
         if ( (brushRange == undefined || brushRange.toString() == '0,0' ) && mappedReads != undefined && unmappedReads != undefined) {
           showMappedDataFromIndex = true;
@@ -663,18 +666,8 @@
               if (window.bam.readDepth[key].length > 0)
                 return  true
             })
-
-          window.pieChooserChart.clickAllSlices(d3.selectAll('#piechooser .arc')[0]);
-        }
-        else {
+        } else {
           var seqDataIds = [selected];
-          $('#piechooser .arc').each(function(i,d) {
-            if (d3.select(d).datum().data.name == selected) {
-              window.pieChooserChart.clickSlice(i)
-            }
-
-          });
-
         }
 
         $("#reference-select").val(selected);
@@ -816,17 +809,12 @@
             .map(function(key) {
               return {"name" : key, "data" : window.bam.readDepth[key] }
             })
+
           this.readDepthData = allPoints;
 
           this.draw = true;
 
           var selection = d3.select('#depth-distribution .chart').datum(allPoints);
-
-          var pie = d3.layout.pie()
-            .sort(null)
-            .value(function(d,i) {return d.data.length });
-
-          var pieSelection = d3.select('#piechooser').datum( pie(allPoints) );
 
           if (allPoints.length > 50) {
             $('#piechooser svg').css('visibility', 'hidden');
@@ -850,14 +838,12 @@
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
 
+          // TODO: Don't draw pie chooser and read depth chart until done
           if ( done ) {
-            window.pieChooserChart.on('end', function() {
               if (!region || (region && region.chr == 'all'))
                 this.setSelectedSeq( 'all' , start, end );
               else
                 this.setSelectedSeq( id, start, end);
-            }.bind(this))
-            window.pieChooserChart(pieSelection);
           }
 
           var totalPoints = allPoints.reduce(function(acc,val) { return acc + val.data.length  },0)

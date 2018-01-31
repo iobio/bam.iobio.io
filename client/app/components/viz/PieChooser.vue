@@ -24,6 +24,7 @@ export default {
 
   props: {
     data: {},
+    selectedItem: {},
     transitionDuration: {
       default: 50,
       type: Number
@@ -45,7 +46,8 @@ export default {
   data() {
     return {
       radius: this.width/2 - this.padding,
-      pieChooser: {}
+      pieChooserChart: {},
+      pie: {},
     }
   },
 
@@ -59,7 +61,11 @@ export default {
 
       var color = d3.scale.category20b();
 
-      window.pieChooserChart = iobio.viz.pieChooser()
+      this.pie = d3.layout.pie()
+        .sort(null)
+        .value(function(d,i) {return d.data.length });
+
+      this.pieChooserChart = iobio.viz.pieChooser()
         .radius(this.radius)
         .innerRadius(this.radius*.5)
         .padding(this.padding)
@@ -84,9 +90,12 @@ export default {
     },
 
     update: function() {
-      var selection = d3.select(this.$el).datum( this.data );
-      this.pieSelection = selection;
-      window.pieChooserChart(this.pieSelection);
+      var pie = d3.layout.pie()
+        .sort(null)
+        .value(function(d,i) {return d.data.length });
+
+      var selection = d3.select('#piechooser').datum( pie(this.data) );
+      this.pieChooserChart(selection);
     }
 
   },
@@ -95,6 +104,19 @@ export default {
     data: function() {
         this.update();
     },
+
+    selectedItem: function() {
+      var self = this;
+      if ( this.selectedItem == 'all'){
+        self.pieChooserChart.clickAllSlices(d3.selectAll('#piechooser .arc')[0]);
+      } else {
+        $('#piechooser .arc').each(function(i,d) {
+          if (d3.select(d).datum().data.name == self.selectedItem) {
+            self.pieChooserChart.clickSlice(i);
+          }
+        });
+      }
+    }
   }
 }
 
