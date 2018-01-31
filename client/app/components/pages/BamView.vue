@@ -227,7 +227,10 @@
 
       <read-coverage-box @removeBedFile="removeBedFile()"
                          @addDefaultBedFile="addDefaultBedFile()"
-                         @setSelectedSeq="setSelectedSeq"></read-coverage-box>
+                         @setSelectedSeq="setSelectedSeq"
+                         :selectedSeqId="selectedSeqId"
+                         :draw="draw"
+                         :readDepthData="readDepthData"></read-coverage-box>
 
       <reads-sampled-box @sampleMore="sampleMore" :totalReads="totalReads"></reads-sampled-box>
 
@@ -367,8 +370,9 @@
 //        bam: new Bam( this.selectedFileURL ),
         bed: {},
 
-//        pieChooserChart: {},
-//        readDepthChart: {},
+        readDepthData: [],
+        selectedSeqId: 'all',
+        region: {},
 
         // Percent Chart Data
         mappedReadsData: [],
@@ -533,10 +537,9 @@
 
       updatePercentCharts : function(stats, donutChart) {
 
-        var selected = this.getSelectedSeqId();
         var unmappedReads, mappedReads;
 
-        if (selected == 'all') {
+        if (this.selectedSeqId == 'all') {
           if (window.bam.readDepth[Object.keys(window.bam.readDepth)[0]].mapped != undefined) {
             mappedReads = unmappedReads = 0;
             for ( var id  in window.bam.readDepth) {
@@ -546,12 +549,12 @@
             unmappedReads = window.bam.n_no_coor;
           }
         } else {
-          mappedReads = window.bam.readDepth[selected].mapped;
-          unmappedReads = window.bam.readDepth[selected].unmapped;
+          mappedReads = window.bam.readDepth[this.selectedSeqId].mapped;
+          unmappedReads = window.bam.readDepth[this.selectedSeqId].unmapped;
         }
 
         var showMappedDataFromIndex = false;
-        var brushRange = window.readDepthChart.brush().extent();
+        var brushRange = undefined;// window.readDepthChart.brush().extent();
         if ( (brushRange == undefined || brushRange.toString() == '0,0' ) && mappedReads != undefined && unmappedReads != undefined) {
           showMappedDataFromIndex = true;
           d3.select("#mapped_reads_chart").selectAll('path')
@@ -621,24 +624,20 @@
         if (this.sampleMultiplier >= this.sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
         this.sampleMultiplier += 1;
         var options = {
+          sampling : this.sampling,
           sequenceNames : this.getSelectedSeqIds(),
           binNumber : this.binNumber + parseInt(this.binNumber/4 * this.sampleMultiplier),
           binSize : this.binSize + parseInt(this.binSize/4 * this.sampleMultiplier)
         }
-        if (window.readDepthChart.brush().extent().length != 0 && window.readDepthChart.brush().extent().toString() != "0,0") {
-          options.start = parseInt(this.depthChart.brush().extent()[0]);
-          options.end = parseInt(this.depthChart.brush().extent()[1]);
-        }
+        // if (window.readDepthChart.brush().extent().length != 0 && window.readDepthChart.brush().extent().toString() != "0,0") {
+        //   options.start = parseInt(this.depthChart.brush().extent()[0]);
+        //   options.end = parseInt(this.depthChart.brush().extent()[1]);
+        // }
         this.goSampling(options);
       },
 
-      getSelectedSeqId : function() {
-        return window.readDepthChart.getSelected();
-      },
-
       getSelectedSeqIds : function() {
-        var selected = window.readDepthChart.getSelected();
-        if (selected == 'all') {
+        if (this.selectedSeqId == 'all') {
           return Object.keys(window.bam.readDepth)
             .filter(function(key) {
               if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
@@ -647,7 +646,7 @@
                 return  true
             })
         } else
-          return [selected];
+          return [this.selectedSeqId];
       },
 
       seqSelected: function (event){
@@ -655,6 +654,7 @@
       },
 
       setSelectedSeq: function(selected, start, end) {
+        this.selectedSeqId = selected;
         if (selected == 'all') {
           var seqDataIds = Object.keys(window.bam.readDepth)
             .filter(function(key) {
@@ -677,8 +677,6 @@
 
         }
 
-        if(this.draw) window.readDepthChart.setSelected(selected);
-
         $("#reference-select").val(selected);
 
         // reset brush
@@ -686,14 +684,15 @@
         this.setUrlRegion({chr:selected, 'start':start, 'end':end });
         // start sampling
         if(start!= undefined && end!=undefined) {
-          this.goSampling({ sequenceNames:seqDataIds, 'start':start, 'end':end });
+          this.goSampling({ sampling: this.sampling, sequenceNames:seqDataIds, 'start':start, 'end':end });
           setTimeout(function() { this.setBrush(start,end)}, 200);
         } else {
-          this.goSampling({ sequenceNames:seqDataIds});
+          this.goSampling({ sampling: this.sampling, sequenceNames:seqDataIds});
         }
       },
 
       setUrlRegion: function(region) {
+        this.region = region;
         if (window.bam.sourceType == 'url' && region != undefined) {
           if (region.start != undefined && region.end != undefined) {
             var regionStr = region.chr + ':' + region.start + '-' + region.end;
@@ -701,7 +700,7 @@
             var regionStr = region.chr;
           }
           var extraParams = '';
-          if (window.sampling) extraParams += '&sampling=' + window.sampling
+          if (this.sampling) extraParams += '&sampling=' + this.sampling
           if (window.bam.baiUri != undefined) {
             window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
 
@@ -716,7 +715,7 @@
         $("#default-bedfile-button").css('visibility', 'visible');
         $("#add-bedfile-button").css('visibility', 'visible');
         this.bed = undefined;
-        this.goSampling({sequenceNames :  this.getSelectedSeqIds() });
+        this.goSampling({sampling: this.sampling, sequenceNames :  this.getSelectedSeqIds() });
       },
 
       addDefaultBedFile : function() {
@@ -735,7 +734,7 @@
 
         var defaultBed = DefaultBed.replace(/chr/g, '');
         this.bed = defaultBed;
-        this.goSampling({sequenceNames : this.getSelectedSeqIds() });
+        this.goSampling({sampling: this.sampling, sequenceNames : this.getSelectedSeqIds() });
       },
 
       openBedFile : function(event) {
@@ -762,7 +761,7 @@
         var reader = new FileReader();
         reader.onload = function(theFile) {
           window.bed = this.result;
-          goSampling({sequenceNames : getSelectedSeqIds() });
+          goSampling({sampling: this.sampling, sequenceNames : this.getSelectedSeqIds() });
         }
         reader.readAsText(event.target.files[0])
       },
@@ -817,6 +816,7 @@
             .map(function(key) {
               return {"name" : key, "data" : window.bam.readDepth[key] }
             })
+          this.readDepthData = allPoints;
 
           this.draw = true;
 
@@ -834,11 +834,12 @@
             this.draw = false;
           }
 
+          // TODO: Deal with noLine variable
           if (region && region.chr != 'all') {
-            if(this.draw) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
+            // if(this.draw) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
           }
           else {
-            if(this.draw) window.readDepthChart(selection, {noLine:!done});
+            // if(this.draw) window.readDepthChart(selection, {noLine:!done});
           }
 
           $('#reference-select')
@@ -852,7 +853,7 @@
           if ( done ) {
             window.pieChooserChart.on('end', function() {
               if (!region || (region && region.chr == 'all'))
-                this.setSelectedSeq( 'all' , start, end ); // TODO: anonymous function doesn't know what 'this' is.
+                this.setSelectedSeq( 'all' , start, end );
               else
                 this.setSelectedSeq( id, start, end);
             }.bind(this))
@@ -889,9 +890,9 @@
       },
 
       setBrush: function (start, end){
-        var brush = window.readDepthChart.brush();
+        // var brush = window.readDepthChart.brush();
         // set brush region
-        d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
+        // d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
       },
 
       resetBrush: function(){

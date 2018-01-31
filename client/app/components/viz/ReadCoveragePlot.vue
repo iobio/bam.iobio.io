@@ -14,7 +14,8 @@ export default {
     name: 'read-coverage-plot',
     props: {
       data: {},
-      selection: undefined,
+      selectedSeqId: '',
+      drawChart: { },
       transitionDuration: {
         default: 400,
         type: Number
@@ -44,7 +45,7 @@ export default {
     },
     data() {
       return {
-
+        readDepthChart: {},
       }
     },
     created: function() {
@@ -59,7 +60,7 @@ export default {
 
         var color = d3.scale.category20b();
 
-        window.readDepthChart = iobio.viz.multiLine()
+        this.readDepthChart = iobio.viz.multiLine()
           .nameValue(function(d) { return d.name; })
           .dataValue(function(d) { return d.data; })
           .xValue(function(d,i) { return d.pos; })
@@ -78,12 +79,12 @@ export default {
           .brush('brushend', function(b) {
             var start = parseInt(b.extent()[0]), end = parseInt(b.extent()[1]);
             if (start != end)
-              self.setSelectedSeq( window.readDepthChart.getSelected(), start, end );
+              self.setSelectedSeq( self.readDepthChart.getSelected(), start, end );
             else
-              self.setSelectedSeq( window.readDepthChart.getSelected() );
+              self.setSelectedSeq( self.readDepthChart.getSelected() );
           });
 
-        window.readDepthChart.lineChart().y(d3.scale.pow().exponent(self.yscale));
+        this.readDepthChart.lineChart().y(d3.scale.pow().exponent(this.yscale));
 
       },
 
@@ -92,13 +93,30 @@ export default {
       },
 
       update: function() {
-        window.readDepthChart.width(this.width);
-        window.readDepthChart.lineChart().y(window.readDepthChart.lineChart().y().exponent(this.yscale));
+        this.readDepthChart.width(this.width);
+        this.readDepthChart.lineChart().y(this.readDepthChart.lineChart().y().exponent(this.yscale));
 
-        window.readDepthChart(d3.select('#depth-distribution .chart')); //TODO: ,{ selected: getSelectedSeqId()});
-
-        this.$emit('setSelection',this.selection);
+        this.draw();
       },
+
+      draw: function() {
+        if (this.drawChart) {
+          var selection = d3.select('#depth-distribution .chart');//d3.select(this.$el);//.datum(this.data);
+          this.readDepthChart(selection, {selection: this.selectedSeqId});
+          this.readDepthChart.setSelected(this.selectedSeqId);
+        }
+      },
+
+      setBrush: function (start, end){
+        var brush = this.readDepthChart.brush();
+        //set brush region
+        d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
+      },
+
+      resetBrush: function(){
+        this.setBrush(0,0);
+      }
+
     },
     computed: {
       yscale: function() {
@@ -109,7 +127,7 @@ export default {
       data: function() {
         this.update();
       },
-      selection: function() {
+      selectedSeqId: function(newValue) {
         this.update();
       },
       width: function() {

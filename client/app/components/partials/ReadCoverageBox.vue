@@ -122,7 +122,10 @@
     <div class='chart' style="width:98%; height:60%"></div>
 
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
-                        :powerScale="powerScale"></read-coverage-plot>
+                        :selectedSeqId="selectedSeqId"
+                        :powerScale="powerScale"
+                        :drawChart="draw"
+                        :data="readDepthData"></read-coverage-plot>
   </div>
 </template>
 
@@ -138,6 +141,10 @@ export default {
   },
   name: 'read-coverage-box',
   props: {
+    readDepthData: {},
+    selectedSeqId: '',
+    powerScale: false,
+    draw: {}
   },
   data() {
     return {
@@ -147,7 +154,7 @@ export default {
                 "all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only. " +
                 "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
                 "of interest; again, all other metrics will then be recalculated for that region only.",
-      powerScale: false,
+
     }
   },
 
@@ -155,11 +162,9 @@ export default {
   },
 
   methods: {
-
     setSelectedSeq: function( selected, start, end) {
       this.$emit('setSelectedSeq', selected, start, end);
-    }
-
+    },
   },
 
   watch: {
