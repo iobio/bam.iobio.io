@@ -298,9 +298,16 @@
 
         <div id="length-distribution" class="distribution panel">
           <div>
+            <help-button modalTitle="Fragment length distribution" tooltipText="Expect a normal distribution"
+                            :body="fragmentLengthHelpBody">
+            </help-button>
             <span class="chart-chooser">
-              <span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Fragment Length</span> | <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span>
+              <span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Fragment Length</span> |
+              <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span>
             </span>
+            <help-button modalTitle="Read length distribution" tooltipText="Expect an extremely narrow distribution"
+                         :body="readLengthHelpBody">
+            </help-button>
           </div>
             <label class="checkbox" style="position:absolute;right:10px;top:24px;cursor:pointer" >
             <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
@@ -311,7 +318,18 @@
           </div>
 
         <div id="mapping-quality-distribution" class="distribution panel">
-          <div><div class="chart-chooser"><span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> | <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span></div></div>
+          <div>
+            <help-button modalTitle="Mapping quality distribution" tooltipText="Expect distribution weighted to high values (~60)"
+                         :body="mappingQualityHelpBody">
+            </help-button>
+            <span class="chart-chooser">
+              <span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> |
+              <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span>
+            </span>
+            <help-button modalTitle="Base quality distribution" tooltipText="Expect most values >40"
+                         :body="baseQualityHelpBody">
+            </help-button>
+          </div>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <stacked-histogram :data="qualityData" ></stacked-histogram>
         </div>
@@ -488,6 +506,33 @@
         "  <img title=\"Exome sequencing using default bed\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/read_coverage_dist_exome_bed.png\"></img>\n" +
         "  This does not have a Poisson distribution and shows the wide distribution of coverage in the exonic regions. The sequenced depth appears to be centred around ~50X, so if this is consistent with the requested depth, this sample would be considered good.\n" +
         "</div>",
+
+        fragmentLengthHelpBody:
+        "<div>\n" +
+        "  For paired end sequencing, DNA fragments are typically size selected to a uniform length and then sequenced from either end. Once the two mates are aligned back to the reference genome, the fragment length can be inferred from how far apart these two mates map. If the sequenced sample has a deletion or insertion relative to the reference, this will result in the two mates mapping closer together, or further apart than expected. Under the assumption that the sequenced sample has a relatively small number of insertions and deletions, we expect to see the fragment length follow a normal distribution.\n" +
+        "</div>\n" +
+        "<br>\n" +
+        "<div><strong><i>Whole genome sequencing</i></strong></div>\n" +
+        "<div>\n" +
+        "  This is an example of the fragment length distribution for a high coverage (~80X) whole genome. The read lengths in this sample are 150bp, so a fragment can not be shorter than this value, consequently, we see a sharp cutoff at a fragment length of 150bp.\n" +
+        "</div>\n" +
+        "<div>\n" +
+        "  <img title=\"WGS sequencing\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/fragment_wgs.png\"></img>\n" +
+        "</div>\n" +
+        "<br>\n" +
+        "<div><strong><i>Whole exome sequencing</i></strong></div>\n" +
+        "<div>\n" +
+        "  Similarly, this is the fragment length distribution for a high coverage exome.\n" +
+        "</div>\n" +
+        "<div>\n" +
+        "  <img title=\"Exome sequencing\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/fragment_exome.png\"></img>\n" +
+        "</div>",
+
+        readLengthHelpBody: "The mapping quality distribution shows the Phred quality scores describing the probability that a read <i>does not</i> map to the location that it has been assigned to (specifically, Q=-log<sub>10</sub>(P), where Q is the Phred score and P is the probability the read is in the wrong location). So the larger the score, the higher the quality of the mapping. Some scores have specific meaning, e.g. a score of 0 means that the read could map equally to multiple places in the reference genome. The majority of reads should be well mapped and so we expect to see this distribution heavily skewed to large value (typically around 60). It is not unusual to see some scores around zero. Reads originating from repetitive elements in the genome will plausibly map to multiple locations.",
+
+        mappingQualityHelpBody: "The mapping quality distribution shows the Phred quality scores describing the probability that a read <i>does not</i> map to the location that it has been assigned to (specifically, Q=-log<sub>10</sub>(P), where Q is the Phred score and P is the probability the read is in the wrong location). So the larger the score, the higher the quality of the mapping. Some scores have specific meaning, e.g. a score of 0 means that the read could map equally to multiple places in the reference genome. The majority of reads should be well mapped and so we expect to see this distribution heavily skewed to large value (typically around 60). It is not unusual to see some scores around zero. Reads originating from repetitive elements in the genome will plausibly map to multiple locations.",
+
+        baseQualityHelpBody: "Similar to the mapping quality distribution, the base quality distribution shows the Phred quality scores describing the probability that a nucleotide has been <i>incorrectly</i> assigned; e.g. an error in the sequencing. Specifically, Q=-log<sub>10</sub>(P), where Q is the Phred score and P is the probability the nucleotide is wrong. The larger the score, the more confident we are in the base call. Depending on the sequencing technology, we can expect to see different distributions, but we expect to see a distribution skewed towards larger (more confident) scores; typically around 40.",
 
 
       }
