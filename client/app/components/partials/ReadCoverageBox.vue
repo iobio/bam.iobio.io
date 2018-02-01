@@ -49,8 +49,6 @@
     cursor: pointer;
   }
 
-  .checkbox {padding-left: 18px;}
-
   .warning {
     display: none;
     margin-top: 40px;

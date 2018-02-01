@@ -193,6 +193,14 @@
   .chart-chooser .selected {color:#2d8fc1; border-bottom: 1px solid #2d8fc1}
   .chart-chooser span { margin: 0px 5px 0px 5px; padding-bottom: 3px; cursor:pointer;}
 
+  .checkbox {
+    cursor:pointer;
+    padding-left: 18px;
+  }
+  .checkbox:checked, .checkbox.checked .icons{
+    color: #267FAD;
+  }
+
   @-webkit-keyframes nprogress-spinner {
     0%   { -webkit-transform: rotate(0deg);   transform: rotate(0deg); }
     100% { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
@@ -315,7 +323,7 @@
                          :body="readLengthHelpBody">
             </help-button>
           </div>
-            <label class="checkbox" style="position:absolute;right:10px;top:24px;cursor:pointer" >
+          <label class="checkbox" style="position:absolute;right:10px;top:24px;" >
             <input type="checkbox" v-model="readOutliers" class="outlier" >
             Outliers
           </label>
