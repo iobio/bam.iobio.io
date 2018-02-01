@@ -56,6 +56,10 @@
     width: 40%;
   }
 
+  #percents .percent {
+    height: 200px;
+  }
+
   #distributions {
     -webkit-flex: 2 1 auto;
     flex: 2 1 auto;
