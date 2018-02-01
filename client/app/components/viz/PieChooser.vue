@@ -57,7 +57,7 @@ export default {
 
   methods: {
     setup: function() {
-      var self = this;
+      let self = this;
 
       var color = d3.scale.category20b();
 
@@ -106,7 +106,7 @@ export default {
     },
 
     selectedItem: function() {
-      var self = this;
+      let self = this;
       if ( this.selectedItem == 'all'){
         self.pieChooserChart.clickAllSlices(d3.selectAll('#piechooser .arc')[0]);
       } else {

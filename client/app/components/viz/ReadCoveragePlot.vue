@@ -56,7 +56,7 @@ export default {
     },
     methods: {
       setup: function() {
-        var self = this;
+        let self = this;
 
         var color = d3.scale.category20b();
 
