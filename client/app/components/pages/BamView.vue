@@ -216,6 +216,8 @@
   <div >
     <app-header></app-header>
 
+    <!--{{selectedFileURL}}-->
+
     <section id="top">
 
       <div id="piechooser" class="panel">
@@ -302,15 +304,15 @@
                             :body="fragmentLengthHelpBody">
             </help-button>
             <span class="chart-chooser">
-              <span class="selected" onclick="toggleChart(this,'lengthChart')" data-outlier="false" data-id="frag_hist">Fragment Length</span> |
-              <span onclick="toggleChart(this,'lengthChart')" data-id="length_hist" data-outlier="true">Read Length</span>
+              <span class="selected" @click="toggleChart('lengthData')" :datafield="lengthData" data-outlier="false" data-id="frag_hist">Fragment Length</span> |
+              <span @click="toggleChart('lengthData')" :datafield="lengthData" data-id="length_hist" data-outlier="true">Read Length</span>
             </span>
             <help-button modalTitle="Read length distribution" tooltipText="Expect an extremely narrow distribution"
                          :body="readLengthHelpBody">
             </help-button>
           </div>
             <label class="checkbox" style="position:absolute;right:10px;top:24px;cursor:pointer" >
-            <input type="checkbox"value="" class="outlier" data-toggle="checkbox" >
+            <input type="checkbox" v-model="readOutliers" class="outlier" >
             Outliers
           </label>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
@@ -323,8 +325,8 @@
                          :body="mappingQualityHelpBody">
             </help-button>
             <span class="chart-chooser">
-              <span onclick="toggleChart(this,'qualityChart')" data-id="mapq_hist" class="selected">Mapping Quality</span> |
-              <span data-id="baseq_hist" onclick="toggleChart(this,'qualityChart')">Base Quality</span>
+              <span @click="toggleChart('qualityData')" data-id="mapq_hist" class="selected">Mapping Quality</span> |
+              <span data-id="baseq_hist" @click="toggleChart('qualityData')">Base Quality</span>
             </span>
             <help-button modalTitle="Base quality distribution" tooltipText="Expect most values >40"
                          :body="baseQualityHelpBody">
@@ -403,87 +405,88 @@
         duplicatesData: [],
 
         // Histogram Chart Data
+        readOutliers: false,
         readCoverageData: [],
         lengthData: [],
         qualityData: [],
 
         // Help Modal Bodies
         mappedReadsHelpBody:
-          "<div>\n" +
-          "  The mapped reads chart shows how many of the reads in the sample were successfully mapped to the reference genome. Genetic variation, in particular structural variants, ensure that every sequenced sample is genetically different to the reference genome it was aligned to. If the sample differs only in a small number of single base pair changes (e.g. SNVs), the read will still likely map to the reference, but, for more significant variation, the read can fail to be placed. Therefore, it is not expected that the mapped reads rate will hit 100%, but it is expected to be high (usually >90%).\n" +
-          "</div>\n" +
-          "<div class=\"row vertical-align\">\n" +
-          "  <div class=\"col-xs-4\">\n" +
-          "    <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\"  src=\"../../../images/mapped_reads_high.png\"></img>\n" +
-          "  </div>\n" +
-          "  <div class=\"col-xs-8\">\n" +
-          "    This is an example of a human, whole exome. In this case, 99.7% of the sampled reads map to the reference, corresponding to 93,385 actual reads. It is important to note that when the wheel is blue, only reads that have been assigned to a reference sequence are included. This means that the 0.3% of reads that are unmapped have a mate pair that successfully maps to the reference genome.\n" +
-          "  </div>\n" +
-          "</div>\n" +
-          "\n" +
-          "<div class=\"row vertical-align\">\n" +
-          "    <div class=\"col-xs-4\">\n" +
-          "      <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\" src=\"../../../images/mapped_reads_high_green.png\"></img>\n" +
-          "    </div>\n" +
-          "    <div class=\"col-xs-8\">\n" +
-          "      For the case that both mates from paired end sequencing are unmapped, they appear at the end of the BAM file. Usually, the number of such unmapped reads can be obtained from the index file. When this is possible, the wheel will appear in green, as shown for this whole genome sample.\n" +
-          "    </div>\n" +
-          "</div>\n" +
-          "\n" +
-          "<div class=\"row vertical-align\">\n" +
-          "    <div class=\"col-xs-4\">\n" +
-          "      <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\" src=\"../../../images/mapped_reads_low.png\"></img>\n" +
-          "    </div>\n" +
-          "    <div class=\"col-xs-8\">\n" +
-          "      If the rate of mapped reads is low (usually below 90%), questions need to be asked about the sample to understand why so many reads are unmapped. The last example only has 71.5% of reads mapping to the reference genome for a whole genome sample. This was caused as the sample was contaminated with a significant amount of bacterial DNA; the DNA sample was obtained from a saliva sample, rather than a blood draw.\n" +
-          "    </div>\n" +
-          "</div>",
+        "<div>\n" +
+        "  The mapped reads chart shows how many of the reads in the sample were successfully mapped to the reference genome. Genetic variation, in particular structural variants, ensure that every sequenced sample is genetically different to the reference genome it was aligned to. If the sample differs only in a small number of single base pair changes (e.g. SNVs), the read will still likely map to the reference, but, for more significant variation, the read can fail to be placed. Therefore, it is not expected that the mapped reads rate will hit 100%, but it is expected to be high (usually >90%).\n" +
+        "</div>\n" +
+        "<div class=\"row vertical-align\">\n" +
+        "  <div class=\"col-xs-4\">\n" +
+        "    <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\"  src=\"../../../images/mapped_reads_high.png\"></img>\n" +
+        "  </div>\n" +
+        "  <div class=\"col-xs-8\">\n" +
+        "    This is an example of a human, whole exome. In this case, 99.7% of the sampled reads map to the reference, corresponding to 93,385 actual reads. It is important to note that when the wheel is blue, only reads that have been assigned to a reference sequence are included. This means that the 0.3% of reads that are unmapped have a mate pair that successfully maps to the reference genome.\n" +
+        "  </div>\n" +
+        "</div>\n" +
+        "\n" +
+        "<div class=\"row vertical-align\">\n" +
+        "    <div class=\"col-xs-4\">\n" +
+        "      <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\" src=\"../../../images/mapped_reads_high_green.png\"></img>\n" +
+        "    </div>\n" +
+        "    <div class=\"col-xs-8\">\n" +
+        "      For the case that both mates from paired end sequencing are unmapped, they appear at the end of the BAM file. Usually, the number of such unmapped reads can be obtained from the index file. When this is possible, the wheel will appear in green, as shown for this whole genome sample.\n" +
+        "    </div>\n" +
+        "</div>\n" +
+        "\n" +
+        "<div class=\"row vertical-align\">\n" +
+        "    <div class=\"col-xs-4\">\n" +
+        "      <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\" src=\"../../../images/mapped_reads_low.png\"></img>\n" +
+        "    </div>\n" +
+        "    <div class=\"col-xs-8\">\n" +
+        "      If the rate of mapped reads is low (usually below 90%), questions need to be asked about the sample to understand why so many reads are unmapped. The last example only has 71.5% of reads mapping to the reference genome for a whole genome sample. This was caused as the sample was contaminated with a significant amount of bacterial DNA; the DNA sample was obtained from a saliva sample, rather than a blood draw.\n" +
+        "    </div>\n" +
+        "</div>",
 
         forwardStrandsHelpBody: "The forward strand chart shows the fraction of reads that map to the forward DNA strand. The general expectation is that the DNA library preparation step will generate DNA from the forward and reverse strands in equal amounts. After mapping the reads to the reference genome, approximately 50% of the reads will consequently map to the forward strand. If the observed rate is significantly different to 50%, this may be indicative of problems with the library preparation step.",
 
         properPairsHelpBody:
-          "<div>\n" +
-          "  A fragment consisting of two <i>mates</i> is called a proper pair if both <i>mates</i> map to the reference genome in a manner consistent with expectations. In particular, if the DNA library consists of fragments ~500 base pairs in length, and 100 base pair reads are sequenced from either end, the expectation would be that the two reads map to the reference genome separated by ~300 base pairs. If the sequenced sample contains large structural variants, e.g. a large insertion, reads mapping with a large separation would be a signal for this variant, and the reads would not be proper pairs. Based on the sequencing technology, there is also an expectation on the orientation of each read in the fragment.\n" +
-          "</div>\n" +
-          "<br>\n" +
-          "<div>\n" +
-          "  <i><strong>When calculating the proper pair rate, pairs where both mates are unmapped are not included in the analysis.</strong></i> As a consequence, the rate of proper pairs is expected to be well over 90%; even if the mapping rate itself is low as a result of bacterial contamination, for example.\n" +
-          "</div>",
+        "<div>\n" +
+        "  A fragment consisting of two <i>mates</i> is called a proper pair if both <i>mates</i> map to the reference genome in a manner consistent with expectations. In particular, if the DNA library consists of fragments ~500 base pairs in length, and 100 base pair reads are sequenced from either end, the expectation would be that the two reads map to the reference genome separated by ~300 base pairs. If the sequenced sample contains large structural variants, e.g. a large insertion, reads mapping with a large separation would be a signal for this variant, and the reads would not be proper pairs. Based on the sequencing technology, there is also an expectation on the orientation of each read in the fragment.\n" +
+        "</div>\n" +
+        "<br>\n" +
+        "<div>\n" +
+        "  <i><strong>When calculating the proper pair rate, pairs where both mates are unmapped are not included in the analysis.</strong></i> As a consequence, the rate of proper pairs is expected to be well over 90%; even if the mapping rate itself is low as a result of bacterial contamination, for example.\n" +
+        "</div>",
 
         singletonsHelpBody: "When working with paired-end sequencing, each DNA fragment is sequenced from both ends, creating two <i>mates</i> for each pair. If one <i>mate</i> in the pair successfully maps to the reference genome, but the other is unmapped, the mapped mate is a <i>singleton</i>. One way in which a singleton could occur would be if the sample has a large insertion compared with the reference genome; one <i>mate</i> can fall in sequence flanking the insertion and will be mapped, but the other falls in the inserted sequence and so cannot map to the reference genome. There are unlikely to many such structural variants in the sample, or sequencing errors that would could cause a read to not be able to map. Consequently, the singleton rate is expected to be very low (<1%).",
 
         bothMatesHelpBody: "When working with paired-end sequencing, each DNA fragment is sequenced from both ends, creating two <i>mates</i> for each pair. This chart shows the fraction of reads in pairs where both of the <i>mates</i> successfully map to the reference genome. <i><strong>When calculating this metric, pairs where both mates are unmapped are not included.</strong></i>.",
 
         duplicatesHelpBody:
-          "<div>\n" +
-          "  PCR duplicates are two (or more) reads that originate from the same DNA fragment. When sequencing data is analysed, it is assumed that each observation (i.e. each read) is independent; an assumption that fails in the presence of duplicate reads. Typically, algorithms look for reads that map to the same genomic coordinate, and whose mates also map to identical genomic coordinates. It is important to note that as the sequencing depth increases, more reads are sampled from the DNA library, and consequently it is increasingly likely that duplicate reads will be sampled. As a result, the true duplicate rate is not independent of the depth, and they should both be considered when looking at the duplicate rate. Additionally, as the sequencing depth in increases, it is also increasingly likely that reads will map to the same location and be marked as duplicates, even when they are not. As such, as the sequencing depth approaches and surpasses the read length, the duplicate rate starts to become less indicative of problems.\n" +
-          "</div>\n" +
-          "<div class=\"row vertical-align\">\n" +
-          "  <div class=\"col-xs-4\">\n" +
-          "    <img title=\"Acceptable duplicate rate\" style=\"width:100%; padding-bottom:15px;\"  src=\"../../../images/dup_good.png\"></img>\n" +
-          "  </div>\n" +
-          "  <div class=\"col-xs-8\">\n" +
-          "    This is an example of the duplicate rate for a ~80X human whole genome. The expectation is that the duplicate rate is low (well below 10%), and consequently, this sample would be considered good.\n" +
-          "  </div>\n" +
-          "</div>\n" +
-          "\n" +
-          "<div class=\"row vertical-align\">\n" +
-          "  <div class=\"col-xs-4\">\n" +
-          "    <img title=\"Acceptable duplicate rate\" style=\"width:100%;padding-bottom:15px;\"  src=\"../../../images/dup_good_low_cov.png\"></img>\n" +
-          "  </div>\n" +
-          "  <div class=\"col-xs-8\">\n" +
-          "    If the median coverage drops to ~50X, the duplicate rate should be even lower.\n" +
-          "  </div>\n" +
-          "</div>\n" +
-          "\n" +
-          "<div class=\"row vertical-align\">\n" +
-          "  <div class=\"col-xs-4\">\n" +
-          "\t\t\t          <img title=\"Potentially problematic duplicate rate\" style=\"width:100%;\"  src=\"../../../images/dup_bad.png\"></img>\n" +
-          "  </div>\n" +
-          "  <div class=\"col-xs-8\">\n" +
-          "    This is a different sample with ~50X coverage, but now the duplicate rate is much higher. This sample could well have problems at the library prep stage and should potentially be resequenced.\n" +
-          "  </div>\n" +
-          "</div>",
+        "<div>\n" +
+        "  PCR duplicates are two (or more) reads that originate from the same DNA fragment. When sequencing data is analysed, it is assumed that each observation (i.e. each read) is independent; an assumption that fails in the presence of duplicate reads. Typically, algorithms look for reads that map to the same genomic coordinate, and whose mates also map to identical genomic coordinates. It is important to note that as the sequencing depth increases, more reads are sampled from the DNA library, and consequently it is increasingly likely that duplicate reads will be sampled. As a result, the true duplicate rate is not independent of the depth, and they should both be considered when looking at the duplicate rate. Additionally, as the sequencing depth in increases, it is also increasingly likely that reads will map to the same location and be marked as duplicates, even when they are not. As such, as the sequencing depth approaches and surpasses the read length, the duplicate rate starts to become less indicative of problems.\n" +
+        "</div>\n" +
+        "<div class=\"row vertical-align\">\n" +
+        "  <div class=\"col-xs-4\">\n" +
+        "    <img title=\"Acceptable duplicate rate\" style=\"width:100%; padding-bottom:15px;\"  src=\"../../../images/dup_good.png\"></img>\n" +
+        "  </div>\n" +
+        "  <div class=\"col-xs-8\">\n" +
+        "    This is an example of the duplicate rate for a ~80X human whole genome. The expectation is that the duplicate rate is low (well below 10%), and consequently, this sample would be considered good.\n" +
+        "  </div>\n" +
+        "</div>\n" +
+        "\n" +
+        "<div class=\"row vertical-align\">\n" +
+        "  <div class=\"col-xs-4\">\n" +
+        "    <img title=\"Acceptable duplicate rate\" style=\"width:100%;padding-bottom:15px;\"  src=\"../../../images/dup_good_low_cov.png\"></img>\n" +
+        "  </div>\n" +
+        "  <div class=\"col-xs-8\">\n" +
+        "    If the median coverage drops to ~50X, the duplicate rate should be even lower.\n" +
+        "  </div>\n" +
+        "</div>\n" +
+        "\n" +
+        "<div class=\"row vertical-align\">\n" +
+        "  <div class=\"col-xs-4\">\n" +
+        "\t\t\t          <img title=\"Potentially problematic duplicate rate\" style=\"width:100%;\"  src=\"../../../images/dup_bad.png\"></img>\n" +
+        "  </div>\n" +
+        "  <div class=\"col-xs-8\">\n" +
+        "    This is a different sample with ~50X coverage, but now the duplicate rate is much higher. This sample could well have problems at the library prep stage and should potentially be resequenced.\n" +
+        "  </div>\n" +
+        "</div>",
 
         readCoverageHelpBody:
         "<div>\n" +
@@ -540,13 +543,15 @@
 
     methods: {
 
-      goSampling : function(options) {
+      goSampling: function (options) {
         // add default options
         options = $.extend({
-          exomeSampling :  this.exomeSampling, //'checked' == $("#depth-distribution input").attr("checked"),
-          bed : this.bed,
-          onEnd:function(){NProgress.done();}
-        },options);
+          exomeSampling: this.exomeSampling, //'checked' == $("#depth-distribution input").attr("checked"),
+          bed: this.bed,
+          onEnd: function () {
+            NProgress.done();
+          }
+        }, options);
 
         // turn on sampling message and off svg
         $("section#middle svg").css("display", "none");
@@ -558,38 +563,43 @@
         NProgress.set(0);
 
         // update selected stats
-        window.bam.sampleStats( function(data){
+        window.bam.sampleStats(function (data) {
           // turn off sampling message
           $(".samplingLoader").css("display", "none");
           $("section#middle svg").css("display", "block");
           this.sampleStats = data;
+
           // update progress bar
           if (options.start != null && options.end != null) {
             var length = options.end - options.start;
-            var percentDone = Math.max(Math.round( ((data.last_read_position-options.start) / length) * 100) / 100,0);
+            var percentDone = Math.max(Math.round(((this.sampleStats.last_read_position - options.start) / length) * 100) / 100, 0);
           } else {
-            var length = window.bam.header.sq.reduce(function(prev,curr) { if (prev)return prev; if (curr.name == options.sequenceNames[0] )return curr; }, false).end;
-            var percentDone = Math.round( (data.last_read_position / length) * 100) / 100;
+            var length = window.bam.header.sq.reduce(function (prev, curr) {
+              if (prev) return prev;
+              if (curr.name == options.sequenceNames[0]) return curr;
+            }, false).end;
+            var percentDone = Math.round((this.sampleStats.last_read_position / length) * 100) / 100;
           }
 
           if (NProgress.status < percentDone) NProgress.set(percentDone);
 
           // update charts
-          this.updatePercentCharts(data);
-          this.totalReads = data.total_reads;
-          this.updateHistogramCharts(data, undefined, "sampleBar");
+          this.updatePercentCharts();
+          this.totalReads = this.sampleStats.total_reads;
+          this.updateHistogramCharts(undefined, "sampleBar");
 
-        }.bind(this),options);
+        }.bind(this), options);
       },
 
-      updatePercentCharts : function(stats) {
+      updatePercentCharts: function () {
 
         var unmappedReads, mappedReads;
+        var stats = this.sampleStats;
 
         if (this.selectedSeqId == 'all') {
           if (window.bam.readDepth[Object.keys(window.bam.readDepth)[0]].mapped != undefined) {
             mappedReads = unmappedReads = 0;
-            for ( var id  in window.bam.readDepth) {
+            for (var id  in window.bam.readDepth) {
               mappedReads += window.bam.readDepth[id].mapped;
               unmappedReads += window.bam.readDepth[id].unmapped;
             }
@@ -603,10 +613,12 @@
         var showMappedDataFromIndex = false;
         // TODO: Deal with brush
         var brushRange = undefined;// window.readDepthChart.brush().extent();
-        if ( (brushRange == undefined || brushRange.toString() == '0,0' ) && mappedReads != undefined && unmappedReads != undefined) {
+        if ((brushRange == undefined || brushRange.toString() == '0,0') && mappedReads != undefined && unmappedReads != undefined) {
           showMappedDataFromIndex = true;
           d3.select("#mapped_reads_chart").selectAll('path')
-            .attr('fill', function(d,i) { return i==0 ? 'rgb(9,176,135)' : 'rgba(9,176,135,0.5)' });
+            .attr('fill', function (d, i) {
+              return i == 0 ? 'rgb(9,176,135)' : 'rgba(9,176,135,0.5)'
+            });
           d3.select('.percent .from-index').style('visibility', 'visible');
         } else {
           d3.select('.percent .from-index').style('visibility', 'hidden');
@@ -615,7 +627,7 @@
         //update percent charts
         var keys = ['mapped_reads', "proper_pairs", "forward_strands", "singletons", "both_mates_mapped", "duplicates"]
 
-        keys.forEach( function(key,i) {
+        keys.forEach(function (key, i) {
           var stat = stats[key];
           if (key == 'mapped_reads' && showMappedDataFromIndex) {
             var data = [mappedReads, unmappedReads];
@@ -625,57 +637,109 @@
             else
               var data = [stat, stats['total_reads'] - stat];
           }
-          if ( key == 'mapped_reads') {
+          if (key == 'mapped_reads') {
             this.mappedReadsData = data;
           } else if (key == 'forward_strands') {
             this.forwardStrandsData = data;
-          } else if ( key == 'proper_pairs') {
+          } else if (key == 'proper_pairs') {
             this.properPairsData = data;
-          } else if ( key == 'singletons') {
+          } else if (key == 'singletons') {
             this.singletonsData = data;
-          } else if ( key == 'both_mates_mapped') {
+          } else if (key == 'both_mates_mapped') {
             this.bothMatesData = data;
-          } else if ( key == 'duplicates') {
+          } else if (key == 'duplicates') {
             this.duplicatesData = data;
           }
 
         }.bind(this));
       },
 
-      updateHistogramCharts : function(histograms, otherMinMax, klass){
+      updateHistogramCharts: function (otherMinMax, klass) {
+        var histograms = this.sampleStats;
 
         // check if coverage is zero
         if (Object.keys(histograms.coverage_hist).length == 0) histograms.coverage_hist[0] = '1.0';
+
         // update read coverage histogram
-        var d = Object.keys(histograms.coverage_hist).filter(function(i){return histograms.coverage_hist[i] != "0"}).map(function(k) { return [+k, +histograms.coverage_hist[k]] });
+        var d = Object.keys(histograms.coverage_hist).filter(function (i) {
+          return histograms.coverage_hist[i] != "0"
+        }).map(function (k) {
+          return [+k, +histograms.coverage_hist[k]]
+        });
         this.readCoverageData = d;
 
-        // update read length distribution
-        if ($("#length-distribution .selected").attr("data-id") == "frag_hist")
-          var d = Object.keys(histograms.frag_hist).filter(function(i){return histograms.frag_hist[i] != "0"}).map(function(k) { return  [+k, +histograms.frag_hist[k]] });
-        else
-          var d = Object.keys(histograms.length_hist).map(function(k) { return  [+k, +histograms.length_hist[k]] });
-        // remove outliers if outliers checkbox isn't explicity checked
-        var outliers = $("#length-distribution .checkbox").hasClass("checked");
-        if (!outliers) d = iobio.viz.layout.outlier()(d);
-        this.lengthData = d;
+        // update length histograms
+        this.updateLengthHistograms();
 
         // update map quality distribution
         if ($("#mapping-quality-distribution .selected").attr("data-id") == "mapq_hist")
-          var d = Object.keys(histograms.mapq_hist).map(function(k) { return  [+k, +histograms.mapq_hist[k]] });
+          var d = Object.keys(histograms.mapq_hist).map(function (k) {
+            return [+k, +histograms.mapq_hist[k]]
+          });
         else
-          var d = Object.keys(histograms.baseq_hist).map(function(k) { return  [+k, +histograms.baseq_hist[k]] });
+          var d = Object.keys(histograms.baseq_hist).map(function (k) {
+            return [+k, +histograms.baseq_hist[k]]
+          });
         this.qualityData = d;
       },
 
-      sampleMore : function() {
-        if (this.sampleMultiplier >= this.sampleMultiplierLimit) { alert("You've reached the sampling limit"); return;}
+      toggleChart: function (chartData) {
+        var elem = event.target;
+
+        if ($(elem).hasClass("selected")) return;
+
+        // toggle selected
+        var pair = [elem, $(elem).siblings()[0]];
+        $(pair).toggleClass('selected');
+
+        // redraw chart
+        var dataId = elem.getAttribute("data-id")
+
+        var h = this.sampleStats[dataId];
+        var d = Object.keys(h).map(function (k) {
+          return [+k, +h[k]]
+        });
+        var chartDiv = $(elem).parent().parent().parent();
+
+        if (chartDiv.find(".selected").attr("data-id") == "frag_hist") {
+          if (!this.readOutliers) d = iobio.viz.layout.outlier()(d);
+        }
+
+        this[chartData] = d;
+      },
+
+      updateLengthHistograms: function () {
+
+        var histograms = this.sampleStats;
+
+        if ($("#length-distribution .selected").attr("data-id") == "frag_hist")
+          var d = Object.keys(histograms.frag_hist).filter(function (i) {
+            return histograms.frag_hist[i] != "0"
+          }).map(function (k) {
+            return [+k, +histograms.frag_hist[k]]
+          });
+        else
+          var d = Object.keys(histograms.length_hist).map(function (k) {
+            return [+k, +histograms.length_hist[k]]
+          });
+
+        // remove outliers if outliers checkbox isn't explicity checked
+        if (!this.readOutliers) d = iobio.viz.layout.outlier()(d);
+        this.lengthData = d;
+
+      },
+
+      sampleMore: function () {
+        if (this.sampleMultiplier >= this.sampleMultiplierLimit) {
+          alert("You've reached the sampling limit");
+          return;
+        }
         this.sampleMultiplier += 1;
         var options = {
-          sampling : this.sampling,
-          sequenceNames : this.getSelectedSeqIds(),
-          binNumber : this.binNumber + parseInt(this.binNumber/4 * this.sampleMultiplier),
-          binSize : this.binSize + parseInt(this.binSize/4 * this.sampleMultiplier)
+          sampling: this.sampling,
+          sequenceNames: this.getSelectedSeqIds(),
+          binNumber: this.binNumber + parseInt(this.binNumber / 4 * this.sampleMultiplier),
+          binSize: this.binSize + parseInt(this.binSize / 4 * this.sampleMultiplier)
         }
         // if (window.readDepthChart.brush().extent().length != 0 && window.readDepthChart.brush().extent().toString() != "0,0") {
         //   options.start = parseInt(this.depthChart.brush().extent()[0]);
@@ -684,32 +748,32 @@
         this.goSampling(options);
       },
 
-      getSelectedSeqIds : function() {
+      getSelectedSeqIds: function () {
         if (this.selectedSeqId == 'all') {
           return Object.keys(window.bam.readDepth)
-            .filter(function(key) {
-              if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
+            .filter(function (key) {
+              if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
                 return false
               if (window.bam.readDepth[key].length > 0)
-                return  true
+                return true
             })
         } else
           return [this.selectedSeqId];
       },
 
-      seqSelected: function (event){
+      seqSelected: function (event) {
         this.setSelectedSeq(event.target.value);
       },
 
-      setSelectedSeq: function(selected, start, end) {
+      setSelectedSeq: function (selected, start, end) {
         this.selectedSeqId = selected;
         if (selected == 'all') {
           var seqDataIds = Object.keys(window.bam.readDepth)
-            .filter(function(key) {
-              if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
+            .filter(function (key) {
+              if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
                 return false
               if (window.bam.readDepth[key].length > 0)
-                return  true
+                return true
             })
         } else {
           var seqDataIds = [selected];
@@ -719,17 +783,19 @@
 
         // reset brush
         this.resetBrush();
-        this.setUrlRegion({chr:selected, 'start':start, 'end':end });
+        this.setUrlRegion({chr: selected, 'start': start, 'end': end});
         // start sampling
-        if(start!= undefined && end!=undefined) {
-          this.goSampling({ sampling: this.sampling, sequenceNames:seqDataIds, 'start':start, 'end':end });
-          setTimeout(function() { this.setBrush(start,end)}, 200);
+        if (start != undefined && end != undefined) {
+          this.goSampling({sampling: this.sampling, sequenceNames: seqDataIds, 'start': start, 'end': end});
+          setTimeout(function () {
+            this.setBrush(start, end)
+          }, 200);
         } else {
-          this.goSampling({ sampling: this.sampling, sequenceNames:seqDataIds});
+          this.goSampling({sampling: this.sampling, sequenceNames: seqDataIds});
         }
       },
 
-      setUrlRegion: function(region) {
+      setUrlRegion: function (region) {
         this.region = region;
         if (window.bam.sourceType == 'url' && region != undefined) {
           if (region.start != undefined && region.end != undefined) {
@@ -740,23 +806,23 @@
           var extraParams = '';
           if (this.sampling) extraParams += '&sampling=' + this.sampling
           if (window.bam.baiUri != undefined) {
-            window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
+            window.history.pushState({'index.html': 'bar'}, null, "?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
 
           } else {
-            window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&region=" + regionStr + extraParams);
+            window.history.pushState({'index.html': 'bar'}, null, "?bam=" + encodeURIComponent(window.bam.bamUri) + "&region=" + regionStr + extraParams);
           }
         }
       },
 
-      removeBedFile : function() {
+      removeBedFile: function () {
         $("#remove-bedfile-button").css('visibility', 'hidden');
         $("#default-bedfile-button").css('visibility', 'visible');
         $("#add-bedfile-button").css('visibility', 'visible');
         this.bed = undefined;
-        this.goSampling({sampling: this.sampling, sequenceNames :  this.getSelectedSeqIds() });
+        this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
       },
 
-      addDefaultBedFile : function() {
+      addDefaultBedFile: function () {
         // clear brush on read coverage chart
         this.resetBrush();
 
@@ -772,10 +838,10 @@
 
         var defaultBed = DefaultBed.replace(/chr/g, '');
         this.bed = defaultBed;
-        this.goSampling({sampling: this.sampling, sequenceNames : this.getSelectedSeqIds() });
+        this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
       },
 
-      openBedFile : function(event) {
+      openBedFile: function (event) {
         if (event.target.files.length != 1) {
           alert('must select a .bed file');
           return;
@@ -783,7 +849,7 @@
 
         // check file extension
         var fileType = /[^.]+$/.exec(event.target.files[0].name)[0];
-        if (fileType != 'bed')  {
+        if (fileType != 'bed') {
           alert('must select a .bed file');
           return;
         }
@@ -797,14 +863,14 @@
 
         // read bed file and store
         var reader = new FileReader();
-        reader.onload = function(theFile) {
+        reader.onload = function (theFile) {
           window.bed = this.result;
-          goSampling({sampling: this.sampling, sequenceNames : this.getSelectedSeqIds() });
+          goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
         }
         reader.readAsText(event.target.files[0])
       },
 
-      openBamFile : function(event) {
+      openBamFile: function (event) {
 
         if (event.target.files.length != 2) {
           alert('must select both a .bam and .bai file');
@@ -824,19 +890,19 @@
           alert('must select both a .bam and .bai file');
         }
 
-        window.bam = new Bam( bamFile, { bai: baiFile });
+        window.bam = new Bam(bamFile, {bai: baiFile});
         this.goBam();
       },
 
-      goBam : function(region) {
+      goBam: function (region) {
         $("#selectData").css("display", "none");
         $("#showData").css("visibility", "visible");
 
         // get read depth
-        window.bam.estimateBaiReadDepth(function(id,points, done){
+        window.bam.estimateBaiReadDepth(function (id, points, done) {
           // setup first time and sample
 
-          if ( Object.keys(window.bam.readDepth).length == 1) {
+          if (Object.keys(window.bam.readDepth).length == 1) {
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
             // turn on sampling message
@@ -845,14 +911,14 @@
           }
 
           var allPoints = Object.keys(window.bam.readDepth)
-            .filter(function(key) {
-              if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
+            .filter(function (key) {
+              if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
                 return false
               if (window.bam.readDepth[key].length > 0)
-                return  true
+                return true
             })
-            .map(function(key) {
-              return {"name" : key, "data" : window.bam.readDepth[key] }
+            .map(function (key) {
+              return {"name": key, "data": window.bam.readDepth[key]}
             })
 
           this.readDepthData = allPoints;
@@ -884,59 +950,46 @@
           var end = region ? region.end : undefined;
 
           // TODO: Don't draw pie chooser and read depth chart until done
-          if ( done ) {
-              if (!region || (region && region.chr == 'all'))
-                this.setSelectedSeq( 'all' , start, end );
-              else
-                this.setSelectedSeq( id, start, end);
+          if (done) {
+            if (!region || (region && region.chr == 'all'))
+              this.setSelectedSeq('all', start, end);
+            else
+              this.setSelectedSeq(id, start, end);
           }
 
-          var totalPoints = allPoints.reduce(function(acc,val) { return acc + val.data.length  },0)
+          var totalPoints = allPoints.reduce(function (acc, val) {
+            return acc + val.data.length
+          }, 0)
           if (done && totalPoints <= 1) {
-            $('#not_enough_data').css('display','block');
+            $('#not_enough_data').css('display', 'block');
           }
         }.bind(this));
 
       },
 
-      toggleChart: function(elem, chartID) {
-        if ($(elem).hasClass("selected")) return;
-        // toggle selected
-        var pair = [elem, $(elem).siblings()[0]];
-        $(pair).toggleClass('selected');
-
-        // redraw chart
-        var dataId = elem.getAttribute("data-id")
-        // var outlier = elem.getAttribute('data-outlier') === 'true' || elem.getAttribute('data-outlier') == null;
-        var h = this.sampleStats[dataId];
-        var d = Object.keys(h).map(function(k) { return  [+k, +h[k]] });
-        var chartDiv = $(elem).parent().parent().parent();
-        var selection = d3.select(chartDiv.find('.chart')[0])
-        if ( chartDiv.find(".selected").attr("data-id") == "frag_hist" ) {
-          var outlier = chartDiv.find('.checkbox').hasClass('checked')
-          if (!outlier) d = iobio.viz.layout.outlier()(d);
-        }
-        selection.datum(d);
-        window[chartId](selection);
-      },
-
-      setBrush: function (start, end){
+      setBrush: function (start, end) {
         // var brush = window.readDepthChart.brush();
         // set brush region
         // d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
       },
 
-      resetBrush: function(){
-        this.setBrush(0,0);
+      resetBrush: function () {
+        this.setBrush(0, 0);
       }
 
     },
 
-    created: function() {
-      window.bam = new Bam( this.selectedFileURL, { bai: this.selectedBaiFileURL });
+    created: function () {
+      window.bam = new Bam(this.selectedFileURL, {bai: this.selectedBaiFileURL});
       var defaultBed = DefaultBed.replace(/chr/g, '');
       this.bed = defaultBed;
       this.goBam(undefined);
+    },
+
+    watch: {
+      readOutliers: function() {
+        this.updateLengthHistograms();
+      },
     }
 
   }
