@@ -50,11 +50,6 @@
   }
 
   .checkbox {padding-left: 18px;}
-  .checkbox, .checkbox .icons{
-    height: 13px;
-    /*line-height: 13px;*/
-    font-size: 13px;
-  }
 
   .warning {
     display: none;
@@ -143,7 +138,6 @@ export default {
   props: {
     readDepthData: {},
     selectedSeqId: '',
-    powerScale: false,
     draw: {}
   },
   data() {
@@ -154,6 +148,8 @@ export default {
                 "all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only. " +
                 "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
                 "of interest; again, all other metrics will then be recalculated for that region only.",
+
+      powerScale: false,
 
     }
   },
