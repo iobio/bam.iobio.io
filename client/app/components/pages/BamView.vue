@@ -1,5 +1,12 @@
 <style>
 
+  .file-name {
+    margin-bottom: -20px;
+    padding: 0px 0px 0px 22px;
+    font-size: 20px;
+    color: rgb(110,110,110);
+  }
+
   .panel {
     margin: 20px;
     padding: 5px;
@@ -228,7 +235,9 @@
   <div >
     <app-header></app-header>
 
-    <!--{{selectedFileURL}}-->
+    <div class="file-name" >
+      {{selectedFileURL}}
+    </div>
 
     <section id="top">
 
