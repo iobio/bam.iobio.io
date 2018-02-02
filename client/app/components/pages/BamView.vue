@@ -392,7 +392,22 @@
       AppHeader
     },
 
-    props: ['selectedFileURL', 'selectedBaiURL'],
+    props: {
+      selectedFileURL: '',
+      selectedBaiURL: '',
+      selectedBamFile: {
+        default: function() {
+          return new File([""], "emptyfile");
+        },
+        type: File
+      },
+      selectedBaiFile: {
+        default: function() {
+          return new File([""], "emptyfile");
+        },
+        type: File
+      }
+    },
 
     data() {
       return {
@@ -881,27 +896,8 @@
         reader.readAsText(file)
       },
 
-      openBamFile: function (event) {
-
-        if (event.target.files.length != 2) {
-          alert('must select both a .bam and .bai file');
-          return;
-        }
-
-        var fileType0 = /[^.]+$/.exec(event.target.files[0].name)[0];
-        var fileType1 = /[^.]+$/.exec(event.target.files[1].name)[0];
-
-        if (fileType0 == 'bam' && fileType1 == 'bai') {
-          bamFile = event.target.files[0];
-          baiFile = event.target.files[1];
-        } else if (fileType1 == 'bam' && fileType0 == 'bai') {
-          bamFile = event.target.files[1];
-          baiFile = event.target.files[0];
-        } else {
-          alert('must select both a .bam and .bai file');
-        }
-
-        window.bam = new Bam(bamFile, {bai: baiFile});
+      openBamFile: function () {
+        window.bam = new Bam(this.selectedBamFile, {bai: this.selectedBaiFile});
         this.goBam();
       },
 
@@ -991,9 +987,13 @@
     },
 
     created: function () {
-      window.bam = new Bam(this.selectedFileURL, {bai: this.selectedBaiFileURL});
       this.bed = undefined;
-      this.goBam(undefined);
+      if ( this.selectedFileURL && this.selectedFileURL != '' ) {
+        window.bam = new Bam(this.selectedFileURL, {bai: this.selectedBaiFileURL});
+        this.goBam(undefined);
+      } else if ( this.selectedBamFile.size>0 && this.selectedBaiFile.size>0 ){
+        this.openBamFile();
+      }
     },
 
     watch: {

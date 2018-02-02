@@ -20,7 +20,7 @@ const routes = [
     component: Home,
   },
   {
-    path: '/bamview/:selectedFileURL',
+    path: '/bamview/:selectedFileURL?',
     name: 'BamView',
     component: BamVue,
     props: true
