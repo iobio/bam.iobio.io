@@ -32,11 +32,11 @@ export default {
         type: Number
       },
       xTickFormatter: {
-        default: tickFormatter(),
+        default: tickFormatter,
         type: Function
       },
       yTickFormatter: {
-        default: tickFormatter(),
+        default: tickFormatter,
         type: Function
       },
       margin: {
