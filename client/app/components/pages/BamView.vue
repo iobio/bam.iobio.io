@@ -236,7 +236,10 @@
     <app-header></app-header>
 
     <div class="file-name" >
-      {{selectedFileURL}}
+      {{selectedBamURL}}
+      <div v-show="selectedBamFile.size>0">
+        {{selectedBamFile.name}}
+      </div>
     </div>
 
     <section id="top">
@@ -393,7 +396,7 @@
     },
 
     props: {
-      selectedFileURL: '',
+      selectedBamURL: '',
       selectedBaiURL: '',
       selectedBamFile: {
         default: function() {
@@ -988,8 +991,8 @@
 
     created: function () {
       this.bed = undefined;
-      if ( this.selectedFileURL && this.selectedFileURL != '' ) {
-        window.bam = new Bam(this.selectedFileURL, {bai: this.selectedBaiFileURL});
+      if ( this.selectedBamURL && this.selectedBamURL != '' ) {
+        window.bam = new Bam(this.selectedBamURL, {bai: this.selectedBaiURL});
         this.goBam(undefined);
       } else if ( this.selectedBamFile.size>0 && this.selectedBaiFile.size>0 ){
         this.openBamFile();

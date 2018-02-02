@@ -88,8 +88,8 @@ export default {
   name: 'file-select-button-bar',
   data() {
     return {
-      selectedFileURL: '',
-      selectedBaiFileURL: '',
+      selectedBamURL: '',
+      selectedBaiURL: '',
       showUrl: false
     }
   },
@@ -107,15 +107,15 @@ export default {
       // remove https if present
       if (bamUrl.slice(0,5) == 'https')
         bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
-      this.selectedFileURL = bamUrl;
+      this.selectedBamURL = bamUrl;
 
       var baiUrl = $("#bai-url-input").val();
       // remove https if present
       if (baiUrl.slice(0,5) == 'https')
         baiUrl = 'http' + baiUrl.slice(5,baiUrl.length);
-      this.selectedBaiFileURL = baiUrl;
+      this.selectedBaiURL = baiUrl;
 
-      self.$router.push({name: 'BamView', params: { selectedFileURL: this.selectedFileURL, selectedBaiURL: this.selectedBaiFileURL}});
+      self.$router.push({name: 'BamView', params: { selectedBamURL: this.selectedBamURL, selectedBaiURL: this.selectedBaiURL}});
     },
 
     processBamFile: function(event){
