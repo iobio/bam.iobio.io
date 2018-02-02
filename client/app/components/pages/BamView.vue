@@ -250,8 +250,9 @@
         </select>
       </div>
 
-      <read-coverage-box @removeBedFile="removeBedFile()"
-                         @addDefaultBedFile="addDefaultBedFile()"
+      <read-coverage-box @removeBedFile="removeBedFile"
+                         @processBedFile="openBedFile"
+                         @addDefaultBedFile="addDefaultBedFile"
                          @setSelectedSeq="setSelectedSeq"
                          :selectedSeqId="selectedSeqId"
                          :draw="draw"
@@ -410,7 +411,7 @@
 
         sampleStats: {},
 
-//        bam: new Bam( this.selectedFileURL ),
+//        bam: {},
         bed: {},
 
         readDepthData: [],
@@ -862,20 +863,9 @@
         this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
       },
 
-      openBedFile: function (event) {
-        if (event.target.files.length != 1) {
-          alert('must select a .bed file');
-          return;
-        }
-
-        // check file extension
-        var fileType = /[^.]+$/.exec(event.target.files[0].name)[0];
-        if (fileType != 'bed') {
-          alert('must select a .bed file');
-          return;
-        }
+      openBedFile: function (file) {
         // clear brush on read coverage chart
-        resetBrush();
+        this.resetBrush();
 
         // hide add bed / show remove bed buttons
         $("#add-bedfile-button").css('visibility', 'hidden');
@@ -885,10 +875,10 @@
         // read bed file and store
         var reader = new FileReader();
         reader.onload = function (theFile) {
-          window.bed = this.result;
-          goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
-        }
-        reader.readAsText(event.target.files[0])
+          this.bed = this.result;
+          this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
+        }.bind(this)
+        reader.readAsText(file)
       },
 
       openBamFile: function (event) {
@@ -1002,8 +992,7 @@
 
     created: function () {
       window.bam = new Bam(this.selectedFileURL, {bai: this.selectedBaiFileURL});
-      var defaultBed = DefaultBed.replace(/chr/g, '');
-      this.bed = defaultBed;
+      this.bed = undefined;
       this.goBam(undefined);
     },
 
@@ -1011,6 +1000,7 @@
       readOutliers: function() {
         this.updateLengthHistograms();
       },
+
     }
 
   }
