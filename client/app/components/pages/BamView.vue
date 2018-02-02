@@ -989,8 +989,8 @@
             else
               this.region = {
                 chr: this.regionURLParam.split(":")[0],
-                start: parseInt(r.split(":")[1].split('-')[0]),
-                end: parseInt(r.split(":")[1].split('-')[1])
+                start: parseInt(this.regionURLParam.split(":")[1].split('-')[0]),
+                end: parseInt(this.regionURLParam.split(":")[1].split('-')[1])
               };
           }
 
