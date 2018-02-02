@@ -115,7 +115,7 @@ export default {
         baiUrl = 'http' + baiUrl.slice(5,baiUrl.length);
       this.selectedBaiURL = baiUrl;
 
-      self.$router.push({name: 'BamView', params: { selectedBamURL: this.selectedBamURL, selectedBaiURL: this.selectedBaiURL}});
+      self.$router.push({name: 'bam-view', query: { bamURL: this.selectedBamURL, baiURL: this.selectedBaiURL}});
     },
 
     processBamFile: function(event){
@@ -143,7 +143,7 @@ export default {
         // return;
       }
 
-      self.$router.push({name: 'BamView', params: { selectedBamFile: bamFile, selectedBaiFile: baiFile}});
+      self.$router.push({name: 'bam-view-file', params: { selectedBamFile: bamFile, selectedBaiFile: baiFile}});
     }
   }
 }

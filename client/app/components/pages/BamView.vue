@@ -409,7 +409,9 @@
           return new File([""], "emptyfile");
         },
         type: File
-      }
+      },
+      regionURLParam: '',
+      sampling: ''
     },
 
     data() {
@@ -422,7 +424,6 @@
         sampleMultiplier: 1,
         sampleMultiplierLimit: 4,
         totalReads: 0,
-        sampling: '',
 
         exomeSampling: false,
         draw: true,
@@ -837,20 +838,15 @@
 
       setUrlRegion: function (region) {
         this.region = region;
+
         if (window.bam.sourceType == 'url' && region != undefined) {
           if (region.start != undefined && region.end != undefined) {
             var regionStr = region.chr + ':' + region.start + '-' + region.end;
           } else {
             var regionStr = region.chr;
           }
-          var extraParams = '';
-          if (this.sampling) extraParams += '&sampling=' + this.sampling
-          if (window.bam.baiUri != undefined) {
-            window.history.pushState({'index.html': 'bar'}, null, "?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
 
-          } else {
-            window.history.pushState({'index.html': 'bar'}, null, "?bam=" + encodeURIComponent(window.bam.bamUri) + "&region=" + regionStr + extraParams);
-          }
+          this.$router.replace({ name: "bam-view", query: { bamURL: this.selectedBamURL, baiURL: this.selectedBaiURL, region: regionStr, sampling: this.sampling}});
         }
       },
 
@@ -901,7 +897,7 @@
 
       openBamFile: function () {
         window.bam = new Bam(this.selectedBamFile, {bai: this.selectedBaiFile});
-        this.goBam();
+        this.goBam(this.region);
       },
 
       goBam: function (region) {
@@ -943,14 +939,6 @@
             this.draw = false;
           }
 
-          // TODO: Deal with noLine variable
-          if (region && region.chr != 'all') {
-            // if(this.draw) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
-          }
-          else {
-            // if(this.draw) window.readDepthChart(selection, {noLine:!done});
-          }
-
           $('#reference-select')
             .append($("<option></option>")
               .attr("value", id)
@@ -964,7 +952,7 @@
             if (!region || (region && region.chr == 'all'))
               this.setSelectedSeq('all', start, end);
             else
-              this.setSelectedSeq(id, start, end);
+              this.setSelectedSeq(region.chr, start, end);
           }
 
           var totalPoints = allPoints.reduce(function (acc, val) {
@@ -985,18 +973,39 @@
 
       resetBrush: function () {
         this.setBrush(0, 0);
+      },
+
+      load: function() {
+        this.bed = undefined;
+        this.region = undefined;
+
+        if ( this.selectedBamURL && this.selectedBamURL != '' ) {
+          // Props should be set by query params
+          window.bam = new Bam(this.selectedBamURL, {bai: this.selectedBaiURL});
+
+          if (this.regionURLParam != undefined && this.regionURLParam != '') {
+            if (this.regionURLParam.split(":").length == 1)
+              this.region = { chr: this.regionURLParam.split(":")[0]}
+            else
+              this.region = {
+                chr: this.regionURLParam.split(":")[0],
+                start: parseInt(r.split(":")[1].split('-')[0]),
+                end: parseInt(r.split(":")[1].split('-')[1])
+              };
+          }
+
+          this.goBam(this.region);
+
+        } else if ( this.selectedBamFile.size>0 && this.selectedBaiFile.size>0 ){
+          // Local files, so properties set by router params instead of query
+          this.openBamFile();
+        }
       }
 
     },
 
     created: function () {
-      this.bed = undefined;
-      if ( this.selectedBamURL && this.selectedBamURL != '' ) {
-        window.bam = new Bam(this.selectedBamURL, {bai: this.selectedBaiURL});
-        this.goBam(undefined);
-      } else if ( this.selectedBamFile.size>0 && this.selectedBaiFile.size>0 ){
-        this.openBamFile();
-      }
+      this.load();
     },
 
     watch: {
