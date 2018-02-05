@@ -28,6 +28,10 @@ const routes = [
       selectedBaiURL: route.query.baiURL,
       regionURLParam: route.query.region,
       sampling: route.query.sampling,
+      // Parameters for when triggered from Illumina
+      action: route.query.action,
+      appSessionHref: route.query.appsessionuri,
+      authorization_code: route.query.authorization_code,
     })
   },
   {
