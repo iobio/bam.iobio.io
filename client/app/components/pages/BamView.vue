@@ -431,7 +431,7 @@
         totalReads: 0,
 
         exomeSampling: false,
-        draw: true,
+        draw: false,
 
         sampleStats: {},
 
@@ -931,7 +931,7 @@
               return {"name": key, "data": window.bam.readDepth[key]}
             });
 
-          this.draw = true;
+          this.readDepthData = allPoints;
 
           var selection = d3.select('#depth-distribution .chart').datum(allPoints);
 
@@ -952,8 +952,8 @@
           if (done) {
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
-            // Assign data for pie chooser and read depth
-            this.readDepthData = allPoints;
+            // Draw read depth chart
+            this.draw = true;
 
             // Set selected seq & region
             if (!region || (region && region.chr == 'all'))

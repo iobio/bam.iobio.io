@@ -15,7 +15,9 @@ export default {
     props: {
       data: {},
       selectedSeqId: '',
-      drawChart: { },
+      drawChart: {
+        type: Boolean,
+      },
       transitionDuration: {
         default: 400,
         type: Number
@@ -125,6 +127,9 @@ export default {
     },
     watch: {
       data: function() {
+        this.update();
+      },
+      drawChart: function() {
         this.update();
       },
       selectedSeqId: function(newValue) {

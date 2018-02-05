@@ -138,7 +138,9 @@ export default {
   props: {
     readDepthData: {},
     selectedSeqId: '',
-    draw: {}
+    draw: {
+      type: Boolean,
+    }
   },
   data() {
     return {
