@@ -198,7 +198,7 @@
   }
 
   .chart-chooser .selected {color:#2d8fc1; border-bottom: 1px solid #2d8fc1}
-  .chart-chooser span { margin: 0px 5px 0px 5px; padding-bottom: 3px; cursor:pointer;}
+  .chart-chooser span { margin: 0px 5px 0px 5px; padding-bottom: 1px; cursor:pointer;}
 
   .checkbox {
     cursor:pointer;
