@@ -835,7 +835,7 @@
           this.goSampling({sampling: this.sampling, sequenceNames: seqDataIds, 'start': start, 'end': end});
           setTimeout(function () {
             this.setBrush(start, end)
-          }, 200);
+          }.bind(this), 200);
         } else {
           this.goSampling({sampling: this.sampling, sequenceNames: seqDataIds});
         }
@@ -914,8 +914,6 @@
           // setup first time and sample
 
           if (Object.keys(window.bam.readDepth).length == 1) {
-            // turn off read depth loading msg
-            $("#readDepthLoadingMsg").css("display", "none");
             // turn on sampling message
             $(".samplingLoader").css("display", "block");
 
@@ -930,9 +928,7 @@
             })
             .map(function (key) {
               return {"name": key, "data": window.bam.readDepth[key]}
-            })
-
-          this.readDepthData = allPoints;
+            });
 
           this.draw = true;
 
@@ -958,6 +954,10 @@
               this.setSelectedSeq('all', start, end);
             else
               this.setSelectedSeq(region.chr, start, end);
+
+            // turn off read depth loading msg
+            $("#readDepthLoadingMsg").css("display", "none");
+            this.readDepthData = allPoints;
           }
 
           var totalPoints = allPoints.reduce(function (acc, val) {

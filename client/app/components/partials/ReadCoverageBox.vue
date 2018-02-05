@@ -1,5 +1,7 @@
 <style type="text/css">
 
+  .panel > .title { font-size: 30px}
+
   .panel#depth-distribution {
     -webkit-flex: 1 1 auto;
     flex: 1 1 auto;
