@@ -228,7 +228,7 @@ var graph = function() {
     var sources = function(d) { return d.sources },
         targets = function(d) { return d.targets },
         position = function(d) { return d.position };
-    
+
     function layout(root) {
     	var nodes = [];
     	var visited = {};
@@ -244,11 +244,11 @@ var graph = function() {
     		v.push(node);
     		if (v.length ==1 )
     			node.y = 0;
-    		else 
-    			for (var i=0; i<v.length; i++) {v[i].y = (i/(v.length-1) || 0) * 2 - 1;}    		
+    		else
+    			for (var i=0; i<v.length; i++) {v[i].y = (i/(v.length-1) || 0) * 2 - 1;}
 
     		// push unvisited neighbors on stack
-    		var neighbors = [].concat(sources(node), targets(node));    		    		
+    		var neighbors = [].concat(sources(node), targets(node));
     		stack = stack.concat( neighbors.filter(function(a) {return a._visited != uid;}) )
     	}
     	return nodes;
@@ -274,7 +274,7 @@ var graph = function() {
      * Specifies the value function *sources*, which returns an array of node objects
      * for each datum. The default value function is `return sources`. The value function
      * is passed two arguments: the current datum and the current index.
-     */    
+     */
     layout.sources = function(_) {
         if (!arguments.length) return sources;
             sources = _;
@@ -315,7 +315,7 @@ var graph = function() {
     // };
     return layout;
   };
- 
+
  module.exports = graph;
 },{"../utils.js":11}],5:[function(require,module,exports){
 
@@ -353,15 +353,15 @@ var outlier = function() {
       return a > b ? 1 : (a < b ? -1 : 0);
     })
 
-    var q1 = quantile(data, scale, 0.25); 
+    var q1 = quantile(data, scale, 0.25);
     var q3 = quantile(data, scale, 0.75);
     var iqr = (q3-q1) * 1.5; //
-    
-    var filteredData = data.filter(function(d) { 
-      return (scale(value(d)) >= (Math.max(q1-iqr,0)) && scale(value(d)) <= (q3+iqr)); 
+
+    var filteredData = data.filter(function(d) {
+      return (scale(value(d)) >= (Math.max(q1-iqr,0)) && scale(value(d)) <= (q3+iqr));
     });
 
-    return filteredData;  
+    return filteredData;
   }
 
   /*
@@ -371,7 +371,7 @@ var outlier = function() {
     var length = arr.reduce(function(previousValue, currentValue, index, array){
        return previousValue + count(currentValue);
     }, 0) - 1;
-    var H = length * p + 1, 
+    var H = length * p + 1,
     h = Math.floor(H);
 
     var hValue, hMinus1Value, currValue = 0;
@@ -383,10 +383,10 @@ var outlier = function() {
           hValue = scale(value(arr[i]));
           break;
        }
-    } 
+    }
     var v = +hMinus1Value, e = H - h;
     return e ? v + e * (hValue - v) : v;
-  } 
+  }
 
   /*
    * Specifies the value function *value*, which returns a nonnegative numeric value
@@ -408,7 +408,7 @@ var outlier = function() {
     if (!arguments.length) return count;
     count = _;
     return layout;
-  };  
+  };
 
   return layout;
 };
@@ -674,22 +674,22 @@ svg.variant = require('./variant.js');
 
 module.exports = svg;
 },{"./variant.js":10}],10:[function(require,module,exports){
-var variant = function() { 
-    
+var variant = function() {
+
     // Value transformers
     var xValue = function(d) { return d.x; },
         yValue = function(d) { return d.y; },
         wValue = function(d) { return d.w; },
         hValue = function(d) { return d.h; };
 
-    var diagonal = d3.svg.diagonal()        
+    var diagonal = d3.svg.diagonal()
 
-    function shape(d, i) {    
+    function shape(d, i) {
         diagonal
-            .source(function(d) { return {"x":hValue(d)*d.y, "y":d.x+Math.abs(d.w/2)}; })            
+            .source(function(d) { return {"x":hValue(d)*d.y, "y":d.x+Math.abs(d.w/2)}; })
             .target(function(d) { return {"x":0, "y":d.x+d.w/2+Math.abs(d.w/2)}; })
             .projection(function(d) { return [d.y, d.x]; });
-        
+
         var variantH = hValue(d);
         var bulbW = Math.abs(variantH * 5/6);
         // Create control points
@@ -699,7 +699,7 @@ var variant = function() {
             c4 = variantH*1.145+yValue(d);
 
         if (wValue(d) <= Math.abs(bulbW/2))
-            return "M" +xValue(d)+","+yValue(d)+" C" +xValue(d)+ "," +c1+" "+parseInt(xValue(d)+wValue(d)/2-bulbW/2)+ "," +c2+" "+parseInt(xValue(d)+wValue(d)/2-bulbW/2)+ "," +c3+" C" +parseInt(xValue(d)+wValue(d)/2-bulbW/2)+ "," +c4+" "+parseInt(xValue(d)+wValue(d)/2+bulbW/2)+ "," +c4+" "+parseInt(xValue(d)+wValue(d)/2+bulbW/2)+ "," +c3+" C" +parseInt(xValue(d)+wValue(d)/2+bulbW/2)+ "," +c2+" "+parseInt(xValue(d)+wValue(d))+"," +c1+" "+parseInt(xValue(d)+wValue(d))+","+yValue(d);            
+            return "M" +xValue(d)+","+yValue(d)+" C" +xValue(d)+ "," +c1+" "+parseInt(xValue(d)+wValue(d)/2-bulbW/2)+ "," +c2+" "+parseInt(xValue(d)+wValue(d)/2-bulbW/2)+ "," +c3+" C" +parseInt(xValue(d)+wValue(d)/2-bulbW/2)+ "," +c4+" "+parseInt(xValue(d)+wValue(d)/2+bulbW/2)+ "," +c4+" "+parseInt(xValue(d)+wValue(d)/2+bulbW/2)+ "," +c3+" C" +parseInt(xValue(d)+wValue(d)/2+bulbW/2)+ "," +c2+" "+parseInt(xValue(d)+wValue(d))+"," +c1+" "+parseInt(xValue(d)+wValue(d))+","+yValue(d);
         else
             return diagonal(d)+diagonal({x:xValue(d), y:yValue(d), w:-wValue(d)});
     }
@@ -707,7 +707,7 @@ var variant = function() {
     /*
      * Specifies the value function *x*, which returns an integer for each datum
      * The value function is passed two arguments: the current datum and the current index.
-     */  
+     */
     shape.xValue = function(_) {
         if (!arguments.length) return xValue;
         xValue = _;
@@ -717,7 +717,7 @@ var variant = function() {
     /*
      * Specifies the value function *y*, which returns an integer for each datum
      * The value function is passed two arguments: the current datum and the current index.
-     */  
+     */
     shape.yValue = function(_) {
         if (!arguments.length) return yValue;
         yValue = _;
@@ -727,22 +727,22 @@ var variant = function() {
     /*
      * Specifies the value function *width*, which returns an integer for each datum
      * The value function is passed two arguments: the current datum and the current index.
-     */  
+     */
     shape.wValue = function(_) {
         if (!arguments.length) return wValue;
         wValue = _;
         return shape;
-    }; 
+    };
 
     /*
      * Specifies the value function *height*, which returns an integer for each datum
      * The value function is passed two arguments: the current datum and the current index.
-     */  
+     */
     shape.hValue = function(_) {
         if (!arguments.length) return hValue;
         hValue = _;
         return shape;
-    }; 
+    };
 
     return shape;
 };
@@ -1199,7 +1199,7 @@ var barViewer = function() {
 
 		// Setup both chart divs
 		selection.selectAll('div')
-				.data([0,0])
+				.data([0,0,0])
 			.enter().append('div')
 				.attr('class', function(d,i) { return 'iobio-bar-' + i + ' iobio-barViewer' });
 
@@ -1223,19 +1223,23 @@ var barViewer = function() {
 		var focalSelection = selection.select('.iobio-bar-0').datum( selection.datum() )
 		focalBar(focalSelection, options);
 
-		// Call little bar chart
+    selection.select('.iobio-bar-1')
+      .text('(Drag to zoom)')
+      .style('font-size', '9pt');
+
+    // Call little bar chart
 		var globalBar = bar()
 			.xValue( chart.xValue() )
 			.yValue( chart.yValue() )
 			.wValue( chart.wValue() )
-			.xAxis( chart.xAxis() )
+			.xAxis( chart.globalXAxis() )
 			.yAxis( null )
 			.margin( chart.margin() )
 			.width( chart.width() )
 			.transitionDuration( chart.transitionDuration() )
 			.id( chart.id() )
 			.color( chart.color() )
-			.tooltip( chart.tooltip() )
+			.tooltip( 'Drag to zoom.' )
 			.height( origHeight * (1-sizeRatio) )
 			.brush('brush', function() {
 				var x2 = globalBar.x(), brush = globalBar.brush();
@@ -1249,8 +1253,9 @@ var barViewer = function() {
 	           	focalBar( focalSelection.datum(datum), options );
 			});
 
-		var globalSelection = selection.select('.iobio-bar-1').datum( selection.datum() )
+		var globalSelection = selection.select('.iobio-bar-2').datum( selection.datum() )
 		globalBar(globalSelection, options);
+
 
 		// // Add title on hover
 	 //    if (tooltip) {
@@ -1326,7 +1331,12 @@ var base = function() {
 		yAxis = d3.svg.axis()
 			.scale(y)
 			.orient("left")
-			.ticks(5);
+			.ticks(5),
+    globalXAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom")
+      .tickFormat(function(d){return ''})
+      .ticks(5);
 
 	// Value transformers
 	var xValue = function(d) { return d[0]; },
@@ -1564,6 +1574,12 @@ var base = function() {
 		return chart;
 	};
 
+  chart.globalXAxis = function(_) {
+    if (!arguments.length) return globalXAxis;
+    globalXAxis = _;
+    return chart;
+  };
+
 	chart.yAxis = function(_) {
 		if (!arguments.length) return yAxis;
 		yAxis = _;
@@ -1629,7 +1645,7 @@ var base = function() {
    	 */
 	chart.rebind = function(object) {
 		utils.rebind(object, this, 'rebind', 'margin', 'width', 'height', 'x', 'y', 'id',
-			'xValue', 'yValue', 'wValue', 'keyValue', 'xAxis', 'yAxis', 'brush', 'onChart',
+			'xValue', 'yValue', 'wValue', 'keyValue', 'xAxis', 'globalXAxis', 'yAxis', 'brush', 'onChart',
 			'tooltipChart', 'preserveAspectRatio', 'getBoundingClientRect', 'transitionDuration', 'color');
 	}
 

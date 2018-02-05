@@ -28,7 +28,7 @@ export default {
         type: Number
       },
       height: {
-        default: 145,
+        default: 167,
         type: Number
       },
       xTickFormatter: {
@@ -51,7 +51,7 @@ export default {
         type: Object
       },
       sizeRatio: {
-        default: 0.8,
+        default: 0.72,
         type: Number
       }
     },
@@ -71,7 +71,8 @@ export default {
         .height(this.height)
         .width(this.width)
         .margin(this.margin)
-        .sizeRatio(this.sizeRatio);
+        .sizeRatio(this.sizeRatio)
+        .tooltip(function(d) { return d[0] + ',' + precisionRound(d[1],2)});
 
       this.histogramChart.xAxis().tickFormat(this.xTickFormatter);
       this.histogramChart.yAxis().tickFormat(this.yTickFormatter);
@@ -99,6 +100,11 @@ function tickFormatter (d) {
   else if ((d / 1000) >= 1)
     d = d / 1000 + "K";
   return d;
+}
+
+function precisionRound(number, precision) {
+  var factor = Math.pow(10, precision);
+  return Math.round(number * factor) / factor;
 }
 
 </script>
