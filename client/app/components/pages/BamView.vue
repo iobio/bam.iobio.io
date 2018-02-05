@@ -830,6 +830,7 @@
         // reset brush
         this.resetBrush();
         this.setUrlRegion({chr: selected, 'start': start, 'end': end});
+
         // start sampling
         if (start != undefined && end != undefined) {
           this.goSampling({sampling: this.sampling, sequenceNames: seqDataIds, 'start': start, 'end': end});
@@ -948,16 +949,17 @@
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
 
-          // TODO: Don't draw pie chooser and read depth chart until done
           if (done) {
+            // turn off read depth loading msg
+            $("#readDepthLoadingMsg").css("display", "none");
+            // Assign data for pie chooser and read depth
+            this.readDepthData = allPoints;
+
+            // Set selected seq & region
             if (!region || (region && region.chr == 'all'))
               this.setSelectedSeq('all', start, end);
             else
               this.setSelectedSeq(region.chr, start, end);
-
-            // turn off read depth loading msg
-            $("#readDepthLoadingMsg").css("display", "none");
-            this.readDepthData = allPoints;
           }
 
           var totalPoints = allPoints.reduce(function (acc, val) {
