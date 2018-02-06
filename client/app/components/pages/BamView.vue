@@ -601,6 +601,7 @@
 
         // turn on sampling message and off svg
         $("section#middle svg").css("display", "none");
+        $(".iobio-bar-1.iobio-barViewer").css("display", "none");
         $(".samplingLoader").css("display", "block");
 
         this.totalReads = 0;
@@ -612,6 +613,7 @@
         window.bam.sampleStats(function (data) {
           // turn off sampling message
           $(".samplingLoader").css("display", "none");
+          $(".iobio-bar-1").css("display", "block");
           $("section#middle svg").css("display", "block");
           this.sampleStats = data;
 
@@ -876,6 +878,7 @@
         // turn on sampling message and off svg
         // turn it on here b\c the bed file is so big it takes a while to download
         $("section#middle svg").css("display", "none");
+        $(".iobio-bar-1").css("display", "none");
         $(".samplingLoader").css("display", "block");
 
         var defaultBed = DefaultBed.replace(/chr/g, '');
