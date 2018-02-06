@@ -132,12 +132,10 @@
       MarthLabFooter,
       AppHeader
     },
-    props: [],
+    props: {},
     data() {
       return {}
     },
-    methods: {
-
-    }
+    methods: {}
   }
 </script>

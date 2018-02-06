@@ -11,7 +11,29 @@ export default {
   data() {
     return {
     }
-  }
+  },
+  mounted: function () {
+    // Check for URL query parameters.  If present, forward to bam view.
+    let self = this;
+
+    var selectedBamURL = self.$route.query.bam;
+    var selectedBaiURL = self.$route.query.bai;
+    var region = self.$route.query.region;
+    var sampling = self.$route.query.sampling;
+
+    if (selectedBamURL != undefined && selectedBamURL != '') {
+
+      self.$router.push({
+        name: 'bam-view',
+        query: {
+          bam: selectedBamURL,
+          bai: selectedBaiURL,
+          region: region,
+          sampling: sampling}
+      });
+
+    }
+  },
 }
 </script>
 

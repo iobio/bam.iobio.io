@@ -115,7 +115,7 @@ export default {
         baiUrl = 'http' + baiUrl.slice(5,baiUrl.length);
       this.selectedBaiURL = baiUrl;
 
-      self.$router.push({name: 'bam-view', query: { bamURL: this.selectedBamURL, baiURL: this.selectedBaiURL}});
+      self.$router.push({name: 'bam-view', query: { bam: this.selectedBamURL, bai: this.selectedBaiURL}});
     },
 
     processBamFile: function(event){

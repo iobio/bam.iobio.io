@@ -412,11 +412,6 @@
       },
       regionURLParam: '',
       sampling: '',
-
-      // parameters for when triggered from Illumina
-      action: '',
-      appSessionHref: '',
-      authorization_code: ''
     },
 
     data() {
@@ -854,7 +849,13 @@
             var regionStr = region.chr;
           }
 
-          this.$router.replace({ name: "bam-view", query: { bamURL: this.selectedBamURL, baiURL: this.selectedBaiURL, region: regionStr, sampling: this.sampling}});
+          this.$router.replace({
+            name: "bam-view",
+            query: {
+              bam: this.selectedBamURL,
+              bai: this.selectedBaiURL,
+              region: regionStr,
+              sampling: this.sampling}});
         }
       },
 
@@ -975,77 +976,6 @@
 
       },
 
-      getIlluminaAccessToken : function(callback) {
-        var basespace = 'nv-dev-new.iobio.io/basespaceauth/';
-        var cmd = new iobio.cmd(basespace, [this.authorization_code]);
-
-        cmd.on('data', function(d) {
-          var accessToken = JSON.parse(d).access_token
-          callback(accessToken);
-        })
-          .on('error', function(e) { /*console.error(e)*/ ;})
-          .run()
-      },
-
-      getIlluminaBamBaiUrls : function (callback) {
-        var apiUrl = "https://api.basespace.illumina.com/";
-
-        getIlluminaAccessToken(function(accessToken) {
-          $.ajax({
-            url: apiUrl + this.appSessionHref,
-            data: {access_token: accessToken},
-            type: 'GET',
-            contentType: "application/json",
-            dataType: 'json',
-            error: function(error) {
-              console.error(error);
-            }
-
-          }).done(function(sessionRes) {
-            var bamHref, baiHref;
-
-            sessionRes.Response.References.forEach(function(ref) {
-              if (ref.Type == 'File' && ref.Rel == 'Input') {
-                if (ref.Content.Name.slice(-3) == 'bam')
-                  bamHref = ref.Content.HrefContent;
-                else if (ref.Content.Name.slice(-3) == 'bai')
-                  baiHref = ref.Content.HrefContent;
-              }
-            })
-
-            // get bam S3 location
-            $.ajax({
-              url: apiUrl + bamHref,
-              data: {access_token: accessToken, redirect: 'meta'},
-              type: 'GET',
-              contentType: "application/json",
-              dataType: 'json',
-              error: function(error) {
-                console.error(error);
-              }
-            }).done(function(bamRes) {
-
-              var bamUrl = '"' + bamRes.Response.HrefContent + '"' ;
-
-              // get bai s3 location
-              $.ajax({
-                url: apiUrl + baiHref,
-                data: {access_token: accessToken, redirect: 'meta'},
-                type: 'GET',
-                contentType: "application/json",
-                dataType: 'json',
-                error: function(error) {
-                  console.error(error);
-                }
-              }).done(function(baiRes) {
-                var baiUrl = '"' + baiRes.Response.HrefContent + '"';
-                callback(bamUrl, baiUrl);
-              })
-            })
-          })
-        })
-      },
-
       setBrush: function (start, end) {
         // var brush = window.readDepthChart.brush();
         // set brush region
@@ -1060,15 +990,7 @@
         this.bed = undefined;
         this.region = undefined;
 
-        if ( this.action == 'trigger' ){
-
-          // If triggered from Illumina
-          getIlluminaBamBaiUrls(function(bamUrl, baiUrl) {
-            this.bam = new Bam(bamUrl, { bai: baiUrl});
-            this.goBam(undefined);
-          }.bind(this))
-
-        } else if ( this.selectedBamURL && this.selectedBamURL != '' ) {
+        if ( this.selectedBamURL && this.selectedBamURL != '' ) {
           // Props should be set by query params
           window.bam = new Bam(this.selectedBamURL, {bai: this.selectedBaiURL});
 

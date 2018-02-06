@@ -17,21 +17,17 @@ Vue.use(VueRouter);
 const routes = [
   {
     path: '/',
-    component: Home,
+    component: Home
   },
   {
     path: '/bamview',
     name: 'bam-view',
     component: BamVue,
     props: (route) => ({
-      selectedBamURL: route.query.bamURL,
-      selectedBaiURL: route.query.baiURL,
+      selectedBamURL: route.query.bam,
+      selectedBaiURL: route.query.bai,
       regionURLParam: route.query.region,
       sampling: route.query.sampling,
-      // Parameters for when triggered from Illumina
-      action: route.query.action,
-      appSessionHref: route.query.appsessionuri,
-      authorization_code: route.query.authorization_code,
     })
   },
   {
@@ -54,7 +50,8 @@ const routes = [
 ]
 
 const router = new VueRouter({
-  routes
+  // mode: 'history',
+  routes: routes
 })
 
 new Vue({
