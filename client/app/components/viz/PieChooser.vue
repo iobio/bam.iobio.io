@@ -90,23 +90,18 @@ export default {
     },
 
     update: function() {
-      var pie = d3.layout.pie()
-        .sort(null)
-        .value(function(d,i) {return d.data.length });
+      var selection = d3.select('#piechooser').datum(this.pie(this.data));
 
-      var selection = d3.select('#piechooser').datum( pie(this.data) );
+      this.pieChooserChart.on('end', function() {
+        this.clickSelectedItem();
+      }.bind(this));
+
       this.pieChooserChart(selection);
-    }
-
-  },
-
-  watch: {
-    data: function() {
-        this.update();
     },
 
-    selectedItem: function() {
+    clickSelectedItem: function() {
       let self = this;
+
       if ( this.selectedItem == 'all'){
         self.pieChooserChart.clickAllSlices(d3.selectAll('#piechooser .arc')[0]);
       } else {
@@ -116,6 +111,17 @@ export default {
           }
         });
       }
+    }
+
+  },
+
+  watch: {
+    data: function() {
+      this.update();
+    },
+
+    selectedItem: function() {
+      this.update();
     }
   }
 }
