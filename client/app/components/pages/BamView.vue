@@ -810,19 +810,10 @@
 
       setSelectedSeq: function (selected, start, end) {
         this.selectedSeqId = selected;
-        if (selected == 'all') {
-          var seqDataIds = Object.keys(window.bam.readDepth)
-            .filter(function (key) {
-              if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
-                return false
-              if (window.bam.readDepth[key].length > 0)
-                return true
-            })
-        } else {
-          var seqDataIds = [selected];
-        }
 
-        $("#reference-select").val(selected);
+        var seqDataIds = this.getSelectedSeqIds();
+
+        $("#reference-select").val(this.selectedSeqId);
 
         // reset brush
         this.resetBrush();
@@ -935,8 +926,6 @@
               return {"name": key, "data": window.bam.readDepth[key]}
             });
 
-          this.readDepthData = allPoints;
-
           var selection = d3.select('#depth-distribution .chart').datum(allPoints);
 
           if (allPoints.length > 50) {
@@ -950,10 +939,12 @@
               .attr("value", id)
               .text(id));
 
-          var start = region ? region.start : undefined;
-          var end = region ? region.end : undefined;
-
           if (done) {
+            this.readDepthData = allPoints;
+
+            var start = region ? region.start : undefined;
+            var end = region ? region.end : undefined;
+
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
             // Draw read depth chart
