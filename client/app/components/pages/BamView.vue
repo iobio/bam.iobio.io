@@ -443,7 +443,7 @@
 
         sampleStats: {},
 
-//        bam: {},
+        bam: {},
         bed: {},
 
         readDepthData: [],
@@ -622,7 +622,7 @@
         NProgress.set(0);
 
         // update selected stats
-        window.bam.sampleStats(function (data) {
+        this.bam.sampleStats(function (data) {
           // turn off sampling message
           $(".samplingLoader").css("display", "none");
           $(".iobio-bar-1").css("display", "block");
@@ -634,7 +634,7 @@
             var length = options.end - options.start;
             var percentDone = Math.max(Math.round(((this.sampleStats.last_read_position - options.start) / length) * 100) / 100, 0);
           } else {
-            var length = window.bam.header.sq.reduce(function (prev, curr) {
+            var length = this.bam.header.sq.reduce(function (prev, curr) {
               if (prev) return prev;
               if (curr.name == options.sequenceNames[0]) return curr;
             }, false).end;
@@ -657,17 +657,17 @@
         var stats = this.sampleStats;
 
         if (this.selectedSeqId == 'all') {
-          if (window.bam.readDepth[Object.keys(window.bam.readDepth)[0]].mapped != undefined) {
+          if (this.bam.readDepth[Object.keys(this.bam.readDepth)[0]].mapped != undefined) {
             mappedReads = unmappedReads = 0;
-            for (var id  in window.bam.readDepth) {
-              mappedReads += window.bam.readDepth[id].mapped;
-              unmappedReads += window.bam.readDepth[id].unmapped;
+            for (var id  in this.bam.readDepth) {
+              mappedReads += this.bam.readDepth[id].mapped;
+              unmappedReads += this.bam.readDepth[id].unmapped;
             }
-            unmappedReads = window.bam.n_no_coor;
+            unmappedReads = this.bam.n_no_coor;
           }
         } else {
-          mappedReads = window.bam.readDepth[this.selectedSeqId].mapped;
-          unmappedReads = window.bam.readDepth[this.selectedSeqId].unmapped;
+          mappedReads = this.bam.readDepth[this.selectedSeqId].mapped;
+          unmappedReads = this.bam.readDepth[this.selectedSeqId].unmapped;
         }
 
         var showMappedDataFromIndex = false;
@@ -817,13 +817,13 @@
 
       getSelectedSeqIds: function () {
         if (this.selectedSeqId == 'all') {
-          return Object.keys(window.bam.readDepth)
+          return Object.keys(this.bam.readDepth)
             .filter(function (key) {
               if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
                 return false
-              if (window.bam.readDepth[key].length > 0)
+              if (this.bam.readDepth[key].length > 0)
                 return true
-            })
+            }.bind(this))
         } else
           return [this.selectedSeqId];
       },
@@ -857,7 +857,7 @@
       setUrlRegion: function (region) {
         this.region = region;
 
-        if (window.bam.sourceType == 'url' && region != undefined) {
+        if (this.bam.sourceType == 'url' && region != undefined) {
           if (region.start != undefined && region.end != undefined) {
             var regionStr = region.chr + ':' + region.start + '-' + region.end;
           } else {
@@ -921,7 +921,7 @@
       },
 
       openBamFile: function () {
-        window.bam = new Bam(this.selectedBamFile, {bai: this.selectedBaiFile});
+        this.bam = new Bam(this.selectedBamFile, {bai: this.selectedBaiFile});
         this.goBam(this.region);
       },
 
@@ -930,25 +930,25 @@
         $("#showData").css("visibility", "visible");
 
         // get read depth
-        window.bam.estimateBaiReadDepth(function (id, points, done) {
+        this.bam.estimateBaiReadDepth(function (id, points, done) {
           // setup first time and sample
 
-          if (Object.keys(window.bam.readDepth).length == 1) {
+          if (Object.keys(this.bam.readDepth).length == 1) {
             // turn on sampling message
             $(".samplingLoader").css("display", "block");
 
           }
 
-          var allPoints = Object.keys(window.bam.readDepth)
+          var allPoints = Object.keys(this.bam.readDepth)
             .filter(function (key) {
               if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
                 return false
-              if (window.bam.readDepth[key].length > 0)
+              if (this.bam.readDepth[key].length > 0)
                 return true
-            })
+            }.bind(this))
             .map(function (key) {
-              return {"name": key, "data": window.bam.readDepth[key]}
-            });
+              return {"name": key, "data": this.bam.readDepth[key]}
+            }.bind(this));
 
           var selection = d3.select('#depth-distribution .chart').datum(allPoints);
 
@@ -1007,7 +1007,7 @@
 
         if ( this.selectedBamURL && this.selectedBamURL != '' ) {
           // Props should be set by query params
-          window.bam = new Bam(this.selectedBamURL, {bai: this.selectedBaiURL});
+          this.bam = new Bam(this.selectedBamURL, {bai: this.selectedBaiURL});
 
           if (this.regionURLParam != undefined && this.regionURLParam != '') {
             if (this.regionURLParam.split(":").length == 1)

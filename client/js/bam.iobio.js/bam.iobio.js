@@ -352,7 +352,7 @@ var Bam = Class.extend({
                    }
                 }
                 else if (data[i][0] == '*') {
-                  window.bam.n_no_coor = +data[i].split("\t")[2];
+                  me.n_no_coor = +data[i].split("\t")[2];
                 }
                 else {
                    if (data[i] != "") {
@@ -361,7 +361,7 @@ var Bam = Class.extend({
                    }
                 }
              }
-          });
+          }.bind(me));
           cmd.on('end', function() {
             isdone = true;
             cb();
