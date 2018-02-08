@@ -154,6 +154,12 @@ export default {
     watch: {
         data: function() {
             this.update();
+        },
+        xAxisLabel: function() {
+          this.addAxisLabels();
+        },
+        yAxisLabel: function() {
+          this.addAxisLabels();
         }
     }
 }
