@@ -320,7 +320,13 @@
                        :body="readCoverageHelpBody">
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <stacked-histogram :data="readCoverageData" :y-tick-formatter="function(d) { return d*100 + '%'}"></stacked-histogram>
+          <stacked-histogram :data="readCoverageData"
+                             :y-tick-formatter="function(d) { return d*100 + '%'}"
+                             :x-tick-formatter="function(d) { return d + 'X'}"
+                             x-axis-label="Read Coverage"
+                             y-axis-label="Frequency">
+
+          </stacked-histogram>
         </div>
 
         <div id="length-distribution" class="distribution panel">
@@ -329,8 +335,8 @@
                             :body="fragmentLengthHelpBody">
             </help-button>
             <span class="chart-chooser">
-              <span class="selected" @click="toggleChart('lengthData')" :datafield="lengthData" data-outlier="false" data-id="frag_hist">Fragment Length</span> |
-              <span @click="toggleChart('lengthData')" :datafield="lengthData" data-id="length_hist" data-outlier="true">Read Length</span>
+              <span class="selected" @click="toggleChart('lengthData')" :datafield="lengthData" data-outlier="false" data-id="frag_hist" x-axis-label="Fragment Length" >Fragment Length</span> |
+              <span @click="toggleChart('lengthData')" :datafield="lengthData" data-id="length_hist" x-axis-label="Read Length" data-outlier="true">Read Length</span>
             </span>
             <help-button modalTitle="Read length distribution" tooltipText="Expect an extremely narrow distribution"
                          :body="readLengthHelpBody">
@@ -341,7 +347,11 @@
             Outliers
           </label>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-            <stacked-histogram :data="lengthData" ></stacked-histogram>
+            <stacked-histogram :data="lengthData"
+                               :x-axis-label="lengthXAxisLabel"
+                               y-axis-label="Frequency" >
+
+            </stacked-histogram>
           </div>
 
         <div id="mapping-quality-distribution" class="distribution panel">
@@ -350,15 +360,18 @@
                          :body="mappingQualityHelpBody">
             </help-button>
             <span class="chart-chooser">
-              <span @click="toggleChart('qualityData')" data-id="mapq_hist" class="selected">Mapping Quality</span> |
-              <span data-id="baseq_hist" @click="toggleChart('qualityData')">Base Quality</span>
+              <span @click="toggleChart('qualityData')" data-id="mapq_hist" x-axis-label="Mapping Quality" class="selected">Mapping Quality</span> |
+              <span data-id="baseq_hist" @click="toggleChart('qualityData')" x-axis-label="Base Quality">Base Quality</span>
             </span>
             <help-button modalTitle="Base quality distribution" tooltipText="Expect most values >40"
                          :body="baseQualityHelpBody">
             </help-button>
           </div>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
-          <stacked-histogram :data="qualityData" ></stacked-histogram>
+          <stacked-histogram :data="qualityData"
+                             :x-axis-label="qualityXAxisLabel"
+                             y-axis-label="Frequency" >
+          </stacked-histogram>
         </div>
       </div>
     </section>
@@ -450,6 +463,10 @@
         readCoverageData: [],
         lengthData: [],
         qualityData: [],
+
+        lengthXAxisLabel: 'Fragment Length',
+        qualityXAxisLabel: 'Mapping Quality',
+
 
         // Help Modal Bodies
         mappedReadsHelpBody:
@@ -736,7 +753,7 @@
         $(pair).toggleClass('selected');
 
         // redraw chart
-        var dataId = elem.getAttribute("data-id")
+        var dataId = elem.getAttribute("data-id");
 
         var h = this.sampleStats[dataId];
         var d = Object.keys(h).map(function (k) {
@@ -746,6 +763,13 @@
 
         if (chartDiv.find(".selected").attr("data-id") == "frag_hist") {
           if (!this.readOutliers) d = iobio.viz.layout.outlier()(d);
+        }
+
+        var axisTitle = elem.getAttribute("x-axis-label");
+        if ( chartData == 'lengthData') {
+          this.lengthXAxisLabel = axisTitle;
+        } else if ( chartData == 'qualityData'){
+          this.qualityXAxisLabel = axisTitle;
         }
 
         this[chartData] = d;
