@@ -13,7 +13,7 @@
     }
     text.axis-label-shadow {
       stroke: white;
-      stroke-width: 3px;
+      stroke-width: 4px;
       font-weight: bold;
     }
 
