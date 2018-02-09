@@ -1223,10 +1223,6 @@ var barViewer = function() {
 		var focalSelection = selection.select('.iobio-bar-0').datum( selection.datum() )
 		focalBar(focalSelection, options);
 
-    selection.select('.iobio-bar-1')
-      .text('(Drag to zoom)')
-      .style('font-size', '9pt');
-
     // Call little bar chart
 		var globalBar = bar()
 			.xValue( chart.xValue() )
