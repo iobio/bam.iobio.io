@@ -14,6 +14,21 @@
     cursor: pointer;
     font-weight: 300;
   }
+  .inverted-file-button{
+    border-radius: 4px;
+    width: 365px;
+    background: #fff;
+    padding: 20px 30px;
+    color: #2d8fc1;
+    border-color: #fff;
+    font-size:24px;
+    cursor: pointer;
+    font-weight: 300;
+  }
+  .inverted-file-button:active, .inverted-file-button:focus {
+    outline: none;
+    border-width: 0;
+  }
   .file label {
     float:left;
   }
@@ -74,11 +89,14 @@
     <div class="file-button" style="text-align:center" @click="displayBamUrlBox()">choose bam url</div>
     <div style="clear:both"></div>
     <div v-if="showUrl" id='bam-url' style="margin-top:18px;width:700px;margin-left:auto;margin-right:auto" class="arrow_box">
-      <input id="url-input" value="http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam" ></input>
+      <input id="url-input" :value="demoFileURL" ></input>
       <input id="bai-url-input" placeholder="BAI URL (optional)" ></input>
       <button id="bam-url-go-button" @click="openBamURL">
           Go
       </button>
+    </div>
+    <div style="text-align: center;">
+      <button class="inverted-file-button" @click="launchDemoData" >Launch with demo data</button>
     </div>
   </div>
 </template>
@@ -90,7 +108,8 @@ export default {
     return {
       selectedBamURL: '',
       selectedBaiURL: '',
-      showUrl: false
+      showUrl: false,
+      demoFileURL: 'http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam',
     }
   },
   methods: {
@@ -98,6 +117,11 @@ export default {
     displayBamUrlBox : function() {
       this.showUrl = true;
       $("#bam-url").children("input").focus();
+    },
+
+    launchDemoData : function () {
+      let self = this;
+      self.$router.push({name: 'bam-view', query: { bam: this.demoFileURL}});
     },
 
     openBamURL : function() {
