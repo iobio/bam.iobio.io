@@ -262,7 +262,7 @@ var Bam = Class.extend({
       } else {
          this.getHeader(function(header) {
             for (var i=0; i < header.sq.length; i++) {
-               if ( me.bam.indices[me.bam.chrToIndex[header.sq[i].name]] != undefined )
+               if ( me.indices[me.chrToIndex[header.sq[i].name]] != undefined )
                   refs.push( header.sq[i] );
             }
             callback(refs);
@@ -381,7 +381,7 @@ var Bam = Class.extend({
               }
               var nref = readInt(uncba, 4);
 
-              bam.indices = [];
+              me.indices = [];
               var p = 8;
 
               for (var ref = 0; ref < nref; ++ref) {
