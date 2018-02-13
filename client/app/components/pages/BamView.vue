@@ -349,7 +349,7 @@
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
             <stacked-histogram :data="lengthData"
                                :x-axis-label="lengthXAxisLabel"
-                               y-axis-label="Frequency" >
+                               y-axis-label="Reads" >
 
             </stacked-histogram>
           </div>
