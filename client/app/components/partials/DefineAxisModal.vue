@@ -88,7 +88,7 @@
                         <input id="yMin" v-model="yMin" :placeholder="yMinPlaceholderText">
                       </div><!-- /form-group -->
                       <div class="form-group">
-                        <label class="form-control-label" for="yMax">xMin</label>
+                        <label class="form-control-label" for="yMax">yMax</label>
                         <input id="yMax" v-model="yMax" :placeholder="yMaxPlaceholderText">
                       </div><!-- /form-group -->
                     </form>
