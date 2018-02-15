@@ -89,7 +89,7 @@
     <div class="file-button" style="text-align:center" @click="displayBamUrlBox()">choose bam url</div>
     <div style="clear:both"></div>
     <div v-if="showUrl" id='bam-url' style="margin-top:18px;width:700px;margin-left:auto;margin-right:auto" class="arrow_box">
-      <input id="url-input" :value="demoFileURL" ></input>
+      <input id="url-input" placeholder="BAM URL"></input>
       <input id="bai-url-input" placeholder="BAI URL (optional)" ></input>
       <button id="bam-url-go-button" @click="openBamURL">
           Go
@@ -129,14 +129,14 @@ export default {
 
       var bamUrl = $("#url-input").val();
       // remove https if present
-      if (bamUrl.slice(0,5) == 'https')
-        bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
+      // if (bamUrl.slice(0,5) == 'https')
+      //   bamUrl = 'http' + bamUrl.slice(5,bamUrl.length);
       this.selectedBamURL = bamUrl;
 
       var baiUrl = $("#bai-url-input").val();
       // remove https if present
-      if (baiUrl.slice(0,5) == 'https')
-        baiUrl = 'http' + baiUrl.slice(5,baiUrl.length);
+      // if (baiUrl.slice(0,5) == 'https')
+      //   baiUrl = 'http' + baiUrl.slice(5,baiUrl.length);
       this.selectedBaiURL = baiUrl;
 
       self.$router.push({name: 'bam-view', query: { bam: this.selectedBamURL, bai: this.selectedBaiURL}});
