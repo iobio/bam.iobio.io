@@ -237,7 +237,11 @@
     <app-header></app-header>
 
     <div class="file-name" >
-      <span v-show="selectedBamURL!=undefined" :title="selectedBamURL" v-html="shortenedBamFileURL" style="margin-top: -19pt"></span>
+      <span v-show="selectedBamURL!=undefined"
+            v-html="shortenedBamFileURL"
+            style="margin-top: -19pt"
+            @mouseover="showFullURL=true"
+            @mouseleave="showFullURL=false"></span>
       <div style="margin-top: 16px" v-show="selectedBamFile.size>0">
         {{selectedBamFile.name}}
       </div>
@@ -430,6 +434,7 @@
 
     data() {
       return {
+        showFullURL: false,
 
         // default sampling values
         samplingBinSize: 40000,
@@ -1061,8 +1066,14 @@
           var fileName = pathDivision.pop();
           var middlePart = pathDivision.join("/");
 
+          if ( this.showFullURL ) {
+            return protocol + "//" + host +
+              "<span style=\"font-size: 25pt\"></span>" + // For sizing uniformity
+              "/" + middlePart + "/" +
+              (fileName != undefined ? fileName : "")
+          }
           return protocol + "//" + host +
-            "/<span style=\"font-size: 25pt;color:#2687BE;\" title=\"" + middlePart + "\">...</span> /" +
+            "/<span style=\"font-size: 25pt;color:#2687BE;\" >...</span> /" +
             (fileName != undefined ? fileName : "")
         }
         return '';
