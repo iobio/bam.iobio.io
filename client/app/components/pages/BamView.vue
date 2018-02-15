@@ -5,6 +5,7 @@
     padding: 0px 0px 0px 22px;
     font-size: 20px;
     color: rgb(110,110,110);
+    margin-top: -16px;
   }
 
   .panel {
@@ -236,8 +237,8 @@
     <app-header></app-header>
 
     <div class="file-name" >
-      {{selectedBamURL}}
-      <div v-show="selectedBamFile.size>0">
+      <span v-show="selectedBamURL!=undefined" :title="selectedBamURL" v-html="shortenedBamFileURL" style="margin-top: -19pt"></span>
+      <div style="margin-top: 16px" v-show="selectedBamFile.size>0">
         {{selectedBamFile.name}}
       </div>
     </div>
@@ -1039,6 +1040,33 @@
         this.updateLengthHistograms();
       },
 
+    },
+
+    computed: {
+      shortenedBamFileURL: function() {
+        if ( this.selectedBamURL != undefined && this.selectedBamURL != '' ) {
+          var protocolDiv = this.selectedBamURL.split('//');
+
+          var protocol = protocolDiv[0];
+          var withoutProtocol = protocolDiv[1];
+
+          var pathDivision = withoutProtocol.split('/');
+
+          // Edge case for '/' ending causing empty item
+          if (pathDivision[pathDivision.length - 1] === '') {
+            pathDivision = pathDivision.slice(0, pathDivision.length - 1);
+          }
+
+          var host = pathDivision.shift();
+          var fileName = pathDivision.pop();
+          var middlePart = pathDivision.join("/");
+
+          return protocol + "//" + host +
+            "/<span style=\"font-size: 25pt;color:#2687BE;\" title=\"" + middlePart + "\">...</span> /" +
+            (fileName != undefined ? fileName : "")
+        }
+        return '';
+      }
     }
 
   }
