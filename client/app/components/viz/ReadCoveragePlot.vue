@@ -22,7 +22,6 @@ export default {
         default: 400,
         type: Number
       },
-      labels: {},
       height:{
         default: 150,
         type: Number
@@ -31,23 +30,19 @@ export default {
         default: 800,
         type: Number
       },
-      labelFormat: {
-        type: Function,
-        default: function(label, d, i) {
-          return label.name ? label.name + ': ' + label.percentage : '';
-        }
-      },
       padding:{
         default: 30,
         type: Number
       },
-      powerScale:{
+      limitYAxes:{
         type: Boolean,
       }
     },
     data() {
       return {
         readDepthChart: {},
+        trimmedYMin: "",
+        trimmedYMax: "",
       }
     },
     created: function() {
@@ -104,9 +99,62 @@ export default {
       draw: function() {
         if (this.drawChart) {
           var selection = d3.select('#depth-distribution .chart');//d3.select(this.$el);//.datum(this.data);
-          this.readDepthChart(selection, {selection: this.selectedSeqId});
-          this.readDepthChart.setSelected(this.selectedSeqId);
+          this.readDepthChart(selection, this.getOptions());
+          this.readDepthChart.setSelected(this.selectedSeqId, this.getOptions(true));
         }
+      },
+
+      getOptions: function(excludeSelection) {
+        var options = {};
+
+        if (!excludeSelection) options.selected = this.selectedSeqId;
+        if (isNumeric(this.trimmedYMin) && this.limitYAxes) options.yMin = this.trimmedYMin;
+        if (isNumeric(this.trimmedYMax) && this.limitYAxes) options.yMax = this.trimmedYMax;
+
+        return options;
+      },
+
+      getBounds: function() {
+
+        var dataList;
+
+        if (this.selectedSeqId=='all'){
+          dataList = Array.from(this.data, d => d.data);
+        } else {
+          dataList = Array.from(this.data.filter(a => a.name == this.selectedSeqId), d => d.data);
+        }
+        dataList = [].concat.apply([],dataList);
+        var sortedYData = Array.from(dataList, d => d.depth);
+        sortedYData.sort(function(a,b){return a-b});
+
+        var l = sortedYData.length;
+        var sum=0;
+        var sumsq = 0;
+        for(var i=0;i<sortedYData.length;++i) {
+          sum+=sortedYData[i];
+          sumsq+=sortedYData[i]*sortedYData[i];
+        }
+        var mean = sum/l;
+        var median = sortedYData[Math.round(l/2)];
+        var varience = sumsq / l - mean*mean;
+        var sd = Math.sqrt(varience);
+
+        var startIndex = 0;
+        for(var i=0;i<sortedYData.length;++i) {
+          if (sortedYData[i] < median - 3 * sd ){
+            startIndex = i;
+            break;
+          }
+        }
+        var endIndex = l-1;
+        for(var i=0;i<sortedYData.length;++i) {
+          if (sortedYData[i] > median + 3 * sd ){
+            endIndex = i;
+            break;
+          }
+        }
+        this.trimmedYMin = sortedYData[startIndex];
+        this.trimmedYMax = sortedYData[endIndex];
       },
 
       setBrush: function (start, end){
@@ -122,28 +170,33 @@ export default {
     },
     computed: {
       yscale: function() {
-        return this.powerScale ? 0.5 : 1;
+        return 1;
       }
     },
     watch: {
       data: function() {
+        this.getBounds();
         this.update();
       },
       drawChart: function() {
         this.update();
       },
-      selectedSeqId: function(newValue) {
+      selectedSeqId: function() {
+        this.getBounds();
         this.update();
       },
       width: function() {
         this.update();
       },
-      powerScale: function() {
+      limitYAxes: function() {
         this.update();
       }
     }
 }
 
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
 
 </script>
 

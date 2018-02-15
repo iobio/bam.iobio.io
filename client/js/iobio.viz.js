@@ -2953,6 +2953,9 @@ var multiLine = function() {
 			.orient("bottom")
 			.tickFormat(utils.format_unit_names)
 			.ticks(5);
+  var yAxis = d3.svg.axis()
+    .orient("left")
+    .ticks(5);
 
 	// Defaults
 	var events = [],
@@ -2975,16 +2978,18 @@ var multiLine = function() {
 		selected = options.selected || 'all';
 
 		// Grab base line functions for easy access
-        var xValue = chart.xValue(),
-        	m = chart.margin(),
-        	w = chart.width(),
-        	h = chart.height(),
-        	x = chart.x(),
-        	transitionDuration = chart.transitionDuration();
+    var xValue = chart.xValue(),
+      yValue = chart.yValue(),
+      m = chart.margin(),
+      w = chart.width(),
+      h = chart.height(),
+      x = chart.x(),
+      y = chart.y(),
+      transitionDuration = chart.transitionDuration();
 
 		// Smoothing function
 		var smooth = iobio.viz.layout.pointSmooth()
-	    	.size(w)
+	    	.size(6000)
 	    	.pos(function(d,i) { return (d.globalPos || 0) + xValue(d,i)})
 	    	.epsilonRate(epsilonRate);
 
@@ -2996,21 +3001,40 @@ var multiLine = function() {
 
 	    selection.datum().forEach(function(d,i) {
 
-			if (selected == 'all') {
-				d.globalPos = curr;
-				var pointData = dataValue(d,i);
-				curr += chart.xValue()(pointData[pointData.length-1],i);
-				pointData.forEach(function(p) {
-					p.globalPos = d.globalPos;
-				})
-				points = points.concat(pointData);
+        if (selected == 'all') {
+          d.globalPos = curr;
+          var pointData = dataValue(d,i);
+          curr += chart.xValue()(pointData[pointData.length-1],i);
+          pointData.forEach(function(p) {
+            p.globalPos = d.globalPos;
+          })
+          points = points.concat(pointData);
 		    } else {
 		    	d.globalPos = 0;
 	    		if(selected == nameValue(d,i)) {
 		      		points = dataValue(d,i);
 	      		}
 	      }
-	    })
+	    });
+
+        var yMin = (options.yMin === undefined || options.yMin === null)
+          ? d3.min(points, function(d) {
+            return yValue(d);
+          })
+          : options.yMin;
+        var yMax = (options.yMax === undefined || options.yMax === null)
+          ? d3.max(points, function(d) {
+              return yValue(d);
+          })
+          : options.yMax;
+
+        // This ensures number values for y when the data is an empty array
+        yMin = yMin || 0;
+        yMax = yMax || 0;
+
+        // Update y scale
+        y.domain( [yMin, yMax] )
+          .range([innerHeight , 0]);
 
 	    if (!selection.select('.iobio-multi-line.line-panel').node())
 				selection.append('div').attr('class', 'iobio-multi-line line-panel').style('height', parseInt(h) + 'px')
@@ -3019,7 +3043,7 @@ var multiLine = function() {
 			// Call base line chart
 			if (selected == 'all') { // for all
 		        lineBase
-		        	.yAxis(null)
+		        	.yAxis(yAxis.scale(y))
 		        	.xAxis(null)
 		        	.call(this, selection.select('.line-panel').datum(smooth(points)), options);
 		        // Remove brush for all
@@ -3031,7 +3055,7 @@ var multiLine = function() {
 		    	if(points.length > 0) {
 			    	x.domain([points[0].pos, points.slice(-1)[0].pos ]);
 			    	lineBase
-			        	.yAxis(null)
+			        	.yAxis(yAxis.scale(y))
 			        	.xAxis( xAxis.scale(x) )
 			        	.call(this, selection.select('.line-panel').datum(smooth(points)), options);
 			    }
@@ -3138,12 +3162,12 @@ var multiLine = function() {
 				button.on(ev.event, ev.listener);
 		})
 
-		// // Add control click event to all buttons
+		// Add control click event to all buttons
 	    button
 			.on('click', function(d,i) {
 	    		var xMin = d.globalPos;
 	    		var xMax = d.globalPos + xValue(d.data[d.data.length-1],i) ;
-	    		chart(selection, {'selected':nameValue(d,i) });
+	    		chart(selection, {'selected':nameValue(d,i), 'yMin':yMin, 'yMax':yMax });
 	    		// chart(selection, {'xMin': xMin, 'xMax': xMax, 'selected':nameValue(d) });
 
 	    		// Handle user event
@@ -3157,7 +3181,7 @@ var multiLine = function() {
 	    			.text('< All')
 	    			.on('click', function() {
 	    				this.remove();
-						chart(selection);
+						chart(selection, options);
 						if (userClickCB) userClickCB.call(this);
 	    			})
 	    }
@@ -3197,8 +3221,10 @@ var multiLine = function() {
 		return selected;
 	};
 
-	chart.setSelected = function(_) {
-		chart(this.selection, {'selected' : _});
+	chart.setSelected = function(_, opts) {
+    var options = {};
+    extend(options, opts, {'selected' : _ });
+		chart(this.selection, options);
 		return chart;
 	};
 

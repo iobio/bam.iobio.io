@@ -46,7 +46,7 @@
   /* power scale */
   #scale-switch {
     position: absolute;
-    top:50px;
+    top:30px;
     left:16px;
     cursor: pointer;
   }
@@ -105,9 +105,9 @@
     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
 
     <!-- log toggle -->
-    <label id="scale-switch" class="checkbox">
-      <input type="checkbox" v-model="powerScale" class='power-scale' >
-      Power Scale
+    <label id="scale-switch" class="checkbox" title="Limit plot to include read data within 3 standard deviations of the median only">
+      <input type="checkbox" v-model="limitYAxes" >
+      Zoom y axis
     </label>
 
     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
@@ -118,7 +118,7 @@
 
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
                         :selectedSeqId="selectedSeqId"
-                        :powerScale="powerScale"
+                        :limitYAxes="limitYAxes"
                         :drawChart="draw"
                         :data="readDepthData"></read-coverage-plot>
   </div>
@@ -151,7 +151,7 @@ export default {
                 "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
                 "of interest; again, all other metrics will then be recalculated for that region only.",
 
-      powerScale: false,
+      limitYAxes: true,
     }
   },
 
