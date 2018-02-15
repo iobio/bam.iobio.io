@@ -27,7 +27,7 @@
 
   #percents .percent {-webkit-flex: 1 1 30%; flex: 1 1 30%; position:relative;}
   #percents .percent svg { width: 100%; height:180px }
-  #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:200px; position:relative; /*padding: 0px 15px 0px 15px*/}
+  #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:220px; position:relative; /*padding: 0px 15px 0px 15px*/}
 
   .bar rect {
     fill: #2d8fc1;

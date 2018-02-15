@@ -1,8 +1,8 @@
 <style type="text/css">
 
-  .percent {-webkit-flex: 1 1 30%; flex: 1 1 30%; position:relative;}
-  .percent svg { width: 100%; height:180px }
-  .percent .from-index { font-size: 10px; color: rgb(160,160,160); font-style: italic; margin-top: -17px; visibility: hidden;}
+  #percents .percent {-webkit-flex: 1 1 30%; flex: 1 1 30%; position:relative;}
+  #percents .percent svg { width: 100%; height:180px }
+  #percents .percent .from-index { font-size: 10px; color: rgb(160,160,160); font-style: italic; margin-top: -17px; visibility: hidden;}
 
   .iobio-center-text .iobio-percent {
     fill : rgb(100,100,100);

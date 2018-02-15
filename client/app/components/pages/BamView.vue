@@ -64,7 +64,7 @@
   }
 
   #percents .percent {
-    height: 200px;
+    height: 220px;
   }
 
   #distributions {
@@ -81,7 +81,7 @@
     width: 60%;
   }
 
-  #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:200px; position:relative; /*padding: 0px 15px 0px 15px*/}
+  #distributions .distribution {-webkit-flex: 1 1 100%; flex: 1 1 100%; height:220px; position:relative; /*padding: 0px 15px 0px 15px*/}
 
   /* Make clicks pass-through */
   #nprogress {
