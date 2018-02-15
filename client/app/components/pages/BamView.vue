@@ -244,7 +244,7 @@
 
     <section id="top">
 
-      <div id="piechooser" class="panel">
+      <div id="piechooser" class="panel" style="padding-top: 12px">
         <pie-chooser @setSelectedSeq="setSelectedSeq"
                      :selected-item="selectedSeqId"
                      :data="readDepthData"></pie-chooser>
