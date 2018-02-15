@@ -151,25 +151,19 @@ export default {
         this.draw();
       },
       addAxisLabels: function() {
-
-        // X axis and zoom hint
-        // Select x axis and zoom hint divs if they exist.
-        var zoomHintDiv = d3.select(this.$el).select(".iobio-bar-1").selectAll('.zoom-label').data([0]);
+        // X axis
+        // Select x axis divs if they exist.
         var xAxisLabelDiv = d3.select(this.$el).select(".iobio-bar-1").selectAll('.axis-label').data([0]);
-        // Otherwise, create the divs.
-        var zoomHintEnter = zoomHintDiv.enter().append('div').attr('class', 'zoom-label noselect');
+        // Otherwise, create it.
         var xAxisEnter = xAxisLabelDiv.enter().append('div').attr('class', 'x axis-label noselect');
 
-        d3.select(this.$el).select('.zoom-label')
-          .style("float", "right")
-          .style("padding-right","15px")
-          .text("(Drag to zoom.)");
+        // Add the label
         d3.select(this.$el).select('.x.axis-label')
           .style("text-align", "center")
           .style("margin", "0 auto")
           .style("width", "100px")
           .style("cursor","pointer")
-          .attr("title", "Double click to define custom axis ranges.")
+          .attr("title", "Double click to define custom axis ranges.") //Tooltip
           .text(this.xAxisLabel);
 
         // Y Axis
@@ -180,8 +174,8 @@ export default {
 
         // Y axis label positions
         var yLabelX = - 5 * this.height * this.sizeRatio / 12;
-        var yLabelY = 6;
-
+        var yLabelY = 4;
+        // Add the label
         d3.select(this.$el).select('.y.axis-label')
           .attr("text-anchor", "middle")
           .attr("y", yLabelY)
@@ -205,6 +199,25 @@ export default {
           this.showAxisModal = true;
         }.bind(this))
 
+        this.addZoomHintLabel();
+      },
+      addZoomHintLabel: function() {
+        // Select the axis text element, if it exists.
+        var svgx = d3.select(this.$el).select(".iobio-bar-2").select("svg").selectAll('.zoom-label').data([0]);
+
+        // Otherwise, create axis text element.
+        var xEnter = svgx.enter().append('text').attr('class', 'zoom-label');
+
+        // Label positions
+        var xLabelX = $(this.$el).width()/2;
+        var xLabelY = 40;
+
+        // X axis
+        d3.select(this.$el).select('.zoom-label')
+          .attr("text-anchor", "middle")
+          .attr("x", xLabelX)
+          .attr("y", xLabelY)
+          .text("(Drag to zoom.)");
       }
     },
     watch: {
