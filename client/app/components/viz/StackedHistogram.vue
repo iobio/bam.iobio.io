@@ -42,6 +42,8 @@
                          :xMaxOrig="xMax"
                          :yMinOrig="yMin"
                          :yMaxOrig="yMax"
+                         :xAxisLabel="xAxisLabel"
+                         :yAxisLabel="yAxisLabel"
                          @updateAxesRanges="updateAxesRanges"
                          @close='showAxisModal = false'></define-axis-modal>
     </div>

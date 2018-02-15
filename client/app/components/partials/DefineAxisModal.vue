@@ -52,7 +52,7 @@
     width: 60px;
   }
   input {
-    width: 300px;
+    width: 75%;
   }
 
 </style>
@@ -77,19 +77,19 @@
                     <form>
                       <div class="form-group">
                         <label class="form-control-label" for="xMin">xMin</label>
-                        <input id="xMin" v-model="xMin" placeholder="Enter a custom lower bound for the x axis.">
+                        <input id="xMin" v-model="xMin" :placeholder="xMinPlaceholderText">
                       </div><!-- /form-group -->
                       <div class="form-group">
                         <label class="form-control-label" for="xMax">xMax</label>
-                        <input id="xMax" v-model="xMax" placeholder="Enter a custom upper bound for the x axis.">
+                        <input id="xMax" v-model="xMax" :placeholder="xMaxPlaceholderText">
                       </div><!-- /form-group -->
                       <div class="form-group">
                         <label class="form-control-label" for="yMin">yMin</label>
-                        <input id="yMin" v-model="yMin" placeholder="Enter a custom lower bound for the y axis.">
+                        <input id="yMin" v-model="yMin" :placeholder="yMinPlaceholderText">
                       </div><!-- /form-group -->
                       <div class="form-group">
                         <label class="form-control-label" for="yMax">xMin</label>
-                        <input id="yMax" v-model="yMax" placeholder="Enter a custom upper bound for the y axis.">
+                        <input id="yMax" v-model="yMax" :placeholder="yMaxPlaceholderText">
                       </div><!-- /form-group -->
                     </form>
                   </slot>
@@ -123,6 +123,8 @@ export default {
     xMaxOrig: {},
     yMinOrig: {},
     yMaxOrig: {},
+    xAxisLabel: '',
+    yAxisLabel: '',
   },
   data() {
     return {
@@ -149,6 +151,20 @@ export default {
     this.xMax = this.xMaxOrig;
     this.yMin = this.yMinOrig;
     this.yMax = this.yMinOrig;
+  },
+  computed: {
+    xMinPlaceholderText: function(){
+      return "Enter a custom lower bound for " + ((this.xAxisLabel != undefined) ? (this.xAxisLabel + ".") : "the x axis.")
+    },
+    xMaxPlaceholderText: function(){
+      return "Enter a custom upper bound for " + ((this.xAxisLabel != undefined) ? (this.xAxisLabel + ".") : "the x axis.")
+    },
+    yMinPlaceholderText: function(){
+      return "Enter a custom lower bound for " + ((this.yAxisLabel != undefined) ? (this.yAxisLabel + ".") : "the y axis.")
+    },
+    yMaxPlaceholderText: function(){
+      return "Enter a custom upper bound for " + ((this.yAxisLabel != undefined) ? (this.yAxisLabel + ".") : "the y axis.")
+    }
   },
 }
 
