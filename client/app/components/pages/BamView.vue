@@ -675,7 +675,7 @@
         var brushRange = undefined;// window.readDepthChart.brush().extent();
         if ((brushRange == undefined || brushRange.toString() == '0,0') && mappedReads != undefined && unmappedReads != undefined) {
           showMappedDataFromIndex = true;
-          d3.select("#mapped_reads_chart").selectAll('path')
+          d3.select("#mapped_reads").selectAll('path')
             .attr('fill', function (d, i) {
               return i == 0 ? 'rgb(9,176,135)' : 'rgba(9,176,135,0.5)'
             });
