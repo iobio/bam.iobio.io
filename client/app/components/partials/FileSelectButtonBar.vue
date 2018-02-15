@@ -22,6 +22,7 @@
     color: #2d8fc1;
     border-color: #fff;
     font-size:24px;
+    text-decoration: underline;
     cursor: pointer;
     font-weight: 300;
   }
