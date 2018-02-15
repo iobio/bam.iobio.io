@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
+    "connect-history-api-fallback": "^1.5.0",
     "d3": "^3.5.17",
     "debug": "^2.6.9",
     "express": "^4.16.2",
