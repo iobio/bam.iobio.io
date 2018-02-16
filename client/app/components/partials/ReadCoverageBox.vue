@@ -86,6 +86,10 @@
   .chart text {
     fill: 'black';
   }
+  .glyphicon.glyphicon-cog {
+    cursor: pointer;
+    color: #828282;
+  }
 </style>
 
 <template>
@@ -105,10 +109,23 @@
     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" title="Add Bed format capture target definition file">Custom Bed</label>
 
     <!-- log toggle -->
-    <label id="scale-switch" class="checkbox" title="Limit plot to include read data within 3 standard deviations of the median only">
+    <div id="scale-switch"
+         class="checkbox"
+         v-if="draw"
+         style="display: inline-block;vertical-align: middle"
+         title="Zoom y axis to better view read coverage data.">
       <input type="checkbox" v-model="limitYAxes" >
-      Zoom y axis
-    </label>
+      <label for="scale-switch" style="padding-left: 0" @click="limitYAxes=!limitYAxes">
+        Zoom y axis
+      </label>
+      <title class="glyphicon glyphicon-cog"
+             style="vertical-align: text-top"
+             @click="showZoomModal=true"></title>
+      <define-zoom-level-modal v-if="showZoomModal"
+                               :sdsFromTheMedianOrig="sdsFromTheMedian"
+                               @updateZoom="updateZoom"
+                               @close='showZoomModal = false'></define-zoom-level-modal>
+    </div>
 
     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
     <div class='warning' id="not_enough_data">Bam file is too small to read coverage information</div>
@@ -119,6 +136,7 @@
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
                         :selectedSeqId="selectedSeqId"
                         :limitYAxes="limitYAxes"
+                        :sdsFromTheMedian="sdsFromTheMedian"
                         :drawChart="draw"
                         :data="readDepthData"></read-coverage-plot>
   </div>
@@ -128,9 +146,12 @@
 
 import HelpButton from "./HelpButton.vue";
 import ReadCoveragePlot from "../viz/ReadCoveragePlot.vue";
+import DefineZoomLevelModal from "./DefineZoomLevelModal.vue";
+
 
 export default {
   components: {
+    DefineZoomLevelModal,
     ReadCoveragePlot,
     HelpButton
   },
@@ -152,6 +173,8 @@ export default {
                 "of interest; again, all other metrics will then be recalculated for that region only.",
 
       limitYAxes: true,
+      showZoomModal: false,
+      sdsFromTheMedian: Number(3)
     }
   },
 
@@ -176,7 +199,12 @@ export default {
       }
 
       this.$emit('processBedFile', event.target.files[0]);
-    }
+    },
+
+    updateZoom: function(sds) {
+      this.showZoomModal = false;
+      this.sdsFromTheMedian = Number(sds);
+    },
   },
 
   watch: {

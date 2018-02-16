@@ -36,6 +36,10 @@ export default {
       },
       limitYAxes:{
         type: Boolean,
+      },
+      sdsFromTheMedian: {
+        default: 3,
+        type: Number
       }
     },
     data() {
@@ -44,9 +48,6 @@ export default {
         trimmedYMin: "",
         trimmedYMax: "",
       }
-    },
-    created: function() {
-
     },
     mounted: function() {
       this.setup();
@@ -81,8 +82,6 @@ export default {
               self.setSelectedSeq( self.readDepthChart.getSelected() );
           });
 
-        this.readDepthChart.lineChart().y(d3.scale.pow().exponent(this.yscale));
-
       },
 
       setSelectedSeq: function( selected, start, end) {
@@ -91,8 +90,6 @@ export default {
 
       update: function() {
         this.readDepthChart.width(this.width);
-        this.readDepthChart.lineChart().y(this.readDepthChart.lineChart().y().exponent(this.yscale));
-
         this.draw();
       },
 
@@ -141,14 +138,14 @@ export default {
 
         var startIndex = 0;
         for(var i=0;i<sortedYData.length;++i) {
-          if (sortedYData[i] < median - 3 * sd ){
+          if (sortedYData[i] < median - this.sdsFromTheMedian * sd ){
             startIndex = i;
             break;
           }
         }
         var endIndex = l-1;
         for(var i=0;i<sortedYData.length;++i) {
-          if (sortedYData[i] > median + 3 * sd ){
+          if (sortedYData[i] > median + this.sdsFromTheMedian * sd ){
             endIndex = i;
             break;
           }
@@ -168,11 +165,6 @@ export default {
       }
 
     },
-    computed: {
-      yscale: function() {
-        return 1;
-      }
-    },
     watch: {
       data: function() {
         this.getBounds();
@@ -189,6 +181,10 @@ export default {
         this.update();
       },
       limitYAxes: function() {
+        this.update();
+      },
+      sdsFromTheMedian: function() {
+        this.getBounds();
         this.update();
       }
     }
