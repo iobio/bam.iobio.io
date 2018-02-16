@@ -628,32 +628,38 @@
         NProgress.set(0);
 
         // update selected stats
-        this.bam.sampleStats(function (data) {
+        this.bam.sampleStats(function (data, error) {
           // turn off sampling message
           $(".samplingLoader").css("display", "none");
           $(".iobio-bar-1").css("display", "block");
           $("section#middle svg").css("display", "block");
-          this.sampleStats = data;
 
-          // update progress bar
-          if (options.start != null && options.end != null) {
-            var length = options.end - options.start;
-            var percentDone = Math.max(Math.round(((this.sampleStats.last_read_position - options.start) / length) * 100) / 100, 0);
+          if ( error!=undefined && error!='' ){
+            alert(error);
+            NProgress.done();
           } else {
-            var length = this.bam.header.sq.reduce(function (prev, curr) {
-              if (prev) return prev;
-              if (curr.name == options.sequenceNames[0]) return curr;
-            }, false).end;
-            var percentDone = Math.round((this.sampleStats.last_read_position / length) * 100) / 100;
+
+            this.sampleStats = data;
+
+            // update progress bar
+            if (options.start != null && options.end != null) {
+              var length = options.end - options.start;
+              var percentDone = Math.max(Math.round(((this.sampleStats.last_read_position - options.start) / length) * 100) / 100, 0);
+            } else {
+              var length = this.bam.header.sq.reduce(function (prev, curr) {
+                if (prev) return prev;
+                if (curr.name == options.sequenceNames[0]) return curr;
+              }, false).end;
+              var percentDone = Math.round((this.sampleStats.last_read_position / length) * 100) / 100;
+            }
+
+            if (NProgress.status < percentDone) NProgress.set(percentDone);
+
+            // update charts
+            this.updatePercentCharts();
+            this.totalReads = this.sampleStats.total_reads;
+            this.updateHistogramCharts(undefined, "sampleBar");
           }
-
-          if (NProgress.status < percentDone) NProgress.set(percentDone);
-
-          // update charts
-          this.updatePercentCharts();
-          this.totalReads = this.sampleStats.total_reads;
-          this.updateHistogramCharts(undefined, "sampleBar");
-
         }.bind(this), options);
       },
 
@@ -993,6 +999,7 @@
           if (done && totalPoints <= 1) {
             $('#not_enough_data').css('display', 'block');
           }
+
         }.bind(this));
 
       },

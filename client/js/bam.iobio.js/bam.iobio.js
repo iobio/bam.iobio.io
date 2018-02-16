@@ -505,82 +505,85 @@ var Bam = Class.extend({
       var me = this;
 
       function goSampling(SQs) {
-         var regions = [];
-         var bedRegions;
-         //for (var j=0; j < SQs.length; j++) {
-            var sqStart = options.start;
-            var length = SQs.length == 1 ? SQs[0].end - sqStart : null;
-            if ( length &&  length < options.binSize * options.binNumber) {
-               SQs[0].start = sqStart;
-               regions.push(SQs[0])
-            } else {
-               // create random reference coordinates
-               var regions = [];
-               for (var i=0; i < options.binNumber; i++) {
-                  var seq = SQs[Math.floor(Math.random()*SQs.length)]; // randomly grab one seq
-                  length = seq.end - sqStart;
-                  var s=sqStart + parseInt(Math.random()*length);
-                  regions.push( {
-                     'name' : seq.name,
-                     'start' : s,
-                     'end' : s+options.binSize
-                  });
-               }
-               // sort by start value
-               regions = regions.sort(function(a,b) {
-                  if (a.name == b.name)
-                    return ((a.start < b.start) ? -1 : ((a.start > b.start) ? 1 : 0));
-                  else
-                    return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
-               });
-
-               // map random region coordinates to bed coordinates
-               if (options.bed != undefined)
-                  bedRegions = me._mapToBedCoordinates(regions, options.bed)
+        if (SQs.length == 0) {
+          callback(undefined, "Make sure index file exists and is valid.")
+        } else {
+          var regions = [];
+          var bedRegions;
+          //for (var j=0; j < SQs.length; j++) {
+          var sqStart = options.start;
+          var length = SQs.length == 1 ? SQs[0].end - sqStart : null;
+          if (length && length < options.binSize * options.binNumber) {
+            SQs[0].start = sqStart;
+            regions.push(SQs[0])
+          } else {
+            // create random reference coordinates
+            var regions = [];
+            for (var i = 0; i < options.binNumber; i++) {
+              var seq = SQs[Math.floor(Math.random() * SQs.length)]; // randomly grab one seq
+              length = seq.end - sqStart;
+              var s = sqStart + parseInt(Math.random() * length);
+              regions.push({
+                'name': seq.name,
+                'start': s,
+                'end': s + options.binSize
+              });
             }
+            // sort by start value
+            regions = regions.sort(function (a, b) {
+              if (a.name == b.name)
+                return ((a.start < b.start) ? -1 : ((a.start > b.start) ? 1 : 0));
+              else
+                return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
+            });
 
-         var r = bedRegions || regions;
-         var cmd = me._getBamCmd( r )
-         var buffer = "";
+            // map random region coordinates to bed coordinates
+            if (options.bed != undefined)
+              bedRegions = me._mapToBedCoordinates(regions, options.bed)
+          }
 
-        cmd.on('error', function(err) {
-          console.log(err);
-        })
+          var r = bedRegions || regions;
+          var cmd = me._getBamCmd(r)
+          var buffer = "";
+
+          cmd.on('error', function (err) {
+            console.log(err);
+          })
 
 
-        cmd.on('queue', function(q) {
-          console.log('queue = ' + q);
-        })
+          cmd.on('queue', function (q) {
+            console.log('queue = ' + q);
+          })
 
-        cmd.on('data', function(datas, options) {
-           datas.split(';').forEach(function(data) {
-             if (data == undefined || data == "\n") return;
-             var success = true;
-             try {
+          cmd.on('data', function (datas, options) {
+            datas.split(';').forEach(function (data) {
+              if (data == undefined || data == "\n") return;
+              var success = true;
+              try {
 
-               var obj = JSON.parse(buffer + data)
-             } catch(e) {
-               success = false;
-               buffer += data;
-             }
-             if(success) {
-               buffer = "";
-               callback(obj);
-             }
+                var obj = JSON.parse(buffer + data)
+              } catch (e) {
+                success = false;
+                buffer += data;
+              }
+              if (success) {
+                buffer = "";
+                callback(obj);
+              }
+            });
           });
-        });
 
-        cmd.on('end', function() {
-           if (options.onEnd != undefined)
+          cmd.on('end', function () {
+            if (options.onEnd != undefined)
               options.onEnd();
-        });
+          });
 
-        cmd.on('exit', function(code) {
-        })
+          cmd.on('exit', function (code) {
+          })
 
-        cmd.run();
+          cmd.run();
 
-
+        }
       }
 
       if ( options.sequenceNames != undefined && options.sequenceNames.length == 1 && options.end != undefined) {
