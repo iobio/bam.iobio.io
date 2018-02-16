@@ -127,6 +127,10 @@ export default {
 
     openBamURL : function() {
       let self = this;
+      if ( this.selectedBamURL == '' ) {
+        alert('Please specify a bam url.');
+        return;
+      }
       self.$router.push({name: 'bam-view', query: { bam: this.selectedBamURL, bai: this.selectedBaiURL}});
     },
 
@@ -134,7 +138,7 @@ export default {
       let self = this;
 
       if (event.target.files.length != 2) {
-        alert('must select both a .bam and .bai file');
+        alert('Must select both a .bam and .bai file.');
         // return;
       }
 
@@ -151,7 +155,7 @@ export default {
         bamFile = event.target.files[1];
         baiFile = event.target.files[0];
       } else {
-        alert('must select both a .bam and .bai file');
+        alert('Must select both a .bam and .bai file.');
         // return;
       }
 
