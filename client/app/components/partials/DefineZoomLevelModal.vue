@@ -122,7 +122,6 @@ export default {
   },
   data() {
     return {
-      showModal: false,
       sdsFromTheMedian: {
         default: 3,
         type: Number
