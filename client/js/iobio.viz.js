@@ -1235,7 +1235,7 @@ var barViewer = function() {
 			.transitionDuration( chart.transitionDuration() )
 			.id( chart.id() )
 			.color( chart.color() )
-			.tooltip( 'Drag to zoom.' )
+			.tooltip( 'drag to zoom' )
 			.height( origHeight * (1-sizeRatio) )
 			.brush('brush', function() {
 				var x2 = globalBar.x(), brush = globalBar.brush();

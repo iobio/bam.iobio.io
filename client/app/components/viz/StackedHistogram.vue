@@ -219,7 +219,7 @@ export default {
           .attr("text-anchor", "middle")
           .attr("x", xLabelX)
           .attr("y", xLabelY)
-          .text("(Drag to zoom.)");
+          .text("(drag to zoom)");
       }
     },
     watch: {
