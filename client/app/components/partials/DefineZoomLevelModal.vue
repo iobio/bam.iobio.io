@@ -135,7 +135,9 @@ export default {
     },
     save: function() {
       this.closeModal();
-      this.$emit('updateZoom',this.sdsFromTheMedian);
+      setTimeout( function(){
+        this.$emit('updateZoom',this.sdsFromTheMedian);
+      }.bind(this), 400 );
     },
     openModal() {
       this.showModal = true;
