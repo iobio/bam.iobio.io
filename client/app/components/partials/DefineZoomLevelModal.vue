@@ -62,15 +62,14 @@
 
 <template>
     <transition name="modal">
-      <div class="modal" style="display: block" @click="$emit('close')">
+      <div class="modal" style="display: block" @click="closeModal" v-if="showModal">
         <div class="modal-mask">
           <div class="modal-wrapper" @click.stop>
             <div class="modal-dialog">
               <div class="modal-content" >
-
                 <div class="modal-header">
                   <slot name="header">
-                    <button type="button" class="close" @click="$emit('close')">&times;</button>
+                    <button type="button" class="close" @click="closeModal">&times;</button>
                   </slot>
                 </div>
 
@@ -122,6 +121,7 @@ export default {
   },
   data() {
     return {
+      showModal: false,
       sdsFromTheMedian: {
         default: 3,
         type: Number
@@ -134,7 +134,14 @@ export default {
       this.save();
     },
     save: function() {
+      this.closeModal();
       this.$emit('updateZoom',this.sdsFromTheMedian);
+    },
+    openModal() {
+      this.showModal = true;
+    },
+    closeModal() {
+      this.showModal = false;
     }
   },
   created: function () {

@@ -120,11 +120,10 @@
       </label>
       <title class="glyphicon glyphicon-cog"
              style="vertical-align: text-top"
-             @click="showZoomModal=true"></title>
-      <define-zoom-level-modal v-if="showZoomModal"
+             @click="openZoomModal"></title>
+      <define-zoom-level-modal ref="zoomModal"
                                :sdsFromTheMedianOrig="sdsFromTheMedian"
-                               @updateZoom="updateZoom"
-                               @close='showZoomModal = false'></define-zoom-level-modal>
+                               @updateZoom="updateZoom"></define-zoom-level-modal>
     </div>
 
     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
@@ -200,15 +199,14 @@ export default {
 
       this.$emit('processBedFile', event.target.files[0]);
     },
-
     updateZoom: function(sds) {
-      this.showZoomModal = false;
-      this.sdsFromTheMedian = Number(sds);
+      this.sdsFromTheMedian = Number(sds)
     },
+    openZoomModal: function() {
+      this.$refs.zoomModal.openModal();
+    }
   },
 
-  watch: {
-  }
 }
 
 
