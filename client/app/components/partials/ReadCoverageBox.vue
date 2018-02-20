@@ -22,6 +22,7 @@
   }
 
   .hint {
+    height: 14px;
     margin-top: -7px;
     margin-bottom: 10px;
     font-size:13px;
@@ -101,7 +102,9 @@
       </help-button>
       Read Coverage
     </div>
-    <div class="hint">(drag to select region)</div>
+    <div class="hint">
+      <div v-show="selectedSeqId!='all'" >(drag to select region)</div>
+    </div>
 
     <input type="file" name="files[]" id="bedfile"  multiple @change="processBedFile"/>
     <div id="remove-bedfile-button" class="bedfile-button" @click="$emit('removeBedFile')" style="visibility:hidden">Remove Bed</div>
