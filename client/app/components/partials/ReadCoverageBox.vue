@@ -47,7 +47,7 @@
   /* power scale */
   #scale-switch {
     position: absolute;
-    top:30px;
+    top:28px;
     left:16px;
     cursor: pointer;
   }
@@ -91,6 +91,9 @@
     cursor: pointer;
     color: #828282;
   }
+  .vue-slider-component .vue-slider {
+    background-color: #2687BE;
+  }
 </style>
 
 <template>
@@ -118,15 +121,18 @@
          style="display: inline-block;vertical-align: middle"
          title="Zoom y axis to better view read coverage data.">
       <input type="checkbox" v-model="limitYAxes" >
-      <label for="scale-switch" style="padding-left: 0" @click="limitYAxes=!limitYAxes">
-        Zoom y axis
-      </label>
-      <title class="glyphicon glyphicon-cog"
-             style="vertical-align: text-top"
-             @click="openZoomModal"></title>
-      <define-zoom-level-modal ref="zoomModal"
-                               :sdsFromTheMedianOrig="sdsFromTheMedian"
-                               @updateZoom="updateZoom"></define-zoom-level-modal>
+        <label for="scale-switch" style="padding-left: 0" @click="limitYAxes=!limitYAxes">
+          Zoom y axis
+        </label>
+
+        <vue-slider v-model="sdsFromTheMedian"
+                    :min="1" :max="10" :dot-size="8" :height="3" :width="65" tooltip="hover" :reverse="true"
+                    formatter="show {value} sd's from median"
+                    :speed=".1"
+                    :tooltipStyle="sliderTooltipStyle"
+                    :style="sliderStyle"
+                    :processStyle="sliderProcessStyle"></vue-slider>
+
     </div>
 
     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
@@ -148,12 +154,12 @@
 
 import HelpButton from "./HelpButton.vue";
 import ReadCoveragePlot from "../viz/ReadCoveragePlot.vue";
-import DefineZoomLevelModal from "./DefineZoomLevelModal.vue";
+import vueSlider from 'vue-slider-component';
 
 
 export default {
   components: {
-    DefineZoomLevelModal,
+    vueSlider,
     ReadCoveragePlot,
     HelpButton
   },
@@ -176,7 +182,19 @@ export default {
 
       limitYAxes: true,
       showZoomModal: false,
-      sdsFromTheMedian: Number(3)
+      sdsFromTheMedian: Number(3),
+      // Styles for the slider component
+      sliderTooltipStyle: {
+        "backgroundColor": "#666",
+        "borderColor": "#666",
+        "font-size": "8pt"
+      },
+      sliderStyle: {
+        "display":"inline-block"
+      },
+      sliderProcessStyle: {
+        "backgroundColor": "#e2e2e2"
+      },
     }
   },
 
@@ -201,12 +219,6 @@ export default {
       }
 
       this.$emit('processBedFile', event.target.files[0]);
-    },
-    updateZoom: function(sds) {
-      this.sdsFromTheMedian = Number(sds)
-    },
-    openZoomModal: function() {
-      this.$refs.zoomModal.openModal();
     }
   },
 

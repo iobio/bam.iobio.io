@@ -17,7 +17,8 @@
     "qs": "^6.5.1",
     "serve-favicon": "^2.4.5",
     "vue": "^2.5.13",
-    "vue-router": "^2.5.3"
+    "vue-router": "^2.5.3",
+    "vue-slider-component": "^2.5.4"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
