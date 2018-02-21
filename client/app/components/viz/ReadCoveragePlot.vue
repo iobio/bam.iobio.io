@@ -47,6 +47,7 @@ export default {
         readDepthChart: {},
         trimmedYMin: "",
         trimmedYMax: "",
+        medianDepth: 0
       }
     },
     mounted: function() {
@@ -66,7 +67,7 @@ export default {
           .wValue(function() { return 1; })
           .transitionDuration(self.transitionDuration)
           .epsilonRate(0.3)
-          .margin({top: 10, right: 0, bottom: 30, left:0})
+          .margin({top: 10, right: 0, bottom: 30, left:15})
           .height(this.height)
           .color(function(d,i) {return color(d.name); })
           .width(this.width)
@@ -124,34 +125,28 @@ export default {
         var sortedYData = Array.from(dataList, d => d.depth);
         sortedYData.sort(function(a,b){return a-b});
 
-        var l = sortedYData.length;
-        var sum=0;
-        var sumsq = 0;
-        for(var i=0;i<sortedYData.length;++i) {
-          sum+=sortedYData[i];
-          sumsq+=sortedYData[i]*sortedYData[i];
-        }
-        var mean = sum/l;
-        var median = sortedYData[Math.round(l/2)];
-        var varience = sumsq / l - mean*mean;
-        var sd = Math.sqrt(varience);
 
-        var startIndex = 0;
-        for(var i=0;i<sortedYData.length;++i) {
-          if (sortedYData[i] < median - this.sdsFromTheMedian * sd ){
-            startIndex = i;
-            break;
-          }
+        var binnedMiddleVal = findBinnedMiddle(sortedYData);
+
+        var mean = d3.mean(sortedYData);
+        var median = d3.median(sortedYData);
+        var variance = d3.variance(sortedYData);
+        var sd = Math.sqrt(variance);
+
+        this.medianDepth = binnedMiddleVal;
+
+        var indices = getIndicesForNumberSdsFrom(sortedYData, this.sdsFromTheMedian, this.medianDepth);
+
+        this.trimmedYMin = sortedYData[indices[0]];
+        this.trimmedYMax = sortedYData[indices[1]];
+      },
+
+      tickFormatter: function(d) {
+        if ( isNumeric(d) && this.medianDepth != 0 ){
+          var number = Math.floor(Number(d) / this.medianDepth);
+          return number - 1;
         }
-        var endIndex = l-1;
-        for(var i=0;i<sortedYData.length;++i) {
-          if (sortedYData[i] > median + this.sdsFromTheMedian * sd ){
-            endIndex = i;
-            break;
-          }
-        }
-        this.trimmedYMin = sortedYData[startIndex];
-        this.trimmedYMax = sortedYData[endIndex];
+        return null ;
       },
 
       setBrush: function (start, end){
@@ -181,18 +176,95 @@ export default {
         this.update();
       },
       limitYAxes: function() {
+        if ( !this.limitYAxes ) {
+          this.readDepthChart.yAxis().tickValues([]);
+          this.readDepthChart.yAxis().tickFormat(null);
+        } else {
+          this.readDepthChart.yAxis().tickValues([0,this.medianDepth,2*this.medianDepth,3*this.medianDepth,4*this.medianDepth,5*this.medianDepth,6*this.medianDepth,7*this.medianDepth,8*this.medianDepth,9*this.medianDepth]);
+          this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
+        }
         this.update();
       },
       sdsFromTheMedian: function() {
         this.getBounds();
         this.update();
+      },
+      medianDepth: function() {
+        if ( !this.limitYAxes ) {
+          this.readDepthChart.yAxis().tickValues([]);
+          this.readDepthChart.yAxis().tickFormat(null);
+        } else {
+          this.readDepthChart.yAxis().tickValues([0,this.medianDepth,2*this.medianDepth,3*this.medianDepth,4*this.medianDepth,5*this.medianDepth,6*this.medianDepth,7*this.medianDepth,8*this.medianDepth,9*this.medianDepth]);
+          this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
+        }
+        this.update();
       }
     }
+}
+
+function getIndicesForNumberSdsFrom(arr, numberSds, middleValue){
+
+  arr = arr.sort(function(a,b){return a-b});
+
+  var middle = middleValue ? middleValue : d3.mean(arr);
+
+  var variance = d3.variance(arr);
+  var sd = Math.sqrt(variance);
+
+  var startIndex = 0;
+  for(var i=0;i<arr.length;++i) {
+    if (arr[i] < middle - numberSds * sd ){
+      startIndex = i;
+      break;
+    }
+  }
+  var endIndex = arr.length-1;
+  for(var i=0;i<arr.length;++i) {
+    if (arr[i] > middle + numberSds * sd ){
+      endIndex = i;
+      break;
+    }
+  }
+  return [startIndex, endIndex];
+}
+
+function findBinnedMiddle(arr) {
+  arr = arr.sort(function(a,b){return a-b});
+
+  var indices = getIndicesForNumberSdsFrom(arr, 3);
+
+  var bins = d3.layout.histogram()
+    .range([arr[indices[0]], arr[indices[1]]])
+    .bins(50)
+    (arr);
+
+  var i, maxIndex = -1, maxY = 0;
+  var maxIndices = [];
+  for (i = 0; i < bins.length; i += 1 ){
+    if ( bins[i].y > maxY ){
+      maxY = bins[i].y;
+      maxIndex = i;
+      maxIndices = [];
+      maxIndices.push(i);
+    } else if ( bins[i].y == maxY ){
+      maxIndices.push(i);
+    }
+  }
+  // Couldn't find a single bin
+  if ( maxIndices.length > 1  || maxIndex == -1 ) {
+    return -1;
+  }
+
+  var maxBin = bins[maxIndex];
+
+  var middleValue = d3.mean([maxBin.x, maxBin.x+maxBin.dx]);
+  return middleValue;
 }
 
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
+
 
 </script>
 

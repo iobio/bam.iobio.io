@@ -1327,6 +1327,7 @@ var base = function() {
 		yAxis = d3.svg.axis()
 			.scale(y)
 			.orient("left")
+      .tickFormat(function(d){return d})
 			.ticks(5),
     globalXAxis = d3.svg.axis()
       .scale(x)
@@ -2955,6 +2956,7 @@ var multiLine = function() {
 			.ticks(5);
   var yAxis = d3.svg.axis()
     .orient("left")
+    .tickFormat(function(d){return d})
     .ticks(5);
 
 	// Defaults
@@ -2984,7 +2986,7 @@ var multiLine = function() {
       w = chart.width(),
       h = chart.height(),
       x = chart.x(),
-      y = chart.y(),
+      y = chart.y();
       transitionDuration = chart.transitionDuration();
 
 		// Smoothing function
@@ -3035,15 +3037,16 @@ var multiLine = function() {
         // Update y scale
         y.domain( [yMin, yMax] )
           .range([innerHeight , 0]);
+        yAxis.scale(y);
 
-	    if (!selection.select('.iobio-multi-line.line-panel').node())
+    if (!selection.select('.iobio-multi-line.line-panel').node())
 				selection.append('div').attr('class', 'iobio-multi-line line-panel').style('height', parseInt(h) + 'px')
 	    if (!options.noLine || selected != 'all') {
 			// Create line div to place the line chart in
 			// Call base line chart
 			if (selected == 'all') { // for all
 		        lineBase
-		        	.yAxis(yAxis.scale(y))
+              .yAxis(yAxis)
 		        	.xAxis(null)
 		        	.call(this, selection.select('.line-panel').datum(smooth(points)), options);
 		        // Remove brush for all
@@ -3055,7 +3058,7 @@ var multiLine = function() {
 		    	if(points.length > 0) {
 			    	x.domain([points[0].pos, points.slice(-1)[0].pos ]);
 			    	lineBase
-			        	.yAxis(yAxis.scale(y))
+              .yAxis(yAxis)
 			        	.xAxis( xAxis.scale(x) )
 			        	.call(this, selection.select('.line-panel').datum(smooth(points)), options);
 			    }
@@ -3065,13 +3068,14 @@ var multiLine = function() {
 			x.range([0,w - m.left - m.right]).domain([0,  maxX]);
 		}
 
-		// Create buttons
+    // Create buttons
 		selection.selectAll('.iobio-multi-line.button-panel').data([0])
 			.enter().append('div')
 				.attr('class', 'iobio-multi-line button-panel')
 				.style('width', w - m.left - m.right)
 				.append('svg')
-					.style('width', '100%');
+					.style('width', '100%')
+          .style('margin-left', m.left);
 
 	   	var button = selection.select('.button-panel svg').selectAll('.button')
 	    			 	.data( selection.datum(), function(d,i) { return nameValue(d,i); });
