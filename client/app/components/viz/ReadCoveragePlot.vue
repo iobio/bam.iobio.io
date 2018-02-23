@@ -37,7 +37,7 @@ export default {
       limitYAxes:{
         type: Boolean,
       },
-      sdsFromTheMedian: {
+      multiplesOfTheMedianToZoom: {
         default: 3,
         type: Number
       }
@@ -82,7 +82,6 @@ export default {
             else
               self.setSelectedSeq( self.readDepthChart.getSelected() );
           });
-
       },
 
       setSelectedSeq: function( selected, start, end) {
@@ -100,6 +99,7 @@ export default {
           this.readDepthChart(selection, this.getOptions());
           this.readDepthChart.setSelected(this.selectedSeqId, this.getOptions(true));
         }
+        this.addAxisLabels();
       },
 
       getOptions: function(excludeSelection) {
@@ -113,35 +113,59 @@ export default {
       },
 
       getBounds: function() {
-
-        var dataList;
-
-        if (this.selectedSeqId=='all'){
-          dataList = Array.from(this.data, d => d.data);
-        } else {
-          dataList = Array.from(this.data.filter(a => a.name == this.selectedSeqId), d => d.data);
-        }
-        dataList = [].concat.apply([],dataList);
-        var sortedYData = Array.from(dataList, d => d.depth);
-        sortedYData.sort(function(a,b){return a-b});
-
-
-        var binnedMiddleVal = findBinnedMiddle(sortedYData);
-
-        var mean = d3.mean(sortedYData);
-        var median = d3.median(sortedYData);
-        var variance = d3.variance(sortedYData);
+        var median = d3.median(this.sortedYData);
+        var variance = d3.variance(this.sortedYData);
         var sd = Math.sqrt(variance);
 
-        this.medianDepth = binnedMiddleVal;
+        this.medianDepth = median;
 
-        var indices = getIndicesForNumberSdsFrom(sortedYData, this.sdsFromTheMedian, this.medianDepth);
+        var indices = getIndicesForMediansFrom(this.sortedYData, this.multiplesOfTheMedianToZoom, this.medianDepth);
 
-        this.trimmedYMin = sortedYData[indices[0]];
-        this.trimmedYMax = sortedYData[indices[1]];
+        this.trimmedYMin = this.sortedYData[indices[0]];
+        this.trimmedYMax = this.sortedYData[indices[1]];
+      },
+
+      calcMaxZoom: function() {
+        // Cut off the max 10 values to avoid the largest outliers
+        var maxZoomValue = Math.round((this.sortedYData[this.sortedYData.length-10] - this.medianDepth )/this.medianDepth);
+        this.$emit('setMaxZoomValue', maxZoomValue);
+      },
+
+      addAxisLabels: function() {
+        // Y Axis
+        // Select the y axis label text element, if it exists.
+        var chartSVG = d3.select(this.$el).select('svg').selectAll('.y.axis-label').data([0]);
+        // Otherwise, create it.
+        var yAxisEnter = chartSVG.enter().append('text').attr('class', 'y axis-label');
+
+        // Y axis label positions
+        var yLabelX = -  this.height / 2;
+        var yLabelY = 4;
+        // Add the label
+        d3.select(this.$el).select('.y.axis-label')
+          .attr("text-anchor", "middle")
+          .attr("y", yLabelY)
+          .attr("x",  yLabelX)
+          .attr("dy", ".75em")
+          .attr("transform", "rotate(-90)")
+          .text("Median");
+      },
+
+      updateAxisTicks: function() {
+        this.readDepthChart.yAxis().tickFormat(null);
+        this.readDepthChart.yAxis().tickValues([]);
+        if ( !this.limitYAxes ) {
+          // No zoom, only include median
+          this.readDepthChart.yAxis().tickValues([this.medianDepth]);
+          this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
+        } else {
+          this.readDepthChart.yAxis().tickValues(Array.from(new Array(10),(val,index)=>this.medianDepth*index));
+          this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
+        }
       },
 
       tickFormatter: function(d) {
+        // Update tick labels to be in multiples of the median (median = 0)
         if ( isNumeric(d) && this.medianDepth != 0 ){
           var number = Math.floor(Number(d) / this.medianDepth);
           return number - 1;
@@ -157,108 +181,79 @@ export default {
 
       resetBrush: function(){
         this.setBrush(0,0);
+      },
+
+      dataUpdate: function(){
+        this.getBounds();
+        this.calcMaxZoom();
+        this.update();
       }
 
     },
     watch: {
       data: function() {
-        this.getBounds();
-        this.update();
+        this.dataUpdate();
       },
       drawChart: function() {
         this.update();
       },
       selectedSeqId: function() {
-        this.getBounds();
-        this.update();
+        this.dataUpdate();
       },
       width: function() {
         this.update();
       },
       limitYAxes: function() {
-        if ( !this.limitYAxes ) {
-          this.readDepthChart.yAxis().tickValues([]);
-          this.readDepthChart.yAxis().tickFormat(null);
-        } else {
-          this.readDepthChart.yAxis().tickValues([0,this.medianDepth,2*this.medianDepth,3*this.medianDepth,4*this.medianDepth,5*this.medianDepth,6*this.medianDepth,7*this.medianDepth,8*this.medianDepth,9*this.medianDepth]);
-          this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
-        }
+        this.updateAxisTicks();
         this.update();
       },
-      sdsFromTheMedian: function() {
+      multiplesOfTheMedianToZoom: function() {
         this.getBounds();
         this.update();
       },
       medianDepth: function() {
-        if ( !this.limitYAxes ) {
-          this.readDepthChart.yAxis().tickValues([]);
-          this.readDepthChart.yAxis().tickFormat(null);
-        } else {
-          this.readDepthChart.yAxis().tickValues([0,this.medianDepth,2*this.medianDepth,3*this.medianDepth,4*this.medianDepth,5*this.medianDepth,6*this.medianDepth,7*this.medianDepth,8*this.medianDepth,9*this.medianDepth]);
-          this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
-        }
+        this.updateAxisTicks();
         this.update();
-      }
+      },
+
+    },
+    computed: {
+      sortedYData: function(){
+        var dataList;
+
+        if (this.selectedSeqId=='all'){
+          dataList = Array.from(this.data, d => d.data);
+        } else {
+          dataList = Array.from(this.data.filter(a => a.name == this.selectedSeqId), d => d.data);
+        }
+        dataList = [].concat.apply([],dataList);
+        var yData = Array.from(dataList, d => d.depth);
+        return yData.sort(function(a,b){return a-b});
+      },
     }
 }
 
-function getIndicesForNumberSdsFrom(arr, numberSds, middleValue){
+function getIndicesForMediansFrom(arr, zoomNumber, middleValue){
 
   arr = arr.sort(function(a,b){return a-b});
 
   var middle = middleValue ? middleValue : d3.mean(arr);
 
-  var variance = d3.variance(arr);
-  var sd = Math.sqrt(variance);
-
   var startIndex = 0;
   for(var i=0;i<arr.length;++i) {
-    if (arr[i] < middle - numberSds * sd ){
+    if (arr[i] < middle - zoomNumber * middle ){
       startIndex = i;
       break;
     }
   }
   var endIndex = arr.length-1;
   for(var i=0;i<arr.length;++i) {
-    if (arr[i] > middle + numberSds * sd ){
+    if (arr[i] > middle + zoomNumber * middle ){
       endIndex = i;
       break;
     }
   }
   return [startIndex, endIndex];
-}
-
-function findBinnedMiddle(arr) {
-  arr = arr.sort(function(a,b){return a-b});
-
-  var indices = getIndicesForNumberSdsFrom(arr, 3);
-
-  var bins = d3.layout.histogram()
-    .range([arr[indices[0]], arr[indices[1]]])
-    .bins(50)
-    (arr);
-
-  var i, maxIndex = -1, maxY = 0;
-  var maxIndices = [];
-  for (i = 0; i < bins.length; i += 1 ){
-    if ( bins[i].y > maxY ){
-      maxY = bins[i].y;
-      maxIndex = i;
-      maxIndices = [];
-      maxIndices.push(i);
-    } else if ( bins[i].y == maxY ){
-      maxIndices.push(i);
-    }
-  }
-  // Couldn't find a single bin
-  if ( maxIndices.length > 1  || maxIndex == -1 ) {
-    return -1;
-  }
-
-  var maxBin = bins[maxIndex];
-
-  var middleValue = d3.mean([maxBin.x, maxBin.x+maxBin.dx]);
-  return middleValue;
 }
 
 function isNumeric(n) {

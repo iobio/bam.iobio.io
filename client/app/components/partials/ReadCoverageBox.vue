@@ -125,9 +125,10 @@
           Zoom y axis
         </label>
 
-        <vue-slider v-model="sdsFromTheMedian"
-                    :min="1" :max="10" :dot-size="8" :height="3" :width="65" tooltip="hover" :reverse="true"
-                    formatter="show {value} sd's from median"
+        <vue-slider v-model="multiplesOfTheMedianToZoom"
+                    v-if="sliderMax>1"
+                    :min="1" :max="sliderMax" :dot-size="8" :height="3" :width="65" tooltip="hover" :reverse="true"
+                    formatter="show {value} multiples of median"
                     :speed=".1"
                     :tooltipStyle="sliderTooltipStyle"
                     :style="sliderStyle"
@@ -142,9 +143,10 @@
     <div class='chart' style="width:98%; height:60%"></div>
 
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
+                        @setMaxZoomValue="updateMaxZoomValue"
                         :selectedSeqId="selectedSeqId"
                         :limitYAxes="limitYAxes"
-                        :sdsFromTheMedian="sdsFromTheMedian"
+                        :multiplesOfTheMedianToZoom="multiplesOfTheMedianToZoom"
                         :drawChart="draw"
                         :data="readDepthData"></read-coverage-plot>
   </div>
@@ -182,7 +184,8 @@ export default {
 
       limitYAxes: true,
       showZoomModal: false,
-      sdsFromTheMedian: Number(3),
+      multiplesOfTheMedianToZoom: Number(3),
+      sliderMax: Number(10),
       // Styles for the slider component
       sliderTooltipStyle: {
         "backgroundColor": "#666",
@@ -205,6 +208,12 @@ export default {
     setSelectedSeq: function( selected, start, end) {
       this.$emit('setSelectedSeq', selected, start, end);
     },
+    updateMaxZoomValue: function( max) {
+      this.sliderMax = max < 10 ? (max > 1 ? max : 1) : 10;
+      if ( this.multiplesOfTheMedianToZoom > this.sliderMax ) {
+        this.multiplesOfTheMedianToZoom = this.sliderMax;
+      }
+    },
     processBedFile: function(event){
       if (event.target.files.length != 1) {
         alert('must select a .bed file');
@@ -223,7 +232,6 @@ export default {
   },
 
 }
-
 
 </script>
 
