@@ -2993,7 +2993,7 @@ var multiLine = function() {
 
 		// Smoothing function
 		var smooth = iobio.viz.layout.pointSmooth()
-	    	.size(w*h/20)
+	    	.size(w*h/5)
 	    	.pos(function(d,i) { return (d.globalPos || 0) + xValue(d,i)})
 	    	.epsilonRate(epsilonRate);
 
