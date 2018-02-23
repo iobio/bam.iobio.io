@@ -201,9 +201,6 @@ export default {
     }
   },
 
-  mounted: function() {
-  },
-
   methods: {
     setSelectedSeq: function( selected, start, end) {
       this.$emit('setSelectedSeq', selected, start, end);
