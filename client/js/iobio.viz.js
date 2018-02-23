@@ -1328,7 +1328,8 @@ var base = function() {
 			.scale(y)
 			.orient("left")
       .tickFormat(function(d){return d})
-			.ticks(5),
+			.ticks(5)
+      .outerTickSize(0),
     globalXAxis = d3.svg.axis()
       .scale(x)
       .orient("bottom")
@@ -2957,7 +2958,8 @@ var multiLine = function() {
   var yAxis = d3.svg.axis()
     .orient("left")
     .tickFormat(function(d){return d})
-    .ticks(5);
+    .ticks(5)
+    .outerTickSize(0);
 
 	// Defaults
 	var events = [],
