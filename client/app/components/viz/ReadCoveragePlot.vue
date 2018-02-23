@@ -141,7 +141,7 @@ export default {
         // Y axis label positions
         var yLabelX = - 5* this.height / 12;
         var yLabelY = 4;
-        // Add the label
+        // Title (line 1)
         d3.select("#depth-distribution .chart").select('.y.axis-label1')
           .attr("text-anchor", "middle")
           .attr("y", yLabelY)
@@ -151,7 +151,7 @@ export default {
           .text("Coverage");
 
         var yLabelY2 = 16;
-        // Add the label
+        // Note (line 2)
         d3.select("#depth-distribution .chart").select('.y.axis-label2')
           .attr("text-anchor", "middle")
           .attr("y", yLabelY2)
