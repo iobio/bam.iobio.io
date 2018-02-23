@@ -234,21 +234,19 @@ export default {
     }
 }
 
+// Get lower and upper index to restrict data to within specified number of multiples of median (or other specified middle value)
 function getIndicesForMediansFrom(arr, zoomNumber, middleValue){
 
-  arr = arr.sort(function(a,b){return a-b});
+  arr = arr.sort(function(a,b){return a-b}); // Data needs to be sorted
 
-  var middle = middleValue ? middleValue : d3.mean(arr);
+  var middle = middleValue ? middleValue : d3.median(arr);  // Use median if no middle value specified
 
   var startIndex = 0;
+  var endIndex = arr.length-1;
   for(var i=0;i<arr.length;++i) {
     if (arr[i] < middle - zoomNumber * middle ){
       startIndex = i;
-      break;
     }
-  }
-  var endIndex = arr.length-1;
-  for(var i=0;i<arr.length;++i) {
     if (arr[i] > middle + zoomNumber * middle ){
       endIndex = i;
       break;
