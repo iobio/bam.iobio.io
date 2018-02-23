@@ -38,7 +38,7 @@ export default {
         type: Boolean,
       },
       multiplesOfTheMedianToZoom: {
-        default: 3,
+        default: 4,
         type: Number
       }
     },
@@ -196,7 +196,6 @@ export default {
 
       dataUpdate: function(){
         this.getBounds();
-        this.calcMaxZoom();
         this.update();
       }
 
@@ -209,6 +208,7 @@ export default {
         this.update();
       },
       selectedSeqId: function() {
+        this.calcMaxZoom();
         this.dataUpdate();
       },
       width: function() {
@@ -219,8 +219,7 @@ export default {
         this.update();
       },
       multiplesOfTheMedianToZoom: function() {
-        this.getBounds();
-        this.update();
+        this.dataUpdate();
       },
       medianDepth: function() {
         this.updateAxisTicks();

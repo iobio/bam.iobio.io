@@ -184,7 +184,8 @@ export default {
 
       limitYAxes: true,
       showZoomModal: false,
-      multiplesOfTheMedianToZoom: Number(3),
+      multiplesOfTheMedianToZoom: Number(4),
+      oldZoomValue: Number(-1),
       sliderMax: Number(10),
       // Styles for the slider component
       sliderTooltipStyle: {
@@ -205,10 +206,14 @@ export default {
     setSelectedSeq: function( selected, start, end) {
       this.$emit('setSelectedSeq', selected, start, end);
     },
-    updateMaxZoomValue: function( max) {
+    updateMaxZoomValue: function(max) {
       this.sliderMax = max < 10 ? (max > 1 ? max : 1) : 10;
       if ( this.multiplesOfTheMedianToZoom > this.sliderMax ) {
+        this.oldZoomValue = this.multiplesOfTheMedianToZoom;
         this.multiplesOfTheMedianToZoom = this.sliderMax;
+      } else if ( this.oldZoomValue != -1 ) {
+        this.multiplesOfTheMedianToZoom = this.oldZoomValue;
+        this.oldZoomValue = -1;
       }
     },
     processBedFile: function(event){
@@ -227,7 +232,6 @@ export default {
       this.$emit('processBedFile', event.target.files[0]);
     }
   },
-
 }
 
 </script>
