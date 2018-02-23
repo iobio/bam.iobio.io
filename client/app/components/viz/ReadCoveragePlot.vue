@@ -152,6 +152,7 @@ export default {
       },
 
       updateAxisTicks: function() {
+        // Clear current axis (otherwise it will redraw on top)
         this.readDepthChart.yAxis().tickFormat(null);
         this.readDepthChart.yAxis().tickValues([]);
         if ( !this.limitYAxes ) {
