@@ -114,12 +114,10 @@ export default {
 
       getBounds: function() {
         var median = d3.median(this.sortedYData);
-        var variance = d3.variance(this.sortedYData);
-        var sd = Math.sqrt(variance);
 
         this.medianDepth = median;
 
-        var indices = getIndicesForMediansFrom(this.sortedYData, this.multiplesOfTheMedianToZoom, this.medianDepth);
+        var indices = getIndicesToZoomToMultiplesOfMedian(this.sortedYData, this.multiplesOfTheMedianToZoom, this.medianDepth);
 
         this.trimmedYMin = this.sortedYData[indices[0]];
         this.trimmedYMax = this.sortedYData[indices[1]];
@@ -235,7 +233,7 @@ export default {
 }
 
 // Get lower and upper index to restrict data to within specified number of multiples of median (or other specified middle value)
-function getIndicesForMediansFrom(arr, zoomNumber, middleValue){
+function getIndicesToZoomToMultiplesOfMedian(arr, zoomNumber, middleValue){
 
   arr = arr.sort(function(a,b){return a-b}); // Data needs to be sorted
 
