@@ -67,7 +67,7 @@ export default {
           .wValue(function() { return 1; })
           .transitionDuration(self.transitionDuration)
           .epsilonRate(0.3)
-          .margin({top: 10, right: 0, bottom: 30, left:15})
+          .margin({top: 10, right: 0, bottom: 30, left:45})
           .height(this.height)
           .color(function(d,i) {return color(d.name); })
           .width(this.width)
@@ -95,7 +95,7 @@ export default {
 
       draw: function() {
         if (this.drawChart) {
-          var selection = d3.select('#depth-distribution .chart');//d3.select(this.$el);//.datum(this.data);
+          var selection = d3.select('#depth-distribution .chart');
           this.readDepthChart(selection, this.getOptions());
           this.readDepthChart.setSelected(this.selectedSeqId, this.getOptions(true));
         }
@@ -132,21 +132,33 @@ export default {
       addAxisLabels: function() {
         // Y Axis
         // Select the y axis label text element, if it exists.
-        var chartSVG = d3.select(this.$el).select('svg').selectAll('.y.axis-label').data([0]);
+        var chartSVG = d3.select("#depth-distribution .chart").select('svg').selectAll('.y.axis-label1').data([0]);
+        var chartSVG2 = d3.select("#depth-distribution .chart").select('svg').selectAll('.y.axis-label2').data([0]);
         // Otherwise, create it.
-        var yAxisEnter = chartSVG.enter().append('text').attr('class', 'y axis-label');
+        var yAxisEnter = chartSVG.enter().append('text').attr('class', 'y axis-label1');
+        var yAxisEnter2 = chartSVG2.enter().append('text').attr('class', 'y axis-label2');
 
         // Y axis label positions
-        var yLabelX = -  this.height / 2;
+        var yLabelX = - 5* this.height / 12;
         var yLabelY = 4;
         // Add the label
-        d3.select(this.$el).select('.y.axis-label')
+        d3.select("#depth-distribution .chart").select('.y.axis-label1')
           .attr("text-anchor", "middle")
           .attr("y", yLabelY)
           .attr("x",  yLabelX)
           .attr("dy", ".75em")
           .attr("transform", "rotate(-90)")
-          .text("Median");
+          .text("Coverage");
+
+        var yLabelY2 = 16;
+        // Add the label
+        d3.select("#depth-distribution .chart").select('.y.axis-label2')
+          .attr("text-anchor", "middle")
+          .attr("y", yLabelY2)
+          .attr("x",  yLabelX)
+          .attr("dy", ".75em")
+          .attr("transform", "rotate(-90)")
+          .text("(multiples of median)");
       },
 
       updateAxisTicks: function() {

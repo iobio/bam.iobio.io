@@ -17,8 +17,8 @@
     flex: 1 1 auto;
     -webkit-order: 2;
     order: 2;
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 0px;
+    margin-right: 0px;
   }
 
   .hint {
@@ -48,7 +48,7 @@
   #scale-switch {
     position: absolute;
     top:28px;
-    left:16px;
+    left:52px;
     cursor: pointer;
   }
 
@@ -140,7 +140,7 @@
     <div class='warning' id="not_enough_data">Bam file is too small to read coverage information</div>
     <div class="warning too-many-refs">Too many references to display. Use the dropdown to the left to select the reference</div>
 
-    <div class='chart' style="width:98%; height:60%"></div>
+    <div class='chart' style="width:100%; height:60%"></div>
 
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
                         @setMaxZoomValue="updateMaxZoomValue"
