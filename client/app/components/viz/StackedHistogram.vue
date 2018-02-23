@@ -190,7 +190,6 @@ export default {
 
         // Tooltip for y axis label
         var ttElement = d3.select(this.$el).select('svg').select('.y.axis-label').selectAll('.title').data([0]);
-        var yAxisTTEnter = ttElement.enter().append('title').text("Double click to define custom axis ranges.");
 
         // Add listeners to axis labels
         d3.select(this.$el).select('.x.axis-label').on("dblclick", function() {
