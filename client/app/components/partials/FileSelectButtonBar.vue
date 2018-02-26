@@ -15,12 +15,12 @@
     font-weight: 300;
   }
   .inverted-file-button{
-    border-radius: 4px;
+    border: 0;
+    outline: none;
     width: 365px;
-    background: #fff;
+    background: none;
     padding: 20px 30px;
     color: #2d8fc1;
-    border-color: #fff;
     font-size:24px;
     text-decoration: underline;
     cursor: pointer;
@@ -28,7 +28,7 @@
   }
   .inverted-file-button:active, .inverted-file-button:focus {
     outline: none;
-    border-width: 0;
+    border: 0;
   }
   .file label {
     float:left;
