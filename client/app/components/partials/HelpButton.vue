@@ -10,7 +10,11 @@
 <template>
   <span >
     <title class="glyphicon glyphicon-info-sign" aria-hidden="true" id="help_button" :title="tooltipText" style="vertical-align: text-top" @click="showModal=true;"></title>
-    <help-modal v-if='showModal' @close='showModal = false' :body="body" :modalTitle="modalTitle" parent="this.parent"></help-modal>
+    <help-modal v-if='showModal' @close='showModal = false' :modalTitle="modalTitle">
+      <template slot="body">
+        <slot name="body"></slot>
+      </template>
+    </help-modal>
   </span>
 </template>
 

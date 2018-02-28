@@ -18,7 +18,13 @@
 
     <div class="title">
       <help-button style="font-size:0.45em;vertical-align: 30%" modalTitle="Sampled reads"
-                   tooltipText="Number of reads sampled" :body="helpBody" >
+                   tooltipText="Number of reads sampled" >
+        <div slot="body">
+          Bam.iobio does not read the entire bam file, rather, it samples reads from across the entire genome.
+          The number of reads that have been sampled are shown here, and should be at least in the tens of thousands
+          to have confidence in the statistics. Click the arrow beneath the displayed number to increase the number
+          of sampled reads.
+        </div>
       </help-button>
       Reads Sampled
     </div>
@@ -48,10 +54,6 @@ export default {
   },
   data() {
     return {
-      helpBody: "Bam.iobio does not read the entire bam file, rather, it samples reads from across the entire genome. " +
-                "The number of reads that have been sampled are shown here, and should be at least in the tens of thousands " +
-                "to have confidence in the statistics. Click the arrow beneath the displayed number to increase the number " +
-                "of sampled reads."
     }
   },
   computed: {

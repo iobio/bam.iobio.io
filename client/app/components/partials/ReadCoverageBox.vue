@@ -100,8 +100,15 @@
   <div id="depth-distribution" class="panel">
 
     <div class="title" >
-      <help-button style="font-size:0.45em;vertical-align: 30%" modalTitle="Read coverage" tooltipText="Coverage across the genome"
-                   :body="helpBody">
+      <help-button style="font-size:0.45em;vertical-align: 30%" modalTitle="Read coverage" tooltipText="Coverage across the genome">
+        <div slot="body">
+          The read coverage shows how the read coverage varies across the entire genome. The coloured
+          numbers beneath represent chromosomes in the reference genome used and can be selected to view
+          the read coverage in an individual chromosome. Selecting a different chromosome will cause
+          all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only.
+          Once a chromosome is selected, you can also focus on a smaller region by dragging over the region
+          of interest; again, all other metrics will then be recalculated for that region only.
+        </div>
       </help-button>
       Read Coverage
     </div>
@@ -175,13 +182,6 @@ export default {
   },
   data() {
     return {
-      helpBody: "The read coverage shows how the read coverage varies across the entire genome. The coloured " +
-                "numbers beneath represent chromosomes in the reference genome used and can be selected to view " +
-                "the read coverage in an individual chromosome. Selecting a different chromosome will cause " +
-                "all other metrics in bam.iobio to be recalculated based on reads sampled from that chromosome only. " +
-                "Once a chromosome is selected, you can also focus on a smaller region by dragging over the region " +
-                "of interest; again, all other metrics will then be recalculated for that region only.",
-
       limitYAxes: true,
       showZoomModal: false,
       multiplesOfTheMedianToZoom: Number(4),

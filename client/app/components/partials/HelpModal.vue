@@ -14,6 +14,7 @@
     overflow: auto;
     font-size: 11pt;
     max-height: 500px;
+
   }
 
   .modal-body .row {
@@ -67,7 +68,6 @@
 
                 <div class="modal-body">
                   <slot name="body">
-                    <span v-html="body"></span>
                   </slot>
                 </div>
 
@@ -92,8 +92,7 @@
 export default {
   name: 'help-modal',
   props: {
-    modalTitle: '',
-    body: ''
+    modalTitle: ''
   },
   data() {
     return {

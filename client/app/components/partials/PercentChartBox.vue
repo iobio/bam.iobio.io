@@ -22,8 +22,10 @@
 
 <template>
   <div class="percent panel">{{title}}
-    <help-button :modalTitle="modalTitle" :tooltipText="helpTooltip"
-                 :body="modalBody">
+    <help-button :modalTitle="modalTitle" :tooltipText="helpTooltip">
+      <template slot="body">
+        <slot name="body"></slot>
+      </template>
     </help-button>
     <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
     <donut-chart :data="chartData" ></donut-chart>
@@ -45,7 +47,6 @@
     props: {
       title: '',
       modalTitle: '',
-      modalBody: '',
       helpTooltip: '',
       chartData: {},
       indexFootnote: ''

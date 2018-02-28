@@ -276,53 +276,162 @@
         <percent-chart-box id="mapped_reads"
                            title="Mapped Reads"
                            modal-title="Mapped reads"
-                           :modal-body="mappedReadsHelpBody"
                            help-tooltip="Expect a value >90%"
                            :chart-data="mappedReadsData"
-                           index-footnote="* full data available in index"></percent-chart-box>
+                           index-footnote="* full data available in index">
+          <div slot="body">
+            <div>
+              The mapped reads chart shows how many of the reads in the sample were successfully mapped to the reference genome. Genetic variation, in particular structural variants, ensure that every sequenced sample is genetically different to the reference genome it was aligned to. If the sample differs only in a small number of single base pair changes (e.g. SNVs), the read will still likely map to the reference, but, for more significant variation, the read can fail to be placed. Therefore, it is not expected that the mapped reads rate will hit 100%, but it is expected to be high (usually >90%).
+            </div>
+            <div class="row vertical-align">
+              <div class="col-xs-4">
+                <img title="Acceptable mapped reads rate" style="width:100%;"  src="../../../images/mapped_reads_high.png"></img>
+              </div>
+              <div class="col-xs-8">
+                This is an example of a human, whole exome. In this case, 99.7% of the sampled reads map to the reference, corresponding to 93,385 actual reads. It is important to note that when the wheel is blue, only reads that have been assigned to a reference sequence are included. This means that the 0.3% of reads that are unmapped have a mate pair that successfully maps to the reference genome.
+              </div>
+            </div>
+
+            <div class="row vertical-align">
+              <div class="col-xs-4">
+                <img title="Acceptable mapped reads rate" style="width:100%;" src="../../../images/mapped_reads_high_green.png"></img>
+              </div>
+              <div class="col-xs-8">
+                For the case that both mates from paired end sequencing are unmapped, they appear at the end of the BAM file. Usually, the number of such unmapped reads can be obtained from the index file. When this is possible, the wheel will appear in green, as shown for this whole genome sample.
+              </div>
+            </div>
+
+            <div class="row vertical-align">
+              <div class="col-xs-4">
+                <img title="Acceptable mapped reads rate" style="width:100%;" src="../../../images/mapped_reads_low.png"></img>
+              </div>
+              <div class="col-xs-8">
+                If the rate of mapped reads is low (usually below 90%), questions need to be asked about the sample to understand why so many reads are unmapped. The last example only has 71.5% of reads mapping to the reference genome for a whole genome sample. This was caused as the sample was contaminated with a significant amount of bacterial DNA; the DNA sample was obtained from a saliva sample, rather than a blood draw.
+              </div>
+            </div>
+          </div>
+        </percent-chart-box>
 
         <percent-chart-box id="forward_strands"
                            title="Forward Strand"
                            modal-title="Forward strand"
-                           :modal-body="forwardStrandsHelpBody"
                            help-tooltip="Expect a value ~50%"
-                           :chart-data="forwardStrandsData"></percent-chart-box>
+                           :chart-data="forwardStrandsData">
+          <div slot="body">
+            <div>
+              The forward strand chart shows the fraction of reads that map to the forward DNA strand. The general expectation is that the DNA library preparation step will generate DNA from the forward and reverse strands in equal amounts. After mapping the reads to the reference genome, approximately 50% of the reads will consequently map to the forward strand. If the observed rate is significantly different to 50%, this may be indicative of problems with the library preparation step.
+            </div>
+          </div>
+        </percent-chart-box>
 
         <percent-chart-box id="proper_pairs"
                            title="Proper Pairs"
                            modal-title="Proper pairs"
-                           :modal-body="properPairsHelpBody"
                            help-tooltip="Expect a value >90%"
-                           :chart-data="properPairsData"></percent-chart-box>
+                           :chart-data="properPairsData">
+          <div slot="body">
+            <div>
+              A fragment consisting of two <i>mates</i> is called a proper pair if both <i>mates</i> map to the reference genome in a manner consistent with expectations. In particular, if the DNA library consists of fragments ~500 base pairs in length, and 100 base pair reads are sequenced from either end, the expectation would be that the two reads map to the reference genome separated by ~300 base pairs. If the sequenced sample contains large structural variants, e.g. a large insertion, reads mapping with a large separation would be a signal for this variant, and the reads would not be proper pairs. Based on the sequencing technology, there is also an expectation on the orientation of each read in the fragment.
+            </div>
+            <br>
+            <div>
+              <i><strong>When calculating the proper pair rate, pairs where both mates are unmapped are not included in the analysis.</strong></i> As a consequence, the rate of proper pairs is expected to be well over 90%; even if the mapping rate itself is low as a result of bacterial contamination, for example.
+            </div>
+          </div>
+        </percent-chart-box>
 
         <percent-chart-box id="singletons"
                            title="Singletons"
                            modal-title="Singletons"
-                           :modal-body="singletonsHelpBody"
                            help-tooltip="Expect a value <1%"
-                           :chart-data="singletonsData"></percent-chart-box>
+                           :chart-data="singletonsData">
+          <div slot="body">
+            <div>
+              When working with paired-end sequencing, each DNA fragment is sequenced from both ends, creating two <i>mates</i> for each pair. If one <i>mate</i> in the pair successfully maps to the reference genome, but the other is unmapped, the mapped mate is a <i>singleton</i>. One way in which a singleton could occur would be if the sample has a large insertion compared with the reference genome; one <i>mate</i> can fall in sequence flanking the insertion and will be mapped, but the other falls in the inserted sequence and so cannot map to the reference genome. There are unlikely to many such structural variants in the sample, or sequencing errors that would could cause a read to not be able to map. Consequently, the singleton rate is expected to be very low (<1%).
+            </div>
+          </div>
+        </percent-chart-box>
 
         <percent-chart-box id="both_mates_mapped"
                            title="Both Mates Mapped"
                            modal-title="Both mates mapped"
-                           :modal-body="bothMatesHelpBody"
                            help-tooltip="Expect a value >90%"
-                           :chart-data="bothMatesData"></percent-chart-box>
+                           :chart-data="bothMatesData">
+          <div slot="body">
+            <div>
+              When working with paired-end sequencing, each DNA fragment is sequenced from both ends, creating two <i>mates</i> for each pair. This chart shows the fraction of reads in pairs where both of the <i>mates</i> successfully map to the reference genome. <i><strong>When calculating this metric, pairs where both mates are unmapped are not included.</strong></i>.
+            </div>
+          </div>
+        </percent-chart-box>
+
 
         <percent-chart-box id="duplicates"
                            title="Duplicates"
                            modal-title="Duplicates"
-                           :modal-body="duplicatesHelpBody"
                            help-tooltip="Value depends on depth"
-                           :chart-data="duplicatesData"></percent-chart-box>
+                           :chart-data="duplicatesData">
+          <div slot="body">
+            <div>
+              PCR duplicates are two (or more) reads that originate from the same DNA fragment. When sequencing data is analysed, it is assumed that each observation (i.e. each read) is independent; an assumption that fails in the presence of duplicate reads. Typically, algorithms look for reads that map to the same genomic coordinate, and whose mates also map to identical genomic coordinates. It is important to note that as the sequencing depth increases, more reads are sampled from the DNA library, and consequently it is increasingly likely that duplicate reads will be sampled. As a result, the true duplicate rate is not independent of the depth, and they should both be considered when looking at the duplicate rate. Additionally, as the sequencing depth in increases, it is also increasingly likely that reads will map to the same location and be marked as duplicates, even when they are not. As such, as the sequencing depth approaches and surpasses the read length, the duplicate rate starts to become less indicative of problems.
+            </div>
+            <div class="row vertical-align">
+              <div class="col-xs-4">
+                <img title="Acceptable duplicate rate" style="width:100%; padding-bottom:15px;"  src="../../../images/dup_good.png"></img>
+              </div>
+              <div class="col-xs-8">
+                This is an example of the duplicate rate for a ~80X human whole genome. The expectation is that the duplicate rate is low (well below 10%), and consequently, this sample would be considered good.
+              </div>
+            </div>
+
+            <div class="row vertical-align">
+              <div class="col-xs-4">
+                <img title="Acceptable duplicate rate" style="width:100%;padding-bottom:15px;"  src="../../../images/dup_good_low_cov.png"></img>
+              </div>
+              <div class="col-xs-8">
+                If the median coverage drops to ~50X, the duplicate rate should be even lower.
+              </div>
+            </div>
+
+            <div class="row vertical-align">
+              <div class="col-xs-4">
+                <img title="Potentially problematic duplicate rate" style="width:100%;"  src="../../../images/dup_bad.png"></img>
+              </div>
+              <div class="col-xs-8">
+                This is a different sample with ~50X coverage, but now the duplicate rate is much higher. This sample could well have problems at the library prep stage and should potentially be resequenced.
+              </div>
+            </div>
+          </div>
+        </percent-chart-box>
+
       </div>
 
       <div id="distributions" >
 
         <div id="read-coverage-distribution" class="distribution panel">
           Read Coverage Distribution
-          <help-button modalTitle="Read Coverage Distribution" tooltipText="Expect a Poisson distribution centered on the expected mean coverage"
-                       :body="readCoverageHelpBody">
+          <help-button modalTitle="Read Coverage Distribution" tooltipText="Expect a Poisson distribution centered on the expected mean coverage">
+            <div slot="body">
+              <div>
+                This chart shows how read coverage is distributed, and the expected distribution is dependent on the type of sequencing data being visualized.
+              </div>
+              <br>
+              <div><strong><i>Whole genome sequencing</i></strong></div>
+              <div>
+                In a whole genome sequencing experiment, the expectation is that the read coverage follows a Poisson distribution centred about the requested sequencing depth. The following example shows a high quality read coverage distribution for a sample sequenced to ~50X coverage. The distribution shows a nice Poisson distribution, and is centred around ~53X. (Note that the second scale at the bottom of the chart can be used to zoom in on desired parts of the distribution).
+                <img title="A good read coverage distribution" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="../../../images/read_coverage_dist_zoomed.png"></img>
+                Alternatively, if the distribution shows multiple peaks, isn't Poisson distributed, or is not centred around the expected coverage, it may be necessary to consider resequencing the sample, or at least, being aware that problems may arise in analysing the data. While the following distribution shows a median coverage around that expected (~80X), but with a significant portion of the genome at zero coverage and the multiple peaks, this would not be considered a good sample.
+                <img title="A bad read coverage distribution" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="../../../images/read_coverage_dist_bad.png"></img>
+              </div>
+              <br>
+              <div><strong><i>Whole exome sequencing</i></strong></div>
+              <div>
+                Exome sequencing relies on the targetted capture of DNA from the exome, followed by DNA amplification. This leads to large variation in the sequencing depth across exons, and consequently, the read coverage distribution is no longer expected to be Poisson distributed. When sampling across the entire genome, the majority of genomic regions will contain no sequencing reads as will are not exonic regions. This leads to a read coverage distribution overwhelmingly weighted to zero coverage as shown below.
+                <img title="Exome sequencing" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="../../../images/read_coverage_dist_exome.png"></img>
+                To restrict sampling to exonic regions, select the default bed file in the top 'Read Coverage' chart. It is also possible to select a custom bed file, if available. After selecting the default bed, the distribution above is updated to as shown below.
+                <img title="Exome sequencing using default bed" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="../../../images/read_coverage_dist_exome_bed.png"></img>
+                This does not have a Poisson distribution and shows the wide distribution of coverage in the exonic regions. The sequenced depth appears to be centred around ~50X, so if this is consistent with the requested depth, this sample would be considered good.
+              </div>
+            </div>
           </help-button>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
           <stacked-histogram :data="readCoverageData"
@@ -336,15 +445,39 @@
 
         <div id="length-distribution" class="distribution panel">
           <div>
-            <help-button modalTitle="Fragment length distribution" tooltipText="Expect a normal distribution"
-                            :body="fragmentLengthHelpBody">
+            <help-button modalTitle="Fragment length distribution" tooltipText="Expect a normal distribution">
+              <div slot="body">
+                <div>
+                  For paired end sequencing, DNA fragments are typically size selected to a uniform length and then sequenced from either end. Once the two mates are aligned back to the reference genome, the fragment length can be inferred from how far apart these two mates map. If the sequenced sample has a deletion or insertion relative to the reference, this will result in the two mates mapping closer together, or further apart than expected. Under the assumption that the sequenced sample has a relatively small number of insertions and deletions, we expect to see the fragment length follow a normal distribution.
+                </div>
+                <br>
+                <div><strong><i>Whole genome sequencing</i></strong></div>
+                <div>
+                  This is an example of the fragment length distribution for a high coverage (~80X) whole genome. The read lengths in this sample are 150bp, so a fragment can not be shorter than this value, consequently, we see a sharp cutoff at a fragment length of 150bp.
+                </div>
+                <div>
+                  <img title="WGS sequencing" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="../../../images/fragment_wgs.png"></img>
+                </div>
+                <br>
+                <div><strong><i>Whole exome sequencing</i></strong></div>
+                <div>
+                  Similarly, this is the fragment length distribution for a high coverage exome.
+                </div>
+                <div>
+                  <img title="Exome sequencing" style="width:100%; padding-top:15px; padding-bottom:20px;"  src="../../../images/fragment_exome.png"></img>
+                </div>
+              </div>
             </help-button>
             <span class="chart-chooser">
               <span class="selected" @click="toggleChart('lengthData')" :datafield="lengthData" data-outlier="false" data-id="frag_hist" x-axis-label="Fragment Length" >Fragment Length</span> |
               <span @click="toggleChart('lengthData')" :datafield="lengthData" data-id="length_hist" x-axis-label="Read Length" data-outlier="true">Read Length</span>
             </span>
-            <help-button modalTitle="Read length distribution" tooltipText="Expect an extremely narrow distribution"
-                         :body="readLengthHelpBody">
+            <help-button modalTitle="Read length distribution" tooltipText="Expect an extremely narrow distribution">
+              <div slot="body">
+                <div>
+                  The read length is usually a very simple distribution. In most cases, the read length is fixed at a uniform length, e.g. 100 base pairs, or 150 base pairs etc. The read length distribution, therefore, tends to be a single spike at this read length. Depending on the sequencing technology used, this may not always be the case.
+                </div>
+              </div>
             </help-button>
           </div>
           <label class="checkbox" style="position:absolute;right:10px;top:24px;" >
@@ -361,15 +494,23 @@
 
         <div id="mapping-quality-distribution" class="distribution panel">
           <div>
-            <help-button modalTitle="Mapping quality distribution" tooltipText="Expect distribution weighted to high values (~60)"
-                         :body="mappingQualityHelpBody">
+            <help-button modalTitle="Mapping quality distribution" tooltipText="Expect distribution weighted to high values (~60)">
+              <div slot="body">
+                <div>
+                  The mapping quality distribution shows the Phred quality scores describing the probability that a read <i>does not</i> map to the location that it has been assigned to (specifically, Q=-log<sub>10</sub>(P), where Q is the Phred score and P is the probability the read is in the wrong location). So the larger the score, the higher the quality of the mapping. Some scores have specific meaning, e.g. a score of 0 means that the read could map equally to multiple places in the reference genome. The majority of reads should be well mapped and so we expect to see this distribution heavily skewed to large value (typically around 60). It is not unusual to see some scores around zero. Reads originating from repetitive elements in the genome will plausibly map to multiple locations.
+                </div>
+              </div>
             </help-button>
             <span class="chart-chooser">
               <span @click="toggleChart('qualityData')" data-id="mapq_hist" x-axis-label="Mapping Quality" class="selected">Mapping Quality</span> |
               <span data-id="baseq_hist" @click="toggleChart('qualityData')" x-axis-label="Base Quality">Base Quality</span>
             </span>
-            <help-button modalTitle="Base quality distribution" tooltipText="Expect most values >40"
-                         :body="baseQualityHelpBody">
+            <help-button modalTitle="Base quality distribution" tooltipText="Expect most values >40">
+              <div slot="body">
+                <div>
+                  Similar to the mapping quality distribution, the base quality distribution shows the Phred quality scores describing the probability that a nucleotide has been <i>incorrectly</i> assigned; e.g. an error in the sequencing. Specifically, Q=-log<sub>10</sub>(P), where Q is the Phred score and P is the probability the nucleotide is wrong. The larger the score, the more confident we are in the base call. Depending on the sequencing technology, we can expect to see different distributions, but we expect to see a distribution skewed towards larger (more confident) scores; typically around 40.
+                </div>
+              </div>
             </help-button>
           </div>
           <div class="samplingLoader">Sampling <img src="../../../images/loading_dots.gif"/></div>
@@ -472,135 +613,6 @@
 
         lengthXAxisLabel: 'Fragment Length',
         qualityXAxisLabel: 'Mapping Quality',
-
-
-        // Help Modal Bodies
-        mappedReadsHelpBody:
-        "<div>\n" +
-        "  The mapped reads chart shows how many of the reads in the sample were successfully mapped to the reference genome. Genetic variation, in particular structural variants, ensure that every sequenced sample is genetically different to the reference genome it was aligned to. If the sample differs only in a small number of single base pair changes (e.g. SNVs), the read will still likely map to the reference, but, for more significant variation, the read can fail to be placed. Therefore, it is not expected that the mapped reads rate will hit 100%, but it is expected to be high (usually >90%).\n" +
-        "</div>\n" +
-        "<div class=\"row vertical-align\">\n" +
-        "  <div class=\"col-xs-4\">\n" +
-        "    <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\"  src=\"../../../images/mapped_reads_high.png\"></img>\n" +
-        "  </div>\n" +
-        "  <div class=\"col-xs-8\">\n" +
-        "    This is an example of a human, whole exome. In this case, 99.7% of the sampled reads map to the reference, corresponding to 93,385 actual reads. It is important to note that when the wheel is blue, only reads that have been assigned to a reference sequence are included. This means that the 0.3% of reads that are unmapped have a mate pair that successfully maps to the reference genome.\n" +
-        "  </div>\n" +
-        "</div>\n" +
-        "\n" +
-        "<div class=\"row vertical-align\">\n" +
-        "    <div class=\"col-xs-4\">\n" +
-        "      <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\" src=\"../../../images/mapped_reads_high_green.png\"></img>\n" +
-        "    </div>\n" +
-        "    <div class=\"col-xs-8\">\n" +
-        "      For the case that both mates from paired end sequencing are unmapped, they appear at the end of the BAM file. Usually, the number of such unmapped reads can be obtained from the index file. When this is possible, the wheel will appear in green, as shown for this whole genome sample.\n" +
-        "    </div>\n" +
-        "</div>\n" +
-        "\n" +
-        "<div class=\"row vertical-align\">\n" +
-        "    <div class=\"col-xs-4\">\n" +
-        "      <img title=\"Acceptable mapped reads rate\" style=\"width:100%;\" src=\"../../../images/mapped_reads_low.png\"></img>\n" +
-        "    </div>\n" +
-        "    <div class=\"col-xs-8\">\n" +
-        "      If the rate of mapped reads is low (usually below 90%), questions need to be asked about the sample to understand why so many reads are unmapped. The last example only has 71.5% of reads mapping to the reference genome for a whole genome sample. This was caused as the sample was contaminated with a significant amount of bacterial DNA; the DNA sample was obtained from a saliva sample, rather than a blood draw.\n" +
-        "    </div>\n" +
-        "</div>",
-
-        forwardStrandsHelpBody: "The forward strand chart shows the fraction of reads that map to the forward DNA strand. The general expectation is that the DNA library preparation step will generate DNA from the forward and reverse strands in equal amounts. After mapping the reads to the reference genome, approximately 50% of the reads will consequently map to the forward strand. If the observed rate is significantly different to 50%, this may be indicative of problems with the library preparation step.",
-
-        properPairsHelpBody:
-        "<div>\n" +
-        "  A fragment consisting of two <i>mates</i> is called a proper pair if both <i>mates</i> map to the reference genome in a manner consistent with expectations. In particular, if the DNA library consists of fragments ~500 base pairs in length, and 100 base pair reads are sequenced from either end, the expectation would be that the two reads map to the reference genome separated by ~300 base pairs. If the sequenced sample contains large structural variants, e.g. a large insertion, reads mapping with a large separation would be a signal for this variant, and the reads would not be proper pairs. Based on the sequencing technology, there is also an expectation on the orientation of each read in the fragment.\n" +
-        "</div>\n" +
-        "<br>\n" +
-        "<div>\n" +
-        "  <i><strong>When calculating the proper pair rate, pairs where both mates are unmapped are not included in the analysis.</strong></i> As a consequence, the rate of proper pairs is expected to be well over 90%; even if the mapping rate itself is low as a result of bacterial contamination, for example.\n" +
-        "</div>",
-
-        singletonsHelpBody: "When working with paired-end sequencing, each DNA fragment is sequenced from both ends, creating two <i>mates</i> for each pair. If one <i>mate</i> in the pair successfully maps to the reference genome, but the other is unmapped, the mapped mate is a <i>singleton</i>. One way in which a singleton could occur would be if the sample has a large insertion compared with the reference genome; one <i>mate</i> can fall in sequence flanking the insertion and will be mapped, but the other falls in the inserted sequence and so cannot map to the reference genome. There are unlikely to many such structural variants in the sample, or sequencing errors that would could cause a read to not be able to map. Consequently, the singleton rate is expected to be very low (<1%).",
-
-        bothMatesHelpBody: "When working with paired-end sequencing, each DNA fragment is sequenced from both ends, creating two <i>mates</i> for each pair. This chart shows the fraction of reads in pairs where both of the <i>mates</i> successfully map to the reference genome. <i><strong>When calculating this metric, pairs where both mates are unmapped are not included.</strong></i>.",
-
-        duplicatesHelpBody:
-        "<div>\n" +
-        "  PCR duplicates are two (or more) reads that originate from the same DNA fragment. When sequencing data is analysed, it is assumed that each observation (i.e. each read) is independent; an assumption that fails in the presence of duplicate reads. Typically, algorithms look for reads that map to the same genomic coordinate, and whose mates also map to identical genomic coordinates. It is important to note that as the sequencing depth increases, more reads are sampled from the DNA library, and consequently it is increasingly likely that duplicate reads will be sampled. As a result, the true duplicate rate is not independent of the depth, and they should both be considered when looking at the duplicate rate. Additionally, as the sequencing depth in increases, it is also increasingly likely that reads will map to the same location and be marked as duplicates, even when they are not. As such, as the sequencing depth approaches and surpasses the read length, the duplicate rate starts to become less indicative of problems.\n" +
-        "</div>\n" +
-        "<div class=\"row vertical-align\">\n" +
-        "  <div class=\"col-xs-4\">\n" +
-        "    <img title=\"Acceptable duplicate rate\" style=\"width:100%; padding-bottom:15px;\"  src=\"../../../images/dup_good.png\"></img>\n" +
-        "  </div>\n" +
-        "  <div class=\"col-xs-8\">\n" +
-        "    This is an example of the duplicate rate for a ~80X human whole genome. The expectation is that the duplicate rate is low (well below 10%), and consequently, this sample would be considered good.\n" +
-        "  </div>\n" +
-        "</div>\n" +
-        "\n" +
-        "<div class=\"row vertical-align\">\n" +
-        "  <div class=\"col-xs-4\">\n" +
-        "    <img title=\"Acceptable duplicate rate\" style=\"width:100%;padding-bottom:15px;\"  src=\"../../../images/dup_good_low_cov.png\"></img>\n" +
-        "  </div>\n" +
-        "  <div class=\"col-xs-8\">\n" +
-        "    If the median coverage drops to ~50X, the duplicate rate should be even lower.\n" +
-        "  </div>\n" +
-        "</div>\n" +
-        "\n" +
-        "<div class=\"row vertical-align\">\n" +
-        "  <div class=\"col-xs-4\">\n" +
-        "\t\t\t          <img title=\"Potentially problematic duplicate rate\" style=\"width:100%;\"  src=\"../../../images/dup_bad.png\"></img>\n" +
-        "  </div>\n" +
-        "  <div class=\"col-xs-8\">\n" +
-        "    This is a different sample with ~50X coverage, but now the duplicate rate is much higher. This sample could well have problems at the library prep stage and should potentially be resequenced.\n" +
-        "  </div>\n" +
-        "</div>",
-
-        readCoverageHelpBody:
-        "<div>\n" +
-        "  This chart shows how read coverage is distributed, and the expected distribution is dependent on the type of sequencing data being visualized.\n" +
-        "</div>\n" +
-        "<br>\n" +
-        "<div><strong><i>Whole genome sequencing</i></strong></div>\n" +
-        "<div>\n" +
-        "  In a whole genome sequencing experiment, the expectation is that the read coverage follows a Poisson distribution centred about the requested sequencing depth. The following example shows a high quality read coverage distribution for a sample sequenced to ~50X coverage. The distribution shows a nice Poisson distribution, and is centred around ~53X. (Note that the second scale at the bottom of the chart can be used to zoom in on desired parts of the distribution).\n" +
-        "  <img title=\"A good read coverage distribution\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/read_coverage_dist_zoomed.png\"></img>\n" +
-        "    Alternatively, if the distribution shows multiple peaks, isn't Poisson distributed, or is not centred around the expected coverage, it may be necessary to consider resequencing the sample, or at least, being aware that problems may arise in analysing the data. While the following distribution shows a median coverage around that expected (~80X), but with a significant portion of the genome at zero coverage and the multiple peaks, this would not be considered a good sample.\n" +
-        "  <img title=\"A bad read coverage distribution\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/read_coverage_dist_bad.png\"></img>\n" +
-        "</div>\n" +
-        "<br>\n" +
-        "<div><strong><i>Whole exome sequencing</i></strong></div>\n" +
-        "<div>\n" +
-        "  Exome sequencing relies on the targetted capture of DNA from the exome, followed by DNA amplification. This leads to large variation in the sequencing depth across exons, and consequently, the read coverage distribution is no longer expected to be Poisson distributed. When sampling across the entire genome, the majority of genomic regions will contain no sequencing reads as will are not exonic regions. This leads to a read coverage distribution overwhelmingly weighted to zero coverage as shown below.\n" +
-        "  <img title=\"Exome sequencing\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/read_coverage_dist_exome.png\"></img>\n" +
-        "  To restrict sampling to exonic regions, select the default bed file in the top 'Read Coverage' chart. It is also possible to select a custom bed file, if available. After selecting the default bed, the distribution above is updated to as shown below.\n" +
-        "  <img title=\"Exome sequencing using default bed\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/read_coverage_dist_exome_bed.png\"></img>\n" +
-        "  This does not have a Poisson distribution and shows the wide distribution of coverage in the exonic regions. The sequenced depth appears to be centred around ~50X, so if this is consistent with the requested depth, this sample would be considered good.\n" +
-        "</div>",
-
-        fragmentLengthHelpBody:
-        "<div>\n" +
-        "  For paired end sequencing, DNA fragments are typically size selected to a uniform length and then sequenced from either end. Once the two mates are aligned back to the reference genome, the fragment length can be inferred from how far apart these two mates map. If the sequenced sample has a deletion or insertion relative to the reference, this will result in the two mates mapping closer together, or further apart than expected. Under the assumption that the sequenced sample has a relatively small number of insertions and deletions, we expect to see the fragment length follow a normal distribution.\n" +
-        "</div>\n" +
-        "<br>\n" +
-        "<div><strong><i>Whole genome sequencing</i></strong></div>\n" +
-        "<div>\n" +
-        "  This is an example of the fragment length distribution for a high coverage (~80X) whole genome. The read lengths in this sample are 150bp, so a fragment can not be shorter than this value, consequently, we see a sharp cutoff at a fragment length of 150bp.\n" +
-        "</div>\n" +
-        "<div>\n" +
-        "  <img title=\"WGS sequencing\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/fragment_wgs.png\"></img>\n" +
-        "</div>\n" +
-        "<br>\n" +
-        "<div><strong><i>Whole exome sequencing</i></strong></div>\n" +
-        "<div>\n" +
-        "  Similarly, this is the fragment length distribution for a high coverage exome.\n" +
-        "</div>\n" +
-        "<div>\n" +
-        "  <img title=\"Exome sequencing\" style=\"width:100%; padding-top:15px; padding-bottom:20px;\"  src=\"../../../images/fragment_exome.png\"></img>\n" +
-        "</div>",
-
-        readLengthHelpBody: "The read length is usually a very simple distribution. In most cases, the read length is fixed at a uniform length, e.g. 100 base pairs, or 150 base pairs etc. The read length distribution, therefore, tends to be a single spike at this read length. Depending on the sequencing technology used, this may not always be the case.",
-
-        mappingQualityHelpBody: "The mapping quality distribution shows the Phred quality scores describing the probability that a read <i>does not</i> map to the location that it has been assigned to (specifically, Q=-log<sub>10</sub>(P), where Q is the Phred score and P is the probability the read is in the wrong location). So the larger the score, the higher the quality of the mapping. Some scores have specific meaning, e.g. a score of 0 means that the read could map equally to multiple places in the reference genome. The majority of reads should be well mapped and so we expect to see this distribution heavily skewed to large value (typically around 60). It is not unusual to see some scores around zero. Reads originating from repetitive elements in the genome will plausibly map to multiple locations.",
-
-        baseQualityHelpBody: "Similar to the mapping quality distribution, the base quality distribution shows the Phred quality scores describing the probability that a nucleotide has been <i>incorrectly</i> assigned; e.g. an error in the sequencing. Specifically, Q=-log<sub>10</sub>(P), where Q is the Phred score and P is the probability the nucleotide is wrong. The larger the score, the more confident we are in the base call. Depending on the sequencing technology, we can expect to see different distributions, but we expect to see a distribution skewed towards larger (more confident) scores; typically around 40.",
-
 
       }
     },
