@@ -13,7 +13,7 @@
     padding: 30px;
     overflow: auto;
     font-size: 11pt;
-    max-height: 500px;
+    max-height: 75vh;
 
   }
 
