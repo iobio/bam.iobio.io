@@ -179,7 +179,7 @@ export default {
         // Update tick labels to be in multiples of the median (median = 0)
         if ( isNumeric(d) && this.medianDepth != 0 ){
           var number = Math.floor(Number(d) / this.medianDepth);
-          return number - 1;
+          return number;
         }
         return null ;
       },
