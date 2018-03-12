@@ -135,7 +135,7 @@
         <vue-slider v-model="multiplesOfTheMedianToZoom"
                     v-if="sliderMax>1"
                     :min="1" :max="sliderMax" :dot-size="8" :height="3" :width="65" tooltip="hover" :reverse="true"
-                    formatter="show {value} multiples of median"
+                    :formatter="'show '+(multiplesOfTheMedianToZoom+1)+' multiples of median'"
                     :speed=".1"
                     :tooltipStyle="sliderTooltipStyle"
                     :style="sliderStyle"
