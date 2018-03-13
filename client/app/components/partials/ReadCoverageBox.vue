@@ -155,7 +155,8 @@
                         :limitYAxes="limitYAxes"
                         :multiplesOfTheMedianToZoom="multiplesOfTheMedianToZoom"
                         :drawChart="draw"
-                        :data="readDepthData"></read-coverage-plot>
+                        :data="readDepthData"
+                        :brushRange="brushRange"></read-coverage-plot>
   </div>
 </template>
 
@@ -178,7 +179,8 @@ export default {
     selectedSeqId: '',
     draw: {
       type: Boolean,
-    }
+    },
+    brushRange: {}
   },
   data() {
     return {
@@ -198,7 +200,7 @@ export default {
       },
       sliderProcessStyle: {
         "backgroundColor": "#e2e2e2"
-      },
+      }
     }
   },
 

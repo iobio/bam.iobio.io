@@ -40,7 +40,8 @@ export default {
       multiplesOfTheMedianToZoom: {
         default: 4,
         type: Number
-      }
+      },
+      brushRange: {}
     },
     data() {
       return {
@@ -88,17 +89,13 @@ export default {
         this.$emit('setSelectedSeq', selected, start, end);
       },
 
-      update: function() {
-        this.readDepthChart.width(this.width);
-        this.draw();
-      },
-
       draw: function() {
         if (this.drawChart) {
           var selection = d3.select('#depth-distribution .chart');
           this.readDepthChart(selection, this.getOptions());
           this.readDepthChart.setSelected(this.selectedSeqId, this.getOptions(true));
         }
+        this.setBrush();
         this.addAxisLabels();
       },
 
@@ -184,14 +181,17 @@ export default {
         return null ;
       },
 
-      setBrush: function (start, end){
-        var brush = this.readDepthChart.brush();
-        //set brush region
-        d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
+      setBrush: function (){
+       if ( this.brushRange  ) {
+          var brush = this.readDepthChart.brush();
+          //set brush region
+          d3.select("#depth-distribution .iobio-brush").call(brush.extent([this.brushRange.start, this.brushRange.end]));
+        }
       },
 
-      resetBrush: function(){
-        this.setBrush(0,0);
+      update: function() {
+        this.readDepthChart.width(this.width);
+        this.draw();
       },
 
       dataUpdate: function(){
@@ -205,6 +205,8 @@ export default {
         this.dataUpdate();
       },
       drawChart: function() {
+        this.dataUpdate();
+        this.updateAxisTicks();
         this.update();
       },
       selectedSeqId: function() {
@@ -225,7 +227,12 @@ export default {
         this.updateAxisTicks();
         this.update();
       },
-
+      brushRange: {
+        handler: function (val, oldVal) {
+          this.setBrush();
+        },
+        deep: true,
+      }
     },
     computed: {
       sortedYData: function(){

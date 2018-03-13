@@ -264,7 +264,8 @@
                          @setSelectedSeq="setSelectedSeq"
                          :selectedSeqId="selectedSeqId"
                          :draw="draw"
-                         :readDepthData="readDepthData"></read-coverage-box>
+                         :readDepthData="readDepthData"
+                         :brushRange="coverageBrushRange"></read-coverage-box>
 
       <reads-sampled-box @sampleMore="sampleMore" :totalReads="totalReads"></reads-sampled-box>
 
@@ -596,6 +597,7 @@
         readDepthData: [],
         selectedSeqId: 'all',
         region: {},
+        coverageBrushRange: {},
 
         // Percent Chart Data
         mappedReadsData: [],
@@ -832,10 +834,10 @@
           binNumber: this.binNumber + parseInt(this.binNumber / 4 * this.sampleMultiplier),
           binSize: this.binSize + parseInt(this.binSize / 4 * this.sampleMultiplier)
         }
-        // if (window.readDepthChart.brush().extent().length != 0 && window.readDepthChart.brush().extent().toString() != "0,0") {
-        //   options.start = parseInt(this.depthChart.brush().extent()[0]);
-        //   options.end = parseInt(this.depthChart.brush().extent()[1]);
-        // }
+        if ( this.coverageBrushRange && !(this.coverageBrushRange.start == 0 && this.coverageBrushRange.end == 0)){
+          options.start = this.coverageBrushRange.start;
+          options.end = this.coverageBrushRange.end;
+        }
         this.goSampling(options);
       },
 
@@ -870,8 +872,10 @@
         // start sampling
         if (start != undefined && end != undefined) {
           this.goSampling({sampling: this.sampling, sequenceNames: seqDataIds, 'start': start, 'end': end});
+          this.draw = false; // force re-draw so brush region is set correctly
           setTimeout(function () {
             this.setBrush(start, end)
+            this.draw = true;
           }.bind(this), 200);
         } else {
           this.goSampling({sampling: this.sampling, sequenceNames: seqDataIds});
@@ -1017,9 +1021,7 @@
       },
 
       setBrush: function (start, end) {
-        // var brush = window.readDepthChart.brush();
-        // set brush region
-        // d3.select("#depth-distribution .iobio-brush").call(brush.extent([start,end]));
+        this.coverageBrushRange.start = start; this.coverageBrushRange.end = end;
       },
 
       resetBrush: function () {
@@ -1036,7 +1038,7 @@
 
           if (this.regionURLParam != undefined && this.regionURLParam != '') {
             if (this.regionURLParam.split(":").length == 1)
-              this.region = { chr: this.regionURLParam.split(":")[0]}
+              this.region = {chr: this.regionURLParam.split(":")[0]}
             else
               this.region = {
                 chr: this.regionURLParam.split(":")[0],
