@@ -42,7 +42,8 @@ export default {
         type: Number
       },
       conversionRatio: {
-        type: Number
+        type: Number,
+        default: 0
       },
       brushRange: {}
     },
@@ -155,7 +156,7 @@ export default {
           .text("Coverage");
 
         // No conversion ration, show multiples of median instead
-        if ( this.conversionRatio == 0 ) {
+        if ( this.conversionRatio == 0 && this.medianDepth != 0 ) {
           var yLabelY2 = 16;
 
           // Note (line 2)
@@ -189,7 +190,7 @@ export default {
 
       tickFormatter: function(d) {
         // Convert to coverage using the conversion ratio
-        if ( isNumeric(d) && this.conversionRatio != 0 && this.conversionRatio != 1 ){
+        if ( isNumeric(d) && this.conversionRatio != 0 ){
           var number = Math.floor(Number(d) / this.conversionRatio);
           return number + 'X';
         }
