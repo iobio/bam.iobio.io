@@ -1,7 +1,5 @@
 <style type="text/css">
 
-  .panel > .title { font-size: 30px}
-
   .panel#total-reads {
     -webkit-flex: 1 1 150px;
     flex: 1 1 150px;

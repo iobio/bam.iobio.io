@@ -56,6 +56,10 @@ export default {
     },
     mounted: function() {
       this.setup();
+      window.addEventListener('resize', this.update)
+    },
+    beforeDestroy: function () {
+      window.removeEventListener('resize', this.update)
     },
     methods: {
       setup: function() {

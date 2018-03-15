@@ -1,5 +1,7 @@
 <style>
 
+  .panel > .title { font-size: 30px}
+
   .file-name {
     margin-bottom: -20px;
     padding: 0px 0px 0px 22px;
