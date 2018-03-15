@@ -179,7 +179,7 @@ export default {
         var yAxisEnter = chartSVG.enter().append('text').attr('class', 'y axis-label noselect');
 
         // Y axis label positions
-        var yLabelX = - 5 * this.height * this.sizeRatio / 12;
+        var yLabelX = - this.height * this.sizeRatio / 2;
         var yLabelY = 4;
         // Add the label
         d3.select(this.$el).select('.y.axis-label')

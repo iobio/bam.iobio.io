@@ -443,7 +443,7 @@
                              :x-tick-formatter="function(d) { return d + 'X'}"
                              :tooltip-formatter="readCoverageTooltipFormatter"
                              x-axis-label="Read Coverage"
-                             y-axis-label="Frequency">
+                             y-axis-label="% Total Reads">
 
           </stacked-histogram>
         </div>
