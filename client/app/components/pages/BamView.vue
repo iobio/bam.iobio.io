@@ -441,6 +441,7 @@
           <stacked-histogram :data="readCoverageData"
                              :y-tick-formatter="function(d) { return d*100 + '%'}"
                              :x-tick-formatter="function(d) { return d + 'X'}"
+                             :tooltip-formatter="readCoverageTooltipFormatter"
                              x-axis-label="Read Coverage"
                              y-axis-label="Frequency">
 
@@ -1082,8 +1083,11 @@
           // Local files, so properties set by router params instead of query
           this.openBamFile();
         }
-      }
+      },
 
+      readCoverageTooltipFormatter: function(d) {
+        return d[0] + ',' + precisionRound(d[1]*100,2) + '%';
+      }
     },
 
     created: function () {
@@ -1139,5 +1143,10 @@
 
   }
 
+
+  function precisionRound(number, precision) {
+    var factor = Math.pow(10, precision);
+    return Math.round(number * factor) / factor;
+  }
 
 </script>

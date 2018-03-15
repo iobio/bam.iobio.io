@@ -74,6 +74,10 @@ export default {
         default: tickFormatter,
         type: Function
       },
+      tooltipFormatter: {
+        default: tooltipFormatter,
+        type: Function
+      },
       margin: {
         default () {
           return {
@@ -120,7 +124,7 @@ export default {
         .width(this.width)
         .margin(this.margin)
         .sizeRatio(this.sizeRatio)
-        .tooltip(function(d) { return d[0] + ',' + precisionRound(d[1],2)});
+        .tooltip(this.tooltipFormatter);
 
       this.histogramChart.xAxis().tickFormat(this.xTickFormatter);
       this.histogramChart.yAxis().tickFormat(this.yTickFormatter);
@@ -240,6 +244,19 @@ function tickFormatter (d) {
   else if ((d / 1000) >= 1)
     d = d / 1000 + "K";
   return d;
+}
+
+function tooltipFormatter (d) {
+  var yVal = d[1];
+
+  if ((yVal / 1000000) >= 1)
+    yVal = precisionRound(yVal / 1000000, 1) + "M";
+  else if ((yVal / 1000) >= 1)
+    yVal = precisionRound(yVal / 1000, 1) + "K";
+  else
+    yVal = precisionRound(yVal, 1);
+
+  return d[0] + ',' + yVal;
 }
 
 function precisionRound(number, precision) {
