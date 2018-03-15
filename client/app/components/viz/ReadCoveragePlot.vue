@@ -41,6 +41,9 @@ export default {
         default: 4,
         type: Number
       },
+      conversionRatio: {
+        type: Number
+      },
       brushRange: {}
     },
     data() {
@@ -138,7 +141,7 @@ export default {
         // Y axis label positions
         var yLabelX = - 5* this.height / 12;
         var yLabelY = 4;
-        // Title (line 1)
+        // Title
         d3.select("#depth-distribution .chart").select('.y.axis-label1')
           .attr("text-anchor", "middle")
           .attr("y", yLabelY)
@@ -147,15 +150,22 @@ export default {
           .attr("transform", "rotate(-90)")
           .text("Coverage");
 
-        var yLabelY2 = 16;
-        // Note (line 2)
-        d3.select("#depth-distribution .chart").select('.y.axis-label2')
-          .attr("text-anchor", "middle")
-          .attr("y", yLabelY2)
-          .attr("x",  yLabelX)
-          .attr("dy", ".75em")
-          .attr("transform", "rotate(-90)")
-          .text("(multiples of median)");
+        // No conversion ration, show multiples of median instead
+        if ( this.conversionRatio == 0 ) {
+          var yLabelY2 = 16;
+
+          // Note (line 2)
+          d3.select("#depth-distribution .chart").select('.y.axis-label2')
+            .attr("text-anchor", "middle")
+            .attr("y", yLabelY2)
+            .attr("x", yLabelX)
+            .attr("dy", ".75em")
+            .attr("transform", "rotate(-90)")
+            .text("(multiples of median)");
+        } else {
+          d3.select("#depth-distribution .chart").select('.y.axis-label2')
+            .text(null);
+        }
       },
 
       updateAxisTicks: function() {
@@ -167,14 +177,20 @@ export default {
           this.readDepthChart.yAxis().tickValues([this.medianDepth]);
           this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
         } else {
+          // Update tick labels to be located at multiples of the median
           this.readDepthChart.yAxis().tickValues(Array.from(new Array(10),(val,index)=>this.medianDepth*index));
           this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
         }
       },
 
       tickFormatter: function(d) {
-        // Update tick labels to be in multiples of the median (median = 0)
-        if ( isNumeric(d) && this.medianDepth != 0 ){
+        // Convert to coverage using the conversion ratio
+        if ( isNumeric(d) && this.conversionRatio != 0 && this.conversionRatio != 1 ){
+          var number = Math.floor(Number(d) / this.conversionRatio);
+          return number + 'X';
+        }
+        // No conversion ration, show multiples of median instead
+        else if ( isNumeric(d) && this.medianDepth != 0 ){
           var number = Math.floor(Number(d) / this.medianDepth);
           return number;
         }
@@ -190,6 +206,7 @@ export default {
       },
 
       update: function() {
+        this.updateAxisTicks();
         this.readDepthChart.width(this.width);
         this.draw();
       },
@@ -206,7 +223,6 @@ export default {
       },
       drawChart: function() {
         this.dataUpdate();
-        this.updateAxisTicks();
         this.update();
       },
       selectedSeqId: function() {
@@ -217,14 +233,15 @@ export default {
         this.update();
       },
       limitYAxes: function() {
-        this.updateAxisTicks();
         this.update();
       },
       multiplesOfTheMedianToZoom: function() {
         this.dataUpdate();
       },
       medianDepth: function() {
-        this.updateAxisTicks();
+        this.update();
+      },
+      conversionRatio: function() {
         this.update();
       },
       brushRange: {

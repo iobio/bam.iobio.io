@@ -156,6 +156,7 @@
                         :multiplesOfTheMedianToZoom="multiplesOfTheMedianToZoom"
                         :drawChart="draw"
                         :data="readDepthData"
+                        :conversionRatio="conversionRatio"
                         :brushRange="brushRange"></read-coverage-plot>
   </div>
 </template>
@@ -179,6 +180,9 @@ export default {
     selectedSeqId: '',
     draw: {
       type: Boolean,
+    },
+    conversionRatio: {
+      type: Number
     },
     brushRange: {}
   },

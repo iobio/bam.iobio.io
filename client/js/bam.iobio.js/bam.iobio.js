@@ -364,8 +364,13 @@ var Bam = Class.extend({
           }.bind(me));
           cmd.on('end', function() {
             isdone = true;
+            // Skip the first one -- less congruous with other chr's bytes-to-depth ratio,
+            // Get the next 3 to get an average conversion ratio
+            me.getReferenceStats(1);
+            me.getReferenceStats(2);
+            me.getReferenceStats(3);
             cb();
-          });
+          }.bind(me));
           cmd.run();
 
       } else if (me.sourceType == 'file') {
@@ -432,8 +437,12 @@ var Bam = Class.extend({
               }
 
               // Invoke Callback function
-
               isdone = true;
+              // Skip the first one -- less congruous with other chr's bytes-to-depth ratio,
+              // Get the next 3 to get an average conversion ratio
+              me.getReferenceStats(1);
+              me.getReferenceStats(2);
+              me.getReferenceStats(3);
               cb();
           });
       }
@@ -560,7 +569,6 @@ var Bam = Class.extend({
               if (data == undefined || data == "\n") return;
               var success = true;
               try {
-
                 var obj = JSON.parse(buffer + data)
               } catch (e) {
                 success = false;
@@ -601,6 +609,70 @@ var Bam = Class.extend({
             goSampling(header.sq);
          });
       }
-   }
+   },
+
+
+  getReferenceStats: function(binNumber) {
+    var me = this;
+    var binSize = 16384;
+    var chrName = me.header.sq[0].name;
+
+    var r =  {
+      'name': chrName,
+      'start': binNumber + binNumber * binSize,
+      'end': (binNumber + binNumber * binSize) + binSize
+    };
+
+    if(!me.referenceDepthData) me.referenceDepthData = [];
+
+    var refDepthObject = {};
+    refDepthObject.binNumber = binNumber;
+
+    var refDepthData = "";
+
+    var cmd; //samtools depth -a -r [region] [bamfile]
+
+    // TODO: file not working?
+    if (me.sourceType == 'file') {
+      var writeFile = function (stream) {
+        var ended = 0;
+        stream.write(me.header.toStr);
+
+        me.convert('sam', r.name, r.start, r.end, function (data, e) {
+          stream.write(data);
+          stream.end();
+        }, {noHeader: true});
+
+      }
+      cmd = new iobio.cmd(this.iobio.samtools,
+        ['depth', '-a', '-r', r.name+ ":"+ r.start + '-' + r.end, writeFile],
+        {ssl:this.ssl,});
+
+    } else {
+      cmd = new iobio.cmd(this.iobio.samtools,
+        ['depth', '-a', '-r', r.name+ ":"+ r.start + '-' + r.end, '"' + this.bamUri + '"'],
+        {ssl:this.ssl,});
+
+    }
+
+    cmd.on('error', function(error) {
+      console.log(error);
+    })
+    cmd.on('data', function(data, options) {
+      refDepthData += data;
+    });
+    cmd.on('end', function() {
+      var depthData = [];
+      refDepthData.split('\n').forEach(function (line) {
+        depthData.push(line.split('\t')[2]);
+      });
+      refDepthObject.data = refDepthData;
+      refDepthObject.averageDepth = d3.mean(depthData);
+      me.referenceDepthData.push(refDepthObject);
+    });
+
+    cmd.run();
+
+  },
 
 });

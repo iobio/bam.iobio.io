@@ -265,6 +265,7 @@
                          :selectedSeqId="selectedSeqId"
                          :draw="draw"
                          :readDepthData="readDepthData"
+                         :conversionRatio="readDepthConversionRatio"
                          :brushRange="coverageBrushRange"></read-coverage-box>
 
       <reads-sampled-box @sampleMore="sampleMore" :totalReads="totalReads"></reads-sampled-box>
@@ -591,6 +592,9 @@
 
         sampleStats: {},
 
+        referenceDepthData: [],
+        readDepthConversionRatio: 0,
+
         bam: {},
         bed: {},
 
@@ -675,6 +679,27 @@
             this.updateHistogramCharts(undefined, "sampleBar");
           }
         }.bind(this), options);
+      },
+
+      calculateReferenceRatio: function() {
+        if ( this.referenceDepthData.length == 0 ) return;
+
+        var convRatios = [];
+        this.referenceDepthData.forEach( data => {
+            if ( !data.hasOwnProperty('averageDepth') || data.averageDepth == -1 ||
+                 !data.hasOwnProperty('binNumber') || data.binNumber == -1 ) return;
+
+            var binNumber = data.binNumber;
+            var bytes = this.readDepthData[0].data[binNumber].depth;
+
+            var aveDepth = data.averageDepth;
+            var convRatio = bytes/aveDepth;
+
+            convRatios.push(convRatio);
+          }
+        )
+
+        this.readDepthConversionRatio = d3.mean(convRatios);
       },
 
       updatePercentCharts: function () {
@@ -1007,6 +1032,8 @@
               this.setSelectedSeq('all', start, end);
             else
               this.setSelectedSeq(region.chr, start, end);
+
+            this.referenceDepthData = this.bam.referenceDepthData;
           }
 
           var totalPoints = allPoints.reduce(function (acc, val) {
@@ -1065,7 +1092,14 @@
       readOutliers: function() {
         this.updateLengthHistograms();
       },
-
+      referenceDepthData: {
+        handler: function (val, oldVal) {
+          if ( val ) {
+            this.calculateReferenceRatio();
+          }
+        },
+        deep: true,
+      }
     },
 
     computed: {
