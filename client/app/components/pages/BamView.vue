@@ -485,7 +485,7 @@
               </div>
             </help-button>
           </div>
-          <label class="checkbox" style="position:absolute;right:10px;top:24px;" >
+          <label class="checkbox" style="position:absolute;right:10px;top:24px;font-weight: 300" >
             <input type="checkbox" v-model="readOutliers" class="outlier" >
             Outliers
           </label>

@@ -1,5 +1,5 @@
 <style type="text/css">
-    text { font-size: 11px; font-weight: bold;}
+    text { font-size: 11px; font-weight: 300;}
 </style>
 
 <template>

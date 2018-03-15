@@ -1,13 +1,4 @@
 <style type="text/css">
-    text { font-size: 11px; font-weight: bold;}
-
-    .iobio-pie .iobio-center-text{text-align:center}
-    .iobio-pie .iobio-center-text .iobio-percent{fill:#646464;color:#646464;font-size:23px}
-    .iobio-pie .iobio-center-text .iobio-count{font-size:14px;letter-spacing:3px;font-weight:400;color:#969696}
-    .iobio-pie text#all-text{fill:#000;font-size:11px}
-    .iobio-pie circle#all-circle:hover{fill:#F7F3BA}
-    .iobio-pie circle#all-circle.selected{fill:#F7F3BA;stroke-width:1.5px}
-    .iobio-pie .arc text{font-size:9px;fill:#fff}
 </style>
 
 <template>

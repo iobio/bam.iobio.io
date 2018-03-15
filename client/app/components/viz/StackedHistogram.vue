@@ -1,11 +1,11 @@
 <style type="text/css">
     text {
       font-size: 11px;
-      font-weight: bold;
+      font-weight: 300;
     }
     .iobio-bar-1 {
       font-size: 8pt;
-      font-weight: bold;
+      font-weight: 300;
       padding: 0px;
       margin: 0px;
     }
@@ -15,13 +15,13 @@
     }
     text.zoom-label {
       font-size: 8pt;
-      font-weight: bold;
+      font-weight: 300;
     }
     text.zoom-label-shadow {
       font-size: 8pt;
       stroke: white;
       stroke-width: 5px;
-      font-weight: bold;
+      font-weight: 300;
     }
     .noselect {
       -webkit-touch-callout: none; /* iOS Safari */
