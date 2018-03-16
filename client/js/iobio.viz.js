@@ -3392,8 +3392,9 @@ var pie = function() {
 		// Add middle text
 		g.selectAll('.iobio-center-text').data([0]).enter().append('foreignObject')
 			.attr('x', -innerRadius)
-			.attr('y', -13)
+			.attr('y', -18)
 			.attr('width', innerRadius*2)
+      .attr('height', innerRadius*2)
 			.attr("class", "iobio-center-text")
 			// .append("xhtml:div")
 
