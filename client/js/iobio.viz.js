@@ -3074,10 +3074,10 @@ var multiLine = function() {
 		selection.selectAll('.iobio-multi-line.button-panel').data([0])
 			.enter().append('div')
 				.attr('class', 'iobio-multi-line button-panel')
-				.style('width', w - m.left - m.right)
+				.style('width', w - m.left - m.right )
 				.append('svg')
 					.style('width', '100%')
-          .style('margin-left', m.left);
+          .style('margin-left', m.left + "px");
 
 	   	var button = selection.select('.button-panel svg').selectAll('.button')
 	    			 	.data( selection.datum(), function(d,i) { return nameValue(d,i); });
@@ -3099,7 +3099,7 @@ var multiLine = function() {
 		    		return  xpos + 'px'
 		    })
 		    .style('fill', color )
-		    .style('height', '20px')
+		    .attr('height', '20px')
 		    .append('title')
 		    	.text(nameValue);
 
