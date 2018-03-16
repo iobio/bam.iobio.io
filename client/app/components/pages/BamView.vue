@@ -546,7 +546,7 @@
 
 
   export default {
-    name: 'bamview',
+    name: 'bam-view',
 
     components: {
       StackedHistogram,
@@ -920,13 +920,16 @@
             var regionStr = region.chr;
           }
 
-          this.$router.replace({
+          var queryParams = {
+            bam: this.selectedBamURL,
+            region: regionStr};
+
+          if ( this.selectedBaiURL != '') queryParams.bai = this.selectedBaiURL;
+          if ( this.sampling != '') queryParams.sampling = this.sampling;
+
+          this.$router.push({
             name: "bam-view",
-            query: {
-              bam: this.selectedBamURL,
-              bai: this.selectedBaiURL,
-              region: regionStr,
-              sampling: this.sampling}});
+            query: queryParams});
         }
       },
 

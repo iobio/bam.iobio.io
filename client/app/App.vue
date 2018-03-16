@@ -21,16 +21,18 @@ export default {
     var region = self.$route.query.region;
     var sampling = self.$route.query.sampling;
 
+
     if (selectedBamURL != undefined && selectedBamURL != '') {
+      var queryParams = {
+        bam: selectedBamURL};
+
+      if ( region != '') queryParams.region = region;
+      if ( selectedBaiURL != '') queryParams.bai = selectedBaiURL;
+      if ( sampling != '') queryParams.sampling = sampling;
 
       self.$router.push({
-        name: 'bam-view',
-        query: {
-          bam: selectedBamURL,
-          bai: selectedBaiURL,
-          region: region,
-          sampling: sampling}
-      });
+        name: "bam-view",
+        query: queryParams});
 
     }
   },
