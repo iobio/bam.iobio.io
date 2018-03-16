@@ -3629,6 +3629,7 @@ var pieChooser = function() {
 	      .attr("r", 25)
 	      .attr("stroke", 'lightgrey')
 	      .attr("fill", 'transparent')
+        .style("pointer-events", "all")
 	      .on("mouseover", function(d) {
 	        d3.select(this).attr("cursor", "pointer");
 	      })
@@ -3651,6 +3652,8 @@ var pieChooser = function() {
 	        .attr("class", "inside")
 	        .text(function(d) { return 'All'; })
 	        // .each('end', function() { console.log('ennennendndndndnd')});
+      selection.select('foreignObject')
+        .style("pointer-events", "none")
 
 	}
 	// Rebind methods in pie.js to this chart
