@@ -1,12 +1,6 @@
 <style>
 
   @import url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css');
-  @import url('http://fonts.googleapis.com/css?family=Quicksand:300');
-
-  body, .title {
-    font-family: Quicksand;
-    font-weight: 300;
-  }
 
   .panel > .title {
     font-size: 30px
