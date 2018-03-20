@@ -85,10 +85,7 @@
   .chart text {
     fill: 'black';
   }
-  .glyphicon.glyphicon-cog {
-    cursor: pointer;
-    color: #828282;
-  }
+
   .vue-slider-component .vue-slider {
     background-color: #2687BE;
   }
