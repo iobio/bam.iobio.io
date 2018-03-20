@@ -1,5 +1,11 @@
 <style>
 
+  @import '~bootstrap/dist/css/bootstrap.css';
+  @import url('http://fonts.googleapis.com/css?family=Quicksand:300');
+  @import url('http://fonts.googleapis.com/css?family=Overlock+SC');
+  @import url('http://fonts.googleapis.com/css?family=Open+Sans');
+  @import url('http://fonts.googleapis.com/css?family=Muli');
+
   .panel > .title { font-size: 30px}
 
   .file-name {
@@ -236,8 +242,6 @@
 
 <template>
   <div >
-    <app-header></app-header>
-
     <div class="file-name" >
       <span v-show="selectedBamURL!=undefined"
             v-html="shortenedBamFileURL"
@@ -532,7 +536,6 @@
 
 <script>
 
-  import AppHeader from "../partials/AppHeader.vue";
   import ReadsSampledBox from "../partials/ReadsSampledBox.vue";
   import HelpButton from "../partials/HelpButton.vue";
   import ReadCoverageBox from "../partials/ReadCoverageBox.vue";
@@ -544,7 +547,6 @@
   import PercentChartBox from "../partials/PercentChartBox.vue";
   import StackedHistogram from "../viz/StackedHistogram.vue";
 
-
   export default {
     name: 'bam-view',
 
@@ -555,8 +557,7 @@
       PieChooser,
       ReadCoverageBox,
       HelpButton,
-      ReadsSampledBox,
-      AppHeader
+      ReadsSampledBox
     },
 
     props: {

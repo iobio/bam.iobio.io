@@ -90,8 +90,6 @@
 <template>
   <div id="bodydiv">
 
-    <app-header></app-header>
-
     <div id="selectData">
       <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
         <div style="margin-left:auto;margin-right:auto;font-size: 28px; color: rgb(110,110,110); margin-bottom:70px; text-align: center;">
@@ -121,7 +119,6 @@
 </template>
 
 <script>
-  import AppHeader from "../partials/AppHeader.vue";
   import MarthLabFooter from "../partials/MarthLabFooter.vue";
   import FileSelectButtonBar from "../partials/FileSelectButtonBar.vue";
 
@@ -129,8 +126,7 @@
     name: 'home',
     components: {
       FileSelectButtonBar,
-      MarthLabFooter,
-      AppHeader
+      MarthLabFooter
     },
     props: {},
     data() {
