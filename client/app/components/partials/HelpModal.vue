@@ -1,6 +1,8 @@
 <style type="text/css">
 
   .modal {
+    font-family: Quicksand;
+    font-weight: 300;
     transition: all .3s ease;
   }
 
