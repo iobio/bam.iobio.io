@@ -2,12 +2,14 @@
 
   @import url('http://fonts.googleapis.com/css?family=Quicksand:300');
 
-  body {
+  body, .title {
     font-family: Quicksand;
     font-weight: 300;
   }
 
-  .panel > .title { font-size: 30px}
+  .panel > .title {
+    font-size: 30px
+  }
 
   .file-name {
     margin-bottom: -20px;
