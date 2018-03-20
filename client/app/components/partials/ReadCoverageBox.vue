@@ -1,5 +1,9 @@
 <style type="text/css">
 
+  .read-coverage-title {
+    font-size: 30px
+  }
+
   .panel#depth-distribution {
     -webkit-flex: 1 1 auto;
     flex: 1 1 auto;
@@ -94,7 +98,7 @@
 <template>
   <div id="depth-distribution" class="panel">
 
-    <div class="title" >
+    <div class="read-coverage-title" >
       <help-button style="font-size:0.45em;vertical-align: 30%" modalTitle="Read coverage" tooltipText="Coverage across the genome">
         <div slot="body">
           The read coverage shows how the read coverage varies across the entire genome. The coloured
