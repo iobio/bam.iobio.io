@@ -189,7 +189,6 @@ export default {
   data() {
     return {
       limitYAxes: true,
-      showZoomModal: false,
       multiplesOfTheMedianToZoom: Number(4),
       oldZoomValue: Number(-1),
       sliderMax: Number(10),
