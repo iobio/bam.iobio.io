@@ -1,6 +1,14 @@
-<style>
-
+<style scoped lang="scss">
   @import url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css');
+</style>
+<style lang="scss">
+  @import url('http://fonts.googleapis.com/css?family=Quicksand:300');
+
+  body {
+    font-family: Quicksand;
+    font-weight: 300;
+    width: 100% ;
+  }
 
   .panel > .title {
     font-size: 30px
