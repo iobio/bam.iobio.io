@@ -1,4 +1,4 @@
-<style type="text/css">
+<style type="text/css" scoped>
   body {
     font-family: Quicksand;
     font-weight: 300;
@@ -36,7 +36,7 @@
   <div >
     <body>
       <header>
-        <a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span></a>
+        <a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio</span></a>
         <div class="iobio-project" >
           <a href="http://iobio.io" style="margin: 0px 5px 0px 5px;">an iobio project</a>
         </div>
