@@ -1,6 +1,27 @@
-<style scoped lang="scss">
-  @import url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css');
+<style module lang="scss">
+  .bootstrap-css {
+    @import url("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css");
+    @font-face {
+      font-family: 'Glyphicons Halflings';
+    }
+    .glyphicon {
+      position: relative;
+      top: 1px;
+      display: inline-block;
+      font-family: 'Glyphicons Halflings';
+      font-style: normal;
+      font-weight: normal;
+      line-height: 1;
+
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .glyphicon-info-sign:before {
+      content: "\e086";
+    }
+  }
 </style>
+
 <style lang="scss">
   @import url('http://fonts.googleapis.com/css?family=Quicksand:300');
 
@@ -247,7 +268,7 @@
 </style>
 
 <template>
-  <div >
+  <div class="$style.bootstrap-css">
     <div class="file-name" >
       <span v-show="selectedBamURL!=undefined"
             v-html="shortenedBamFileURL"
