@@ -7,7 +7,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import App from './App.vue'
-import BamVue from './components/pages/BamView.vue'
+import BamView from './components/pages/BamView.vue'
 import Help from './components/pages/Help.vue'
 import Home from './components/pages/Home.vue'
 import License from './components/pages/License.vue'
@@ -22,7 +22,7 @@ const routes = [
   {
     path: '/bamview',
     name: 'bam-view',
-    component: BamVue,
+    component: BamView,
     props: (route) => ({
       selectedBamURL: route.query.bam,
       selectedBaiURL: route.query.bai,
@@ -34,7 +34,7 @@ const routes = [
     // File objects not working sending in as query params like above, so use properties instead.
     path: '/bamview?bamFile=:selectedBamFile?&baiFile=:selectedBaiFile?',
     name: 'bam-view-file',
-    component: BamVue,
+    component: BamView,
     props: true
   },
   {
