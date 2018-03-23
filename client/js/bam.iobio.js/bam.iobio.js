@@ -306,6 +306,7 @@ var Bam = Class.extend({
    estimateBaiReadDepth: function(callback) {
       var me = this, readDepth = {};
       me.readDepth = {};
+      var numRefSamples = 10;
 
       var isdone = false;
       function cb() {
@@ -364,11 +365,19 @@ var Bam = Class.extend({
           }.bind(me));
           cmd.on('end', function() {
             isdone = true;
-            // Skip the first one -- less congruous with other chr's bytes-to-depth ratio,
-            // Get the next 3 to get an average conversion ratio
-            me.getReferenceStats(1);
-            me.getReferenceStats(2);
-            me.getReferenceStats(3);
+
+            // Get some random reference read depth data
+            var seq = Object.keys(me.readDepth);
+
+            for (var count = 0; count < numRefSamples; count++) {
+              var randSeqInd = Math.floor(Math.random()*seq.length);
+              var randSeq = seq[randSeqInd];
+              var readDepthLength = me.readDepth[randSeq].length;
+              var randBinNumber = Math.floor(Math.random()*readDepthLength);
+              randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
+              me.getReferenceStats(randSeq, randBinNumber);
+            }
+
             cb();
           }.bind(me));
           cmd.run();
@@ -438,11 +447,19 @@ var Bam = Class.extend({
 
               // Invoke Callback function
               isdone = true;
-              // Skip the first one -- less congruous with other chr's bytes-to-depth ratio,
-              // Get the next 3 to get an average conversion ratio
-              me.getReferenceStats(1);
-              me.getReferenceStats(2);
-              me.getReferenceStats(3);
+
+              // Get some random reference read depth data
+              var seq = Object.keys(me.readDepth);
+
+              for (var count = 0; count < numRefSamples; count++) {
+                var randSeqInd = Math.floor(Math.random()*seq.length);
+                var randSeq = seq[randSeqInd];
+                var readDepthLength = me.readDepth[randSeq].length;
+                var randBinNumber = Math.floor(Math.random()*readDepthLength);
+                randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
+                me.getReferenceStats(randSeq, randBinNumber);
+              }
+
               cb();
           });
       }
@@ -612,13 +629,12 @@ var Bam = Class.extend({
    },
 
 
-  getReferenceStats: function(binNumber) {
+  getReferenceStats: function(chr, binNumber) {
     var me = this;
     var binSize = 16384;
-    var chrName = me.header.sq[0].name;
 
     var r =  {
-      'name': chrName,
+      'name': chr,
       'start': binNumber + binNumber * binSize,
       'end': (binNumber + binNumber * binSize) + binSize
     };
@@ -626,6 +642,7 @@ var Bam = Class.extend({
     if(!me.referenceDepthData) me.referenceDepthData = [];
 
     var refDepthObject = {};
+    refDepthObject.chr = chr;
     refDepthObject.binNumber = binNumber;
 
     var refDepthData = "";
@@ -650,7 +667,7 @@ var Bam = Class.extend({
 
     } else {
       cmd = new iobio.cmd(this.iobio.samtools,
-        ['depth', '-a', '-r', r.name+ ":"+ r.start + '-' + r.end, '"' + this.bamUri + '"'],
+        ['depth', '-a', '-r', r.name + ":"+ r.start + '-' + r.end, '"' + this.bamUri + '"'],
         {ssl:this.ssl,});
 
     }
@@ -662,13 +679,15 @@ var Bam = Class.extend({
       refDepthData += data;
     });
     cmd.on('end', function() {
-      var depthData = [];
-      refDepthData.split('\n').forEach(function (line) {
-        depthData.push(line.split('\t')[2]);
-      });
-      refDepthObject.data = refDepthData;
-      refDepthObject.averageDepth = d3.mean(depthData);
-      me.referenceDepthData.push(refDepthObject);
+      if ( refDepthData != "" ) {
+        var depthData = [];
+        refDepthData.split('\n').forEach(function (line) {
+          depthData.push(line.split('\t')[2]);
+        });
+        refDepthObject.data = refDepthData;
+        refDepthObject.averageDepth = d3.mean(depthData);
+        me.referenceDepthData.push(refDepthObject);
+      }
     });
 
     cmd.run();

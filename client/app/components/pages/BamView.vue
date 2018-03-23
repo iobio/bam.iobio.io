@@ -713,15 +713,17 @@
       },
 
       calculateReferenceRatio: function() {
-        if ( this.referenceDepthData.length == 0 ) return;
+        if ( this.referenceDepthData.length == 0 || this.bam.readDepth == undefined ) return;
 
         var convRatios = [];
+        var readDepthData = this.bam.readDepth;
         this.referenceDepthData.forEach( data => {
             if ( !data.hasOwnProperty('averageDepth') || data.averageDepth == -1 ||
                  !data.hasOwnProperty('binNumber') || data.binNumber == -1 ) return;
 
             var binNumber = data.binNumber;
-            var bytes = this.readDepthData[0].data[binNumber].depth;
+            var chr = data.chr;
+            var bytes = readDepthData[chr][binNumber].depth;
 
             var aveDepth = data.averageDepth;
             var convRatio = bytes/aveDepth;
@@ -729,7 +731,6 @@
             convRatios.push(convRatio);
           }
         )
-
         this.readDepthConversionRatio = d3.mean(convRatios);
       },
 
