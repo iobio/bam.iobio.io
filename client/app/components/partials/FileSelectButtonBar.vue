@@ -97,7 +97,7 @@
       </button>
     </div>
     <div style="text-align: center;">
-      <button class="inverted-file-button" @click="launchDemoData" >Launch with demo data</button>
+      <button class="inverted-file-button" @click="launchDemoData" >launch with demo data</button>
     </div>
   </div>
 </template>

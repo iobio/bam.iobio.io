@@ -117,7 +117,7 @@
 
     <input type="file" name="files[]" id="bedfile"  multiple @change="processBedFile"/>
     <div id="remove-bedfile-button" class="bedfile-button" @click="$emit('removeBedFile')" style="visibility:hidden">Remove Bed</div>
-    <div id="default-bedfile-button" class="bedfile-button" @click="$emit('addDefaultBedFile')" title="1000G human exome targets file " style="right:100px">GRCh37 exonic regions</div>
+    <div id="default-bedfile-button" class="bedfile-button" @click="$emit('addDefaultBedFile')" title="1000G human exome targets file " style="right:100px">GRCh37 Exonic Regions</div>
     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" style="font-weight:300" title="Add Bed format capture target definition file">Custom Bed</label>
 
     <!-- log toggle -->
