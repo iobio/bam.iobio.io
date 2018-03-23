@@ -726,9 +726,11 @@
             var bytes = readDepthData[chr][binNumber].depth;
 
             var aveDepth = data.averageDepth;
-            var convRatio = bytes/aveDepth;
 
-            convRatios.push(convRatio);
+            if ( bytes != 0 && aveDepth != 0 ) {
+              var convRatio = bytes / aveDepth;
+              convRatios.push(convRatio);
+            }
           }
         )
         this.readDepthConversionRatio = d3.mean(convRatios);
