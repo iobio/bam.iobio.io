@@ -129,9 +129,11 @@ export default {
       },
 
       calcMaxZoom: function() {
-        // Cut off the max 10 values to avoid the largest outliers
-        var maxZoomValue = Math.round((this.sortedYData[this.sortedYData.length-10] - this.medianDepth )/this.medianDepth);
-        this.$emit('setMaxZoomValue', maxZoomValue);
+        if ( this.medianDepth != 0 ) {
+          // Cut off the max 10 values to avoid the largest outliers
+          var maxZoomValue = Math.round((this.sortedYData[this.sortedYData.length - 10] - this.medianDepth) / this.medianDepth);
+          this.$emit('setMaxZoomValue', maxZoomValue);
+        }
       },
 
       addAxisLabels: function() {
@@ -194,7 +196,7 @@ export default {
           var number = Math.floor(Number(d) / this.conversionRatio);
           return number + 'X';
         }
-        // No conversion ration, show multiples of median instead
+        // No conversion ratio, show multiples of median instead
         else if ( isNumeric(d) && this.medianDepth != 0 ){
           var number = Math.floor(Number(d) / this.medianDepth);
           return number;
