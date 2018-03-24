@@ -37,7 +37,7 @@ export default {
       limitYAxes:{
         type: Boolean,
       },
-      multiplesOfTheMedianToZoom: {
+      numberIntervalsToZoom: {
         default: 4,
         type: Number
       },
@@ -52,7 +52,9 @@ export default {
         readDepthChart: {},
         trimmedYMin: "",
         trimmedYMax: "",
-        medianDepth: 0
+        medianDepth: 0,
+        useMedianAsZoomInterval: true,
+        zoomInterval: 0,
       }
     },
     mounted: function() {
@@ -121,17 +123,25 @@ export default {
         var median = d3.median(this.sortedYData);
 
         this.medianDepth = median;
+        var indices;
 
-        var indices = getIndicesToZoomToMultiplesOfMedian(this.sortedYData, this.multiplesOfTheMedianToZoom, this.medianDepth);
+        if ( this.medianDepth && this.medianDepth > 0 ) {
+          this.useMedianAsZoomInterval = true;
+          indices = getIndicesToZoomToIntsFromMiddle(this.sortedYData, this.numberIntervalsToZoom, this.medianDepth, false, this.medianDepth);
+        } else {
+          this.useMedianAsZoomInterval = false;
+          indices = getIndicesToZoomToIntsFromMiddle(this.sortedYData, this.numberIntervalsToZoom, this.medianDepth, true);
+        }
 
         this.trimmedYMin = this.sortedYData[indices[0]];
         this.trimmedYMax = this.sortedYData[indices[1]];
+        this.zoomInterval = indices[2];
       },
 
       calcMaxZoom: function() {
         if ( this.medianDepth != 0 ) {
           // Cut off the max 10 values to avoid the largest outliers
-          var maxZoomValue = Math.round((this.sortedYData[this.sortedYData.length - 10] - this.medianDepth) / this.medianDepth);
+          var maxZoomValue = Math.round((this.sortedYData[this.sortedYData.length - 10] - this.medianDepth) / this.zoomInterval);
           this.$emit('setMaxZoomValue', maxZoomValue);
         }
       },
@@ -146,7 +156,7 @@ export default {
         var yAxisEnter2 = chartSVG2.enter().append('text').attr('class', 'y axis-label2');
 
         // Y axis label positions
-        var yLabelX = - 5* this.height / 12;
+        var yLabelX = - 5 * this.height / 12;
         var yLabelY = 4;
         // Title
         d3.select("#depth-distribution .chart").select('.y.axis-label1')
@@ -181,11 +191,11 @@ export default {
         this.readDepthChart.yAxis().tickValues([]);
         if ( !this.limitYAxes ) {
           // No zoom, only include median
-          this.readDepthChart.yAxis().tickValues([this.medianDepth]);
+          this.readDepthChart.yAxis().tickValues([this.zoomInterval]);
           this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
         } else {
           // Update tick labels to be located at multiples of the median
-          this.readDepthChart.yAxis().tickValues(Array.from(new Array(10),(val,index)=>this.medianDepth*index));
+          this.readDepthChart.yAxis().tickValues(Array.from(new Array(10),(val,index)=>this.zoomInterval*index));
           this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
         }
       },
@@ -197,8 +207,8 @@ export default {
           return number + 'X';
         }
         // No conversion ratio, show multiples of median instead
-        else if ( isNumeric(d) && this.medianDepth != 0 ){
-          var number = Math.floor(Number(d) / this.medianDepth);
+        else if ( isNumeric(d) && this.zoomInterval != 0 ){
+          var number = Math.floor(Number(d) / this.zoomInterval);
           return number;
         }
         return null ;
@@ -242,13 +252,16 @@ export default {
       limitYAxes: function() {
         this.update();
       },
-      multiplesOfTheMedianToZoom: function() {
+      numberIntervalsToZoom: function() {
         this.dataUpdate();
       },
       medianDepth: function() {
         this.update();
       },
       conversionRatio: function() {
+        this.update();
+      },
+      useMedianAsZoomInterval: function() {
         this.update();
       },
       brushRange: {
@@ -275,23 +288,33 @@ export default {
 }
 
 // Get lower and upper index to restrict data to within specified number of multiples of median (or other specified middle value)
-function getIndicesToZoomToMultiplesOfMedian(arr, zoomNumber, middleValue){
-
-  arr = arr.sort(function(a,b){return a-b}); // Data needs to be sorted
+function getIndicesToZoomToIntsFromMiddle(arr, zoomNumber, middleValue, excludeZeroData, interval){
+  var noZerosArr = arr.filter(d => d != 0);
 
   var middle = middleValue ? middleValue : d3.median(arr);  // Use median if no middle value specified
+  var int = interval ? interval : ( excludeZeroData ? d3.deviation(noZerosArr) : d3.deviation(arr));  // Use standard deviation if no middle value specified
+
+  var indices = getIndicesBetweenBounds(arr, middle - zoomNumber * int, middle + zoomNumber * int)
+
+  return [indices[0], indices[1], int];
+}
+
+function getIndicesBetweenBounds(arr, lowerBound, upperBound) {
+  arr = arr.sort(function(a,b){return a-b}); // Data needs to be sorted
 
   var startIndex = 0;
   var endIndex = arr.length-1;
+
   for(var i=0;i<arr.length;++i) {
-    if (arr[i] < middle - zoomNumber * middle ){
+    if (arr[i] < lowerBound ){
       startIndex = i;
     }
-    if (arr[i] > middle + zoomNumber * middle ){
+    if (arr[i] > upperBound ){
       endIndex = i;
       break;
     }
   }
+
   return [startIndex, endIndex];
 }
 

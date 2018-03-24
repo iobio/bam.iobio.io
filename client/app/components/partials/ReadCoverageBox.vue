@@ -131,10 +131,10 @@
           Zoom y axis
         </label>
 
-        <vue-slider v-model="multiplesOfTheMedianToZoom"
+        <vue-slider v-model="numberIntervalsToZoom"
                     v-if="sliderMax>1"
                     :min="1" :max="sliderMax" :dot-size="8" :height="3" :width="65" tooltip="hover" :reverse="true"
-                    :formatter="'show '+(multiplesOfTheMedianToZoom+1)+' multiples of median'"
+                    :formatter="'show '+(numberIntervalsToZoom+1)+' multiples of median'"
                     :speed=".1"
                     :tooltipStyle="sliderTooltipStyle"
                     :style="sliderStyle"
@@ -152,7 +152,7 @@
                         @setMaxZoomValue="updateMaxZoomValue"
                         :selectedSeqId="selectedSeqId"
                         :limitYAxes="limitYAxes"
-                        :multiplesOfTheMedianToZoom="multiplesOfTheMedianToZoom"
+                        :numberIntervalsToZoom="numberIntervalsToZoom"
                         :drawChart="draw"
                         :data="readDepthData"
                         :conversionRatio="conversionRatio"
@@ -189,9 +189,10 @@ export default {
   data() {
     return {
       limitYAxes: true,
-      multiplesOfTheMedianToZoom: Number(4),
+      numberIntervalsToZoom: Number(4),
       oldZoomValue: Number(-1),
-      sliderMax: Number(10),
+      sliderMax: Number(9),
+      useMedianAsZoomInterval: true,
       // Styles for the slider component
       sliderTooltipStyle: {
         "backgroundColor": "#666",
@@ -212,12 +213,12 @@ export default {
       this.$emit('setSelectedSeq', selected, start, end);
     },
     updateMaxZoomValue: function(max) {
-      this.sliderMax = max < 10 ? (max > 1 ? max : 1) : 10;
-      if ( this.multiplesOfTheMedianToZoom > this.sliderMax ) {
-        this.oldZoomValue = this.multiplesOfTheMedianToZoom;
-        this.multiplesOfTheMedianToZoom = this.sliderMax;
+      this.sliderMax = max < 9 ? (max > 1 ? max : 1) : 9;
+      if ( this.numberIntervalsToZoom > this.sliderMax ) {
+        this.oldZoomValue = this.numberIntervalsToZoom;
+        this.numberIntervalsToZoom = this.sliderMax;
       } else if ( this.oldZoomValue != -1 ) {
-        this.multiplesOfTheMedianToZoom = this.oldZoomValue;
+        this.numberIntervalsToZoom = this.oldZoomValue;
         this.oldZoomValue = -1;
       }
     },
