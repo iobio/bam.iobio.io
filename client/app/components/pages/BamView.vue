@@ -574,6 +574,8 @@
   import PercentChartBox from "../partials/PercentChartBox.vue";
   import StackedHistogram from "../viz/StackedHistogram.vue";
 
+  var naturalSort = require('javascript-natural-sort');
+
   export default {
     name: 'bam-view',
 
@@ -1028,8 +1030,9 @@
             $(".samplingLoader").css("display", "block");
 
           }
-
+          naturalSort.insensitive = true;
           var allPoints = Object.keys(this.bam.readDepth)
+            .sort(naturalSort)
             .filter(function (key) {
               if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
                 return false
@@ -1055,6 +1058,8 @@
 
           if (done) {
             this.readDepthData = allPoints;
+
+            this.sortReferenceSelect();
 
             var start = region ? region.start : undefined;
             var end = region ? region.end : undefined;
@@ -1082,6 +1087,18 @@
 
         }.bind(this));
 
+      },
+
+      sortReferenceSelect: function() {
+        var options = $("#reference-select option").filter(function(_, o) { return o.value != 'all' }).detach();
+        var values = options.map(function(_, o) { return o.value }).get();
+        values.sort(naturalSort);
+        values.forEach(value=> {
+          $('#reference-select')
+            .append($("<option></option>")
+              .attr("value", value)
+              .text(value));
+        })
       },
 
       setBrush: function (start, end) {
