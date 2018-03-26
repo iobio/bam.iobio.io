@@ -727,7 +727,7 @@
 
             var aveDepth = data.averageDepth;
 
-            if ( bytes != 0 && aveDepth != 0 ) {
+            if ( bytes != 0 && aveDepth > 1 ) {
               var convRatio = bytes / aveDepth;
               convRatios.push(convRatio);
             }

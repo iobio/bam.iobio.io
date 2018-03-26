@@ -214,7 +214,10 @@ export default {
       this.$emit('setSelectedSeq', selected, start, end);
     },
     updateMaxZoomValue: function(max) {
-      this.sliderMax = max < 9 ? (max > 1 ? max : 1) : 9;
+      this.sliderMax = max < 19 ? (max > 1 ? max : 1) : 19;
+      if ( this.sliderMax > 15 && this.numberIntervalsToZoom <=5 ) {
+        this.numberIntervalsToZoom = 9;
+      }
       if ( this.numberIntervalsToZoom > this.sliderMax ) {
         this.oldZoomValue = this.numberIntervalsToZoom;
         this.numberIntervalsToZoom = this.sliderMax;

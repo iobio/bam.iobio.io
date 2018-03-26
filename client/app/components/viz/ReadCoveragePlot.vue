@@ -122,9 +122,10 @@ export default {
         var median = d3.median(this.sortedYData);
 
         this.medianDepth = median;
+        var convertedMedian = Math.round(this.medianDepth / this.conversionRatio);
         var indices;
 
-        if ( this.medianDepth && this.medianDepth > 0 ) {
+        if ( this.medianDepth && this.medianDepth > 0 && convertedMedian > 5 ) {
           this.$emit('setUseMedianAsZoomInterval',true);
           indices = getIndicesToZoomToIntsFromMiddle(this.sortedYData, this.numberIntervalsToZoom, this.medianDepth, false, this.medianDepth);
         } else {
@@ -138,9 +139,9 @@ export default {
       },
 
       calcMaxZoom: function() {
-        if ( this.medianDepth != 0 ) {
-          // Cut off the max 10 values to avoid the largest outliers
-          var maxZoomValue = Math.round((this.sortedYData[this.sortedYData.length - 10] - this.medianDepth) / this.zoomInterval);
+        if ( this.zoomInterval != 0 ) {
+          // Cut off the max values to avoid the largest outliers
+          var maxZoomValue = Math.round((this.sortedYData[this.sortedYData.length - 6] - this.medianDepth) / this.zoomInterval);
           this.$emit('setMaxZoomValue', maxZoomValue);
         }
       },
@@ -190,11 +191,15 @@ export default {
         this.readDepthChart.yAxis().tickValues([]);
         if ( !this.limitYAxes ) {
           // No zoom, only include median
-          this.readDepthChart.yAxis().tickValues([this.zoomInterval]);
+          this.readDepthChart.yAxis().tickValues([this.medianDepth]);
           this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
         } else {
           // Update tick labels to be located at multiples of the median
-          this.readDepthChart.yAxis().tickValues(Array.from(new Array(10),(val,index)=>this.zoomInterval*index));
+          if ( this.numberIntervalsToZoom >= 9 ) {
+            this.readDepthChart.yAxis().tickValues(Array.from(new Array(12), (val, index) => this.zoomInterval * index * 2));
+          } else {
+            this.readDepthChart.yAxis().tickValues(Array.from(new Array(12), (val, index) => this.zoomInterval * index));
+          }
           this.readDepthChart.yAxis().tickFormat(this.tickFormatter);
         }
       },
@@ -258,7 +263,8 @@ export default {
         this.update();
       },
       conversionRatio: function() {
-        this.update();
+        this.calcMaxZoom();
+        this.dataUpdate();
       },
       brushRange: {
         handler: function (val, oldVal) {
