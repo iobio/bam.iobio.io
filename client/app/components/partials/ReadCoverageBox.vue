@@ -215,7 +215,7 @@ export default {
     },
     updateMaxZoomValue: function(max) {
       this.sliderMax = max < 19 ? (max > 1 ? max : 1) : 19;
-      if ( this.sliderMax > 15 && this.numberIntervalsToZoom <=5 ) {
+      if ( this.sliderMax > 15 && this.numberIntervalsToZoom <=5 && this.oldZoomValue == -1 ) {
         this.numberIntervalsToZoom = 9;
       }
       if ( this.numberIntervalsToZoom > this.sliderMax ) {
