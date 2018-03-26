@@ -53,7 +53,6 @@ export default {
         trimmedYMin: "",
         trimmedYMax: "",
         medianDepth: 0,
-        useMedianAsZoomInterval: true,
         zoomInterval: 0,
       }
     },
@@ -126,10 +125,10 @@ export default {
         var indices;
 
         if ( this.medianDepth && this.medianDepth > 0 ) {
-          this.useMedianAsZoomInterval = true;
+          this.$emit('setUseMedianAsZoomInterval',true);
           indices = getIndicesToZoomToIntsFromMiddle(this.sortedYData, this.numberIntervalsToZoom, this.medianDepth, false, this.medianDepth);
         } else {
-          this.useMedianAsZoomInterval = false;
+          this.$emit('setUseMedianAsZoomInterval',false);
           indices = getIndicesToZoomToIntsFromMiddle(this.sortedYData, this.numberIntervalsToZoom, this.medianDepth, true);
         }
 
@@ -259,9 +258,6 @@ export default {
         this.update();
       },
       conversionRatio: function() {
-        this.update();
-      },
-      useMedianAsZoomInterval: function() {
         this.update();
       },
       brushRange: {

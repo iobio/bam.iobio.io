@@ -134,7 +134,7 @@
         <vue-slider v-model="numberIntervalsToZoom"
                     v-if="sliderMax>1"
                     :min="1" :max="sliderMax" :dot-size="8" :height="3" :width="65" tooltip="hover" :reverse="true"
-                    :formatter="'show '+(numberIntervalsToZoom+1)+' multiples of median'"
+                    :formatter="zoomMessage"
                     :speed=".1"
                     :tooltipStyle="sliderTooltipStyle"
                     :style="sliderStyle"
@@ -150,6 +150,7 @@
 
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
                         @setMaxZoomValue="updateMaxZoomValue"
+                        @setUseMedianAsZoomInterval="setUseMedianAsZoomInterval"
                         :selectedSeqId="selectedSeqId"
                         :limitYAxes="limitYAxes"
                         :numberIntervalsToZoom="numberIntervalsToZoom"
@@ -222,6 +223,9 @@ export default {
         this.oldZoomValue = -1;
       }
     },
+    setUseMedianAsZoomInterval: function(medianIsZoom) {
+      this.useMedianAsZoomInterval = medianIsZoom;
+    },
     processBedFile: function(event){
       if (event.target.files.length != 1) {
         alert('must select a .bed file');
@@ -238,6 +242,13 @@ export default {
       this.$emit('processBedFile', event.target.files[0]);
     }
   },
+  computed: {
+    zoomMessage: function() {
+      return this.useMedianAsZoomInterval ?
+        ('show ' + (this.numberIntervalsToZoom+1) +  ' multiples of median') :
+        ('show ' + this.numberIntervalsToZoom + ' standard deviations');
+    }
+  }
 }
 
 </script>
