@@ -306,7 +306,7 @@ var Bam = Class.extend({
    estimateBaiReadDepth: function(callback) {
       var me = this, readDepth = {};
       me.readDepth = {};
-      var numRefSamples = 10;
+      var numRefSamples = 12;
 
       var isdone = false;
       function cb() {
