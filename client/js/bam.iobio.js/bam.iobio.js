@@ -369,13 +369,15 @@ var Bam = Class.extend({
             // Get some random reference read depth data
             var seq = Object.keys(me.readDepth);
 
-            for (var count = 0; count < numRefSamples; count++) {
-              var randSeqInd = Math.floor(Math.random()*seq.length);
-              var randSeq = seq[randSeqInd];
-              var readDepthLength = me.readDepth[randSeq].length;
-              var randBinNumber = Math.floor(Math.random()*readDepthLength);
-              randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
-              me.getReferenceStats(randSeq, randBinNumber);
+            if ( seq != undefined && seq.length > 0 ) {
+              for (var count = 0; count < numRefSamples; count++) {
+                var randSeqInd = Math.floor(Math.random() * seq.length);
+                var randSeq = seq[randSeqInd];
+                var readDepthLength = me.readDepth[randSeq].length;
+                var randBinNumber = Math.floor(Math.random() * readDepthLength);
+                randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
+                me.getReferenceStats(randSeq, randBinNumber);
+              }
             }
 
             cb();
@@ -451,13 +453,15 @@ var Bam = Class.extend({
               // Get some random reference read depth data
               var seq = Object.keys(me.readDepth);
 
-              for (var count = 0; count < numRefSamples; count++) {
-                var randSeqInd = Math.floor(Math.random()*seq.length);
-                var randSeq = seq[randSeqInd];
-                var readDepthLength = me.readDepth[randSeq].length;
-                var randBinNumber = Math.floor(Math.random()*readDepthLength);
-                randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
-                me.getReferenceStats(randSeq, randBinNumber);
+              if ( seq != undefined && seq.length > 0 ) {
+                for (var count = 0; count < numRefSamples; count++) {
+                  var randSeqInd = Math.floor(Math.random() * seq.length);
+                  var randSeq = seq[randSeqInd];
+                  var readDepthLength = me.readDepth[randSeq].length;
+                  var randBinNumber = Math.floor(Math.random() * readDepthLength);
+                  randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
+                  me.getReferenceStats(randSeq, randBinNumber);
+                }
               }
 
               cb();
