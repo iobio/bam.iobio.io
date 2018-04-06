@@ -331,6 +331,15 @@
                   })
                 }
 
+                // check if app is triggered from illumina
+                var source = getUrlParameter('source')
+                if (source == 'hubiobio') {
+                  getHubIobioUrls(function(bamUrl, baiUrl) {
+                    window.bam = new Bam(bamUrl, { bai: baiUrl});
+                    goBam();
+                  })
+                }
+
                 // check if url is present
                 var bamUrl = decodeUrl(getUrlParameter('bam'))
                 // check if url to bam file is supplied in url and sample it
@@ -816,6 +825,59 @@
                 })
                     .on('error', function(e) { /*console.error(e)*/ ;})
                     .run()
+            }
+
+            function getHubIobioUrls(callback) {
+              let ENV = "development"
+              let api = {
+                development: "http://localhost:3000/apiv1",
+                production: "https://staging.frameshift.io/apiv1"
+              };
+              console.log('in getHub')
+              // let queryParams = Qs.parse(window.location.href.split('?').slice(1).join('?'));
+              let access_token = getUrlParameter('access_token');
+              let sample_uuid = getUrlParameter('sample_uuid');
+              let token_type = getUrlParameter('token_type');
+
+              localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
+
+              // Get VCF File
+              getFilesForSample(sample_uuid).done(data => {
+                bam = data.data.filter(f => f.type == 'bam')[0];
+                bai = data.data.filter(f => f.type == 'bai')[0];
+
+                // Get Signed Url
+                getSignedUrlForFile(bam).done(bamUrlData => {
+                  bamUrl = bamUrlData.url;
+                  getSignedUrlForFile(bai).done(baiUrlData => {
+                    baiUrl = baiUrlData.url;
+                    callback(bamUrl, baiUrl);
+                  })
+                })
+              })
+
+              function getFilesForSample(sample_uuid) {
+                return $.ajax({
+                  url: api[ENV] + '/samples/' + sample_uuid + '/files',
+                  type: 'GET',
+                  contentType: 'application/json',
+                  headers: {
+                    'Authorization': localStorage.getItem('hub-iobio-tkn')
+                  }
+                });
+              }
+
+              function getSignedUrlForFile (file) {
+                return $.ajax({
+                  url: api[ENV] + '/files/' + file.uuid + '/url',
+                  type: 'GET',
+                  contentType: 'application/json',
+                  headers: {
+                    'Authorization': localStorage.getItem('hub-iobio-tkn')
+                  }
+                });
+              }
+
             }
 
             function getIlluminaBamBaiUrls(callback) {
