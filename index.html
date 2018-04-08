@@ -500,7 +500,7 @@
 
                      var allPoints = Object.keys(window.bam.readDepth)
                       .filter(function(key) {
-                        if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
+                        if (filterRef(key))
                           return false
                         if (window.bam.readDepth[key].length > 0)
                           return  true
@@ -510,6 +510,8 @@
                      })
 
                     draw = true;
+
+                    var numRefs = (d3.select('#depth-distribution .chart').datum() || []).length;
 
                     var selection = d3.select('#depth-distribution .chart').datum(allPoints);
 
@@ -526,10 +528,10 @@
                     }
 
                     if (region && region.chr != 'all') {
-                      if(draw) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
+                      if(draw && (allPoints.length > numRefs)) window.readDepthChart(selection, {selected:region.chr, noLine:!done});
                     }
                     else {
-                      if(draw) window.readDepthChart(selection, {noLine:!done});
+                      if(draw && (allPoints.length > numRefs)) window.readDepthChart(selection, {noLine:!done});
                     }
 
                     $('#reference-select')
@@ -550,7 +552,7 @@
                           if (!region || (region && region.chr == 'all'))
                             setSelectedSeq( 'all' , start, end );
                           else
-                            setSelectedSeq( id, start, end);
+                            setSelectedSeq( region.chr, start, end);
                         })
                         window.pieChooserChart(pieSelection);
                      }
@@ -579,6 +581,20 @@
             }
 
 
+            function filterRef(ref) {
+              return (
+                ref.substr(0,4) == 'GL00' ||
+                ref.substr(0,6).toLowerCase() == "hs37d5" ||
+                ref.includes('GL00') ||
+                ref.includes('KI2707') ||
+                ref.split("_").slice(-1)[0] == "alt" ||
+                ref.split("_").slice(-1)[0] == "decoy" ||
+                ref.includes('chrUn') ||
+                ref.substr(0,4) == 'HLA-'
+              )
+            }
+
+
             function updateTotalReads(totalReads) {
                 // update total reads
                 var reads = shortenNumber( totalReads );
@@ -590,7 +606,7 @@
                 if (selected == 'all') {
                   var seqDataIds = Object.keys(window.bam.readDepth)
                         .filter(function(key) {
-                            if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
+                            if (filterRef(key))
                               return false
                             if (window.bam.readDepth[key].length > 0)
                               return  true
@@ -715,7 +731,7 @@
               if (selected == 'all') {
                 return Object.keys(window.bam.readDepth)
                       .filter(function(key) {
-                        if (key.substr(0,4) == 'GL00' || key.substr(0,6).toLowerCase() == "hs37d5")
+                        if (filterRef(key))
                           return false
                         if (window.bam.readDepth[key].length > 0)
                           return  true
