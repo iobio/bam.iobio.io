@@ -660,8 +660,13 @@
                   var regionStr = region.chr;
                 }
                 var extraParams = '';
+
                 if (window.sampling) extraParams += '&sampling=' + window.sampling
-                if (window.bam.baiUri != undefined) {
+
+                if (getUrlParameter('source') == 'hubiobio') {
+                  window.history.pushState({'index.html' : 'bar'},null,"?source=hubiobio&sample_uuid=" + getUrlParameter('sample_uuid') + "&region=" + regionStr + extraParams);
+
+                } else if (window.bam.baiUri != undefined) {
                   window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
 
                 } else {
@@ -849,13 +854,14 @@
                 development: "http://localhost:3000/apiv1",
                 production: "https://staging.frameshift.io/apiv1"
               };
-              console.log('in getHub')
-              // let queryParams = Qs.parse(window.location.href.split('?').slice(1).join('?'));
+
               let access_token = getUrlParameter('access_token');
               let sample_uuid = getUrlParameter('sample_uuid');
               let token_type = getUrlParameter('token_type');
 
-              localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
+              if (access_token !== undefined) {
+                localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
+              }
 
               // Get VCF File
               getFilesForSample(sample_uuid).done(data => {
