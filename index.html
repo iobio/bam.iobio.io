@@ -327,16 +327,19 @@
                 if (action == 'trigger') {
                   getIlluminaBamBaiUrls(function(bamUrl, baiUrl) {
                     window.bam = new Bam(bamUrl, { bai: baiUrl});
-                    goBam();
+                    let region = parseRegionParam(getUrlParameter('region'));
+                    goBam(region);
                   })
                 }
 
                 // check if app is triggered from illumina
                 var source = getUrlParameter('source')
-                if (source == 'hubiobio') {
-                  getHubIobioUrls(function(bamUrl, baiUrl) {
+
+                if (source !== undefined) {
+                  getHubIobioUrls(source, function(bamUrl, baiUrl) {
                     window.bam = new Bam(bamUrl, { bai: baiUrl});
-                    goBam();
+                    let region = parseRegionParam(getUrlParameter('region'));
+                    goBam(region);
                   })
                 }
 
@@ -353,19 +356,7 @@
                     else
                         window.bam = new Bam( bamUrl );
                     var r = getUrlParameter('region');
-                    var region = undefined;
-                    if (r != undefined) {
-                      if (r.split(":").length == 1)
-                        region = { chr: r.split(":")[0]}
-                      else
-                        region = {
-                          chr: r.split(":")[0],
-                          start: parseInt(r.split(":")[1].split('-')[0]),
-                          end: parseInt(r.split(":")[1].split('-')[1])
-                        };
-                    }
-
-
+                    let region = parseRegionParam(r);
                     goBam(region);
                 }
             });
@@ -375,6 +366,21 @@
                 return decodeURIComponent(url)
               else
                 return url;
+            }
+
+            function parseRegionParam(regionParam) {
+              var region = undefined;
+              if (regionParam != undefined) {
+                if (regionParam.split(":").length == 1)
+                  region = { chr: regionParam.split(":")[0]}
+                else
+                  region = {
+                    chr: regionParam.split(":")[0],
+                    start: parseInt(regionParam.split(":")[1].split('-')[0]),
+                    end: parseInt(regionParam.split(":")[1].split('-')[1])
+                  };
+              }
+              return region;
             }
 
             function getUrlParameter(sParam) {
@@ -663,8 +669,9 @@
 
                 if (window.sampling) extraParams += '&sampling=' + window.sampling
 
-                if (getUrlParameter('source') == 'hubiobio') {
-                  window.history.pushState({'index.html' : 'bar'},null,"?source=hubiobio&sample_uuid=" + getUrlParameter('sample_uuid') + "&region=" + regionStr + extraParams);
+                if (getUrlParameter('source') !== undefined) {
+                  const source = getUrlParameter('source');
+                  window.history.pushState({'index.html' : 'bar'},null,"?source="+source+"&sample_uuid=" + getUrlParameter('sample_uuid') + "&region=" + regionStr + extraParams);
 
                 } else if (window.bam.baiUri != undefined) {
                   window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
@@ -848,12 +855,8 @@
                     .run()
             }
 
-            function getHubIobioUrls(callback) {
-              let ENV = "production"
-              let api = {
-                development: "http://localhost:3000/apiv1",
-                production: "https://staging.frameshift.io/apiv1"
-              };
+            function getHubIobioUrls(source, callback) {
+              let api = decodeURIComponent(source) + "/apiv1";
 
               let access_token = getUrlParameter('access_token');
               let sample_uuid = getUrlParameter('sample_uuid');
@@ -880,7 +883,7 @@
 
               function getFilesForSample(sample_uuid) {
                 return $.ajax({
-                  url: api[ENV] + '/samples/' + sample_uuid + '/files',
+                  url: api + '/samples/' + sample_uuid + '/files',
                   type: 'GET',
                   contentType: 'application/json',
                   headers: {
@@ -891,7 +894,7 @@
 
               function getSignedUrlForFile (file) {
                 return $.ajax({
-                  url: api[ENV] + '/files/' + file.uuid + '/url',
+                  url: api + '/files/' + file.uuid + '/url',
                   type: 'GET',
                   contentType: 'application/json',
                   headers: {
