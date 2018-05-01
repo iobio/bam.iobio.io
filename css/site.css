@@ -15,6 +15,15 @@ header .iobio-project {font-size:18px; letter-spacing:6px;margin-top:8px; margin
 header .iobio-project a {color: rgb(120,120,120)}
 header .iobio-project a:hover {color:#2d8fc1;}
 
+#warning-authorize {
+  text-align: center;
+  background: red;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  display: none;
+}
+
 .modal-body {
   font-family: 'Open Sans';
   text-align: justify;

@@ -336,6 +336,10 @@
                 var source = getUrlParameter('source')
 
                 if (source !== undefined) {
+                  // if (window.location.hash != "") {
+                  //   let newUrl = window.location.href.replace('#', '&')
+                  //   window.location.href = newUrl;
+                  // }
                   getHubIobioUrls(source, function(bamUrl, baiUrl) {
                     window.bam = new Bam(bamUrl, { bai: baiUrl});
                     let region = parseRegionParam(getUrlParameter('region'));
@@ -384,11 +388,18 @@
             }
 
             function getUrlParameter(sParam) {
+                // get params
                 var sPageURL = window.location.search.substring(1);
                 var sURLVariables = sPageURL.match(/(?:[^&"]+|"[^"]*")+/g) || [];
-                for (var i = 0; i < sURLVariables.length; i++)
+                // get hashes
+                var sHashURL = window.location.hash.slice(1);
+                var sHashVariables = sHashURL.match(/(?:[^&"]+|"[^"]*")+/g) || [];
+
+                var variables = sURLVariables.concat(sHashVariables);
+
+                for (var i = 0; i < variables.length; i++)
                 {
-                    var sParameterName = sURLVariables[i].match(/(?:[^="]+|"[^"]*")+/g);
+                    var sParameterName = variables[i].match(/(?:[^="]+|"[^"]*")+/g);
                     if (sParameterName[0] == sParam)
                     {
                         return sParameterName[1];
@@ -866,20 +877,26 @@
                 localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
               }
 
-              // Get VCF File
-              getFilesForSample(sample_uuid).done(data => {
-                bam = data.data.filter(f => f.type == 'bam')[0];
-                bai = data.data.filter(f => f.type == 'bai')[0];
+              if (localStorage.getItem('hub-iobio-tkn')) {
 
-                // Get Signed Url
-                getSignedUrlForFile(bam).done(bamUrlData => {
-                  bamUrl = bamUrlData.url;
-                  getSignedUrlForFile(bai).done(baiUrlData => {
-                    baiUrl = baiUrlData.url;
-                    callback(bamUrl, baiUrl);
+              // Get VCF File
+                getFilesForSample(sample_uuid).done(data => {
+                  bam = data.data.filter(f => f.type == 'bam')[0];
+                  bai = data.data.filter(f => f.type == 'bai')[0];
+
+                  // Get Signed Url
+                  getSignedUrlForFile(bam).done(bamUrlData => {
+                    bamUrl = bamUrlData.url;
+                    getSignedUrlForFile(bai).done(baiUrlData => {
+                      baiUrl = baiUrlData.url;
+                      callback(bamUrl, baiUrl);
+                    })
                   })
                 })
-              })
+              } else {
+                window.location.href = buildOauthLink();
+
+              }
 
               function getFilesForSample(sample_uuid) {
                 return $.ajax({
@@ -889,6 +906,11 @@
                   headers: {
                     'Authorization': localStorage.getItem('hub-iobio-tkn')
                   }
+                }).fail(function(xhr,status,error) {
+                  let = link = buildOauthLink();
+                  $('#warning-authorize')
+                    .append('Your access to hub.iobio has expired. Please click <a href='+link+'>here</a> to renew your access.')
+                    .css('display', 'block');
                 });
               }
 
@@ -903,6 +925,15 @@
                 });
               }
 
+            }
+
+            function buildOauthLink() {
+              // var client_id = apiConfig['hub_client'].id;
+              var hubApi = decodeURIComponent(getUrlParameter('source'));
+              var client_id = 'u3oRvGom';
+              // var queryString = qs.stringify(queryParams, { arrayFormat: 'brackets', addQueryPrefix: true });
+              var redirect_uri = encodeURIComponent(window.location.href);
+              return `${hubApi}/oauth/authorization?response_type=token&client_id=${client_id}&redirect_uri=${redirect_uri}`
             }
 
             function getIlluminaBamBaiUrls(callback) {
@@ -1043,6 +1074,9 @@
         </script>
     </head>
     <body>
+        <div id="warning-authorize">
+          Test
+        </div>
         <header>
             <a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span></a>
             <div style="float:right" class="iobio-project" style="padding-top:20px">
