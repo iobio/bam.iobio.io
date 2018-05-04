@@ -443,6 +443,26 @@ div.tooltip {
     text-decoration: underline;
 }
 
+.beta-info {
+  margin-bottom: 20px;
+  margin-top: 20px;
+  text-align: center;
+}
+.beta-icon {
+  fill: #95c627;
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 3px;
+  margin-top: 7px;
+  height: 28px;
+  width: 28px;
+
+}
+.beta-link {
+  font-size:  28px;
+  border: 1px solid #d4d4d4;
+}
+
 /* For mobile phones in portrait view */
 @media screen and (max-device-width:640px), screen and (max-width:640px) {
 
