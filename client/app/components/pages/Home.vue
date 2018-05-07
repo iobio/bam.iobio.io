@@ -130,8 +130,35 @@
     },
     props: {},
     data() {
-      return {}
+      return {
+        launchedFromClin: null,
+        clinIobioUrl: "http://localhost:4030"
+      }
     },
-    methods: {}
+    mounted: function() {
+      let self = this;
+      window.addEventListener("message", self.receiveClinMessage, false);
+    },
+    methods: {
+      receiveClinMessage: function(event) {
+        let self = this;
+        // Do we trust the sender of this message?
+        if (event.origin !== this.clinIobioUrl) {
+          return;
+        }
+
+        var clinObject = JSON.parse(event.data);
+
+        if (clinObject.type == 'set-data') {
+          self.launchedFromClin = true;
+          self.$router.push({name: 'bam-view', query: { bam: clinObject.modelInfo.bam, bai: clinObject.modelInfo.bai}});
+
+        }
+
+        var responseObject = {success: true, type: 'message-received', sender: 'gene.iobio.io'};
+        window.parent.postMessage(JSON.stringify(responseObject), this.clinIobioUrl);
+      }
+
+    }
   }
 </script>
