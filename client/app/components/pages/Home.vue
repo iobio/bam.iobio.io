@@ -154,11 +154,11 @@
         if (clinObject.type == 'set-data') {
           self.launchedFromClin = true;
           self.$router.push({name: 'bam-view', query: { bam: clinObject.modelInfo.bam, bai: clinObject.modelInfo.bai}});
-
+          var responseObject = {success: true, type: 'message-received', sender: 'bam.iobio.io'};
+          window.parent.postMessage(JSON.stringify(responseObject), this.clinIobioUrl);
         }
 
-        var responseObject = {success: true, type: 'message-received', sender: 'gene.iobio.io'};
-        window.parent.postMessage(JSON.stringify(responseObject), this.clinIobioUrl);
+
       }
 
     }

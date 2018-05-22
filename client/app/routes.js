@@ -12,6 +12,10 @@ import Help from './components/pages/Help.vue'
 import Home from './components/pages/Home.vue'
 import License from './components/pages/License.vue'
 
+import VTooltip from 'v-tooltip'
+import               '../assets/css/v-tooltip.css'
+Vue.use(VTooltip)
+
 Vue.use(VueRouter);
 
 const routes = [

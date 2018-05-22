@@ -299,21 +299,24 @@
                          :draw="draw"
                          :readDepthData="readDepthData"
                          :conversionRatio="readDepthConversionRatio"
-                         :brushRange="coverageBrushRange"></read-coverage-box>
+                         :brushRange="coverageBrushRange"
+                         v-tooltip.top-center="{content: clinTooltip.genome_wide_coverage.content, show: clinTooltip.genome_wide_coverage.show, trigger: 'manual'}">
+                         </read-coverage-box>
 
       <reads-sampled-box @sampleMore="sampleMore" :totalReads="totalReads"></reads-sampled-box>
 
     </section>
 
     <section id="middle">
-      <div id="percents">
+      <div id="percents" >
 
         <percent-chart-box id="mapped_reads"
                            title="Mapped Reads"
                            modal-title="Mapped reads"
                            help-tooltip="Expect a value >90%"
                            :chart-data="mappedReadsData"
-                           index-footnote="* full data available in index">
+                           index-footnote="* full data available in index"
+                           v-tooltip.top-center="{content: clinTooltip.mapped_reads.content, show: clinTooltip.mapped_reads.show, trigger: 'manual'}">
           <div slot="body">
             <div>
               The mapped reads chart shows how many of the reads in the sample were successfully mapped to the reference genome. Genetic variation, in particular structural variants, ensure that every sequenced sample is genetically different to the reference genome it was aligned to. If the sample differs only in a small number of single base pair changes (e.g. SNVs), the read will still likely map to the reference, but, for more significant variation, the read can fail to be placed. Therefore, it is not expected that the mapped reads rate will hit 100%, but it is expected to be high (usually >90%).
@@ -404,7 +407,8 @@
                            title="Duplicates"
                            modal-title="Duplicates"
                            help-tooltip="Value depends on depth"
-                           :chart-data="duplicatesData">
+                           :chart-data="duplicatesData"
+                           v-tooltip.top-center="{content: clinTooltip.duplicate_rate.content, show: clinTooltip.duplicate_rate.show, trigger: 'manual'}">
           <div slot="body">
             <div>
               PCR duplicates are two (or more) reads that originate from the same DNA fragment. When sequencing data is analysed, it is assumed that each observation (i.e. each read) is independent; an assumption that fails in the presence of duplicate reads. Typically, algorithms look for reads that map to the same genomic coordinate, and whose mates also map to identical genomic coordinates. It is important to note that as the sequencing depth increases, more reads are sampled from the DNA library, and consequently it is increasingly likely that duplicate reads will be sampled. As a result, the true duplicate rate is not independent of the depth, and they should both be considered when looking at the duplicate rate. Additionally, as the sequencing depth in increases, it is also increasingly likely that reads will map to the same location and be marked as duplicates, even when they are not. As such, as the sequencing depth approaches and surpasses the read length, the duplicate rate starts to become less indicative of problems.
@@ -442,7 +446,8 @@
 
       <div id="distributions" >
 
-        <div id="read-coverage-distribution" class="distribution panel">
+        <div id="read-coverage-distribution" class="distribution panel"
+          v-tooltip.top-center="{content: clinTooltip.median_coverage.content, show: clinTooltip.median_coverage.show, trigger: 'manual'}">
           Read Coverage Distribution
           <help-button modalTitle="Read Coverage Distribution" tooltipText="Expect a Poisson distribution centered on the expected mean coverage">
             <div slot="body">
@@ -652,6 +657,16 @@
 
         lengthXAxisLabel: 'Fragment Length',
         qualityXAxisLabel: 'Mapping Quality',
+
+        clinIobioUrls: ["http://localhost:4030", "http://clin.iobio.io"],
+        clinIobioUrl: null,
+
+        clinTooltip: {
+          genome_wide_coverage: {show: false, content: ''},
+          median_coverage:      {show: false, content: ''},
+          mapped_reads:         {show: false, content: ''},
+          duplicate_rate:       {show: false, content: ''}
+        }
 
       }
     },
@@ -1138,11 +1153,35 @@
 
       readCoverageTooltipFormatter: function(d) {
         return d[0] + ',' + precisionRound(d[1]*100,2) + '%';
+      },
+
+      receiveClinMessage: function(event) {
+        let self = this;
+        // Do we trust the sender of this message?
+        if (this.clinIobioUrls.indexOf(event.origin) == -1) {
+          return;
+        }
+        this.clinIobioUrl = event.origin;
+
+        var clinObject = JSON.parse(event.data);
+
+        if (clinObject.type == 'show-tooltip') {
+          self.clinTooltip[clinObject.task.key].show = true;
+          self.clinTooltip[clinObject.task.key].content = clinObject.task.tooltip;
+        } else if (clinObject.type == 'hide-tooltip') {
+          self.clinTooltip[clinObject.task.key].show = false;
+        }
+
       }
     },
 
     created: function () {
       this.load();
+    },
+
+    mounted: function() {
+      let self = this;
+      window.addEventListener("message", self.receiveClinMessage, false);
     },
 
     watch: {
