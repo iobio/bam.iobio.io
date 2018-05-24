@@ -313,16 +313,21 @@ var Bam = Class.extend({
          if (me.header) {
             var keys = Object.keys(readDepth);
             for (var i=0; i < keys.length; i++) {
-              var name = me.header.sq[parseInt(keys[i])].name;
-              // console.log('cb done = ' + done);
-              //console.log('before last callback');
-              if ( me.readDepth[ name ] == undefined){
-                //console.log('last callback');
-                me.readDepth[ name ] = readDepth[keys[i]];
-                // check if request is done and this is the last iteration
-                done = (isdone && ( (i+1)==keys.length ) )
-                callback( name, readDepth[keys[i]], done );
+              var recIdx = parseInt(keys[i]);
+              if (recIdx < me.header.sq.length && me.header.sq[recIdx]) {
+                var name = me.header.sq[recIdx].name;
+                // console.log('cb done = ' + done);
+                //console.log('before last callback');
+                if ( me.readDepth[ name ] == undefined){
+                  //console.log('last callback');
+                  me.readDepth[ name ] = readDepth[keys[i]];
+                }
+              } else {
+                console.log("bypassing read depth for header.sq at position " + recIdx);
               }
+              // check if request is done and this is the last iteration
+              done = (isdone && ( (i+1)==keys.length ) )
+              callback( name, readDepth[keys[i]], done );
             }
          }
       }
