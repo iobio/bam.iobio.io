@@ -127,8 +127,8 @@ export default {
 
     openBamURL : function() {
       let self = this;
-      if ( this.selectedBamURL == '' ) {
-        alert('Please specify a bam url.');
+      if (!validURL(this.selectedBamURL)) {
+        alert('Please enter a valid bam url, including http:// or https:// in front');
         return;
       }
       self.$router.push({name: 'bam-view', query: { bam: this.selectedBamURL, bai: this.selectedBaiURL}});
@@ -162,6 +162,14 @@ export default {
       self.$router.push({name: 'bam-view-file', params: { selectedBamFile: bamFile, selectedBaiFile: baiFile}});
     }
   }
+}
+
+// TODO: If we want to get serious about validating URLS we should probably use
+// a library. It's notoriously difficult to get right. This just
+// verifies the string has the necessary bits so our UI doesn't choke.
+function validURL(url) {
+  const regex = /(http|https):\/\/.+\/.+/;
+  return regex.test(url);
 }
 
 

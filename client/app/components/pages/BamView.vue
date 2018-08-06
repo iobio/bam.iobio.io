@@ -1200,32 +1200,39 @@
 
     computed: {
       shortenedBamFileURL: function() {
-        if ( this.selectedBamURL != undefined && this.selectedBamURL != '' ) {
-          var protocolDiv = this.selectedBamURL.split('//');
+        if (this.selectedBamURL !== undefined) {
+          const protocolDiv = this.selectedBamURL.split('//');
 
-          var protocol = protocolDiv[0];
-          var withoutProtocol = protocolDiv[1];
+          const protocol = protocolDiv[0];
+          const withoutProtocol = protocolDiv[1];
 
-          var pathDivision = withoutProtocol.split('/');
+          let pathDivision = withoutProtocol.split('/');
 
           // Edge case for '/' ending causing empty item
           if (pathDivision[pathDivision.length - 1] === '') {
-            pathDivision = pathDivision.slice(0, pathDivision.length - 1);
+            pathDivision.splice(pathDivision.length - 1, 1);
           }
 
-          var host = pathDivision.shift();
-          var fileName = pathDivision.pop();
-          var middlePart = pathDivision.join("/");
+          const host = pathDivision.shift();
+          const fileName = pathDivision.pop();
+          const middlePart = pathDivision.join("/");
 
-          if ( this.showFullURL ) {
+          const fontSize = 25;
+          const sizingStr = `<span style="font-size: ${fontSize}pt"></span>`;
+
+          if (middlePart.length === 0) {
+            return sizingStr + this.selectedBamURL;
+          }
+          else if (this.showFullURL) {
             return protocol + "//" + host +
-              "<span style=\"font-size: 25pt\"></span>" + // For sizing uniformity
-              "/" + middlePart + "/" +
-              (fileName != undefined ? fileName : "")
+              sizingStr + "/" + middlePart + "/" +
+              (fileName !== undefined ? fileName : "")
           }
-          return protocol + "//" + host +
-            "/<span style=\"font-size: 25pt;color:#2687BE;\" >...</span> /" +
-            (fileName != undefined ? fileName : "")
+          else {
+            return protocol + "//" + host +
+              `/<span style="font-size: ${fontSize}pt;color:#2687BE;" >...</span> /` +
+              (fileName !== undefined ? fileName : "")
+          }
         }
         return '';
       }

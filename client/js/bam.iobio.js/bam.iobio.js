@@ -480,7 +480,14 @@ var Bam = Class.extend({
 
           var rawHeader = ""
           var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
+
+          var hadError = false;
           cmd.on('error', function(error) {
+            // only show the alert on the first error
+            if (!hadError) {
+              hadError = true;
+              alert("Error downloading file. Please check the URL and reload.")
+            }
             console.log(error);
           })
           cmd.on('data', function(data, options) {
