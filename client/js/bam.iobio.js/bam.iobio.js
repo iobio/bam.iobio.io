@@ -337,7 +337,12 @@ var Bam = Class.extend({
           var currentSequence;
           var indexUrl = this.baiUri || this.bamUri + ".bai";
           var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
-          cmd.on('error', function(e){ console.log(e); });
+          cmd.on('error', (e) => {
+            alert("Error accessing the BAM index file. Please provide an " +
+                  "index file URL or ensure that " +
+                  `${this.bamUri + '.bai'} exists`);
+            console.log(e);
+          });
           cmd.on('data', function(data, options) {
              data = data.split("\n");
              for (var i=0; i < data.length; i++)  {
