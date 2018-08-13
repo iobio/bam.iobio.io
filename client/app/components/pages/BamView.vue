@@ -579,8 +579,6 @@
   import PercentChartBox from "../partials/PercentChartBox.vue";
   import StackedHistogram from "../viz/StackedHistogram.vue";
 
-  var naturalSort = require('javascript-natural-sort');
-
   export default {
     name: 'bam-view',
 
@@ -666,8 +664,14 @@
           median_coverage:      {show: false, content: ''},
           mapped_reads:         {show: false, content: ''},
           duplicate_rate:       {show: false, content: ''}
-        }
+        },
 
+        // this is used to achieve a "natural sort". see
+        // https://stackoverflow.com/a/38641281/943814
+        sorter: new Intl.Collator(undefined, {
+          numeric: true,
+          sensitivity: 'base'
+        }),
       }
     },
 
@@ -1045,9 +1049,8 @@
             $(".samplingLoader").css("display", "block");
 
           }
-          naturalSort.insensitive = true;
           var allPoints = Object.keys(this.bam.readDepth)
-            .sort(naturalSort)
+            .sort(this.sorter.compare)
             .filter(function (key) {
               if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
                 return false
@@ -1107,7 +1110,7 @@
       sortReferenceSelect: function() {
         var options = $("#reference-select option").filter(function(_, o) { return o.value != 'all' }).detach();
         var values = options.map(function(_, o) { return o.value }).get();
-        values.sort(naturalSort);
+        values.sort(this.sorter.compare);
         values.forEach(value=> {
           $('#reference-select')
             .append($("<option></option>")
