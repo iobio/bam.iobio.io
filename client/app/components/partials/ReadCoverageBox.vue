@@ -55,7 +55,6 @@
   }
 
   .warning {
-    display: none;
     margin-top: 40px;
     background: rgb(120,120,120);
     color: white;
@@ -143,8 +142,8 @@
     </div>
 
     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
-    <div class='warning' id="not_enough_data">Bam file is too small to read coverage information</div>
-    <div class="warning too-many-refs">Too many references to display. Use the dropdown to the left to select the reference</div>
+    <div v-if="notEnoughData" class="warning">Bam file is too small to read coverage information</div>
+    <div v-if="tooManyRefs" class="warning">Too many references to display. Use the dropdown to the left to select the reference</div>
 
     <div class='chart' style="width:100%; height:60%"></div>
 
@@ -154,7 +153,7 @@
                         :selectedSeqId="selectedSeqId"
                         :limitYAxes="limitYAxes"
                         :numberIntervalsToZoom="numberIntervalsToZoom"
-                        :drawChart="draw"
+                        :drawChart="draw && !tooManyRefs"
                         :data="readDepthData"
                         :conversionRatio="conversionRatio"
                         :brushRange="brushRange"></read-coverage-plot>
@@ -250,7 +249,21 @@ export default {
       return this.useMedianAsZoomInterval ?
         ('show ' + (this.numberIntervalsToZoom+1) +  ' multiples of median') :
         ('show ' + this.numberIntervalsToZoom + ' standard deviations');
-    }
+    },
+
+    notEnoughData: function() {
+      const totalPoints = this.readDepthData.reduce(function (acc, val) {
+        return acc + val.data.length
+      }, 0);
+
+      return this.draw && totalPoints <= 1;
+    },
+
+    tooManyRefs: function() {
+      const maxRefs = 50;
+      const allSelected = this.selectedSeqId === 'all';
+      return allSelected && this.readDepthData.length > 50;
+    },
   }
 }
 

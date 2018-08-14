@@ -672,6 +672,9 @@
           numeric: true,
           sensitivity: 'base'
         }),
+
+        allPoints: [],
+        totalPoints: 0,
       }
     },
 
@@ -1041,7 +1044,7 @@
         $("#showData").css("visibility", "visible");
 
         // get read depth
-        this.bam.estimateBaiReadDepth(function (id, points, done) {
+        this.bam.estimateBaiReadDepth(function dataCallback(id) {
           // setup first time and sample
 
           if (Object.keys(this.bam.readDepth).length == 1) {
@@ -1049,7 +1052,7 @@
             $(".samplingLoader").css("display", "block");
 
           }
-          var allPoints = Object.keys(this.bam.readDepth)
+          this.allPoints = Object.keys(this.bam.readDepth)
             .sort(this.sorter.compare)
             .filter(function (key) {
               if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
@@ -1061,47 +1064,36 @@
               return {"name": key, "data": this.bam.readDepth[key]}
             }.bind(this));
 
-          var selection = d3.select('#depth-distribution .chart').datum(allPoints);
-
-          if (allPoints.length > 50) {
-            $('#piechooser svg').css('visibility', 'hidden');
-            $('.too-many-refs').css('display', 'block');
-            this.draw = false;
-          }
+          var selection = d3.select('#depth-distribution .chart').datum(this.allPoints);
 
           $('#reference-select')
             .append($("<option></option>")
               .attr("value", id)
               .text(id));
 
-          if (done) {
-            this.readDepthData = allPoints;
+        }.bind(this),
 
-            this.sortReferenceSelect();
+        function doneCallback() {
 
-            var start = region ? region.start : undefined;
-            var end = region ? region.end : undefined;
+          this.readDepthData = this.allPoints;
 
-            // turn off read depth loading msg
-            $("#readDepthLoadingMsg").css("display", "none");
-            // Draw read depth chart
-            this.draw = true;
+          this.sortReferenceSelect();
 
-            // Set selected seq & region
-            if (!region || (region && region.chr == 'all'))
-              this.setSelectedSeq('all', start, end);
-            else
-              this.setSelectedSeq(region.chr, start, end);
+          var start = region ? region.start : undefined;
+          var end = region ? region.end : undefined;
 
-            this.referenceDepthData = this.bam.referenceDepthData;
-          }
+          // turn off read depth loading msg
+          $("#readDepthLoadingMsg").css("display", "none");
+          // Draw read depth chart
+          this.draw = true;
 
-          var totalPoints = allPoints.reduce(function (acc, val) {
-            return acc + val.data.length
-          }, 0)
-          if (done && totalPoints <= 1) {
-            $('#not_enough_data').css('display', 'block');
-          }
+          // Set selected seq & region
+          if (!region || (region && region.chr == 'all'))
+            this.setSelectedSeq('all', start, end);
+          else
+            this.setSelectedSeq(region.chr, start, end);
+
+          this.referenceDepthData = this.bam.referenceDepthData;
 
         }.bind(this));
 
@@ -1247,6 +1239,10 @@
   function precisionRound(number, precision) {
     var factor = Math.pow(10, precision);
     return Math.round(number * factor) / factor;
+  }
+
+  function timeNowSeconds() {
+    return performance.now() / 1000;
   }
 
 </script>
