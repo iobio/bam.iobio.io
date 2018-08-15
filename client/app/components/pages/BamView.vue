@@ -1100,8 +1100,11 @@
             $('#not_enough_data').css('display', 'block');
           }
 
-        }.bind(this));
-
+        }.bind(this),
+        (err) => {
+          // if there's an error start over on the home page
+          this.$router.push({ path: '/' });
+        })
       },
 
       sortReferenceSelect: function() {

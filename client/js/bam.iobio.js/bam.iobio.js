@@ -32,6 +32,8 @@ var Bam = Class.extend({
       this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
       this.iobio.bamstatsAlive  = "nv-prod.iobio.io/bamstatsalive/";
 
+      this.hadError = false;
+
       return this;
    },
 
@@ -303,7 +305,7 @@ var Bam = Class.extend({
       // Filters BAM file(s) by user-specified criteria
    },
 
-   estimateBaiReadDepth: function(callback) {
+   estimateBaiReadDepth: function(callback, baiErrCb) {
       var me = this, readDepth = {};
       me.readDepth = {};
       var numRefSamples = 12;
@@ -330,6 +332,9 @@ var Bam = Class.extend({
 
       me.getHeader(function(header) {
             cb();
+      },
+      (err) => {
+        baiErrCb(err);
       });
       if ( Object.keys(me.readDepth).length > 0 )
          callback(me.readDepth)
@@ -337,7 +342,15 @@ var Bam = Class.extend({
           var currentSequence;
           var indexUrl = this.baiUri || this.bamUri + ".bai";
           var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
-          cmd.on('error', function(e){ console.log(e); });
+          cmd.on('error', (e) => {
+            if (!this.hadError) {
+              alert("Error accessing the BAM index file. Please provide an " +
+                    "index file URL or ensure that " +
+                    `${this.bamUri + '.bai'} exists`);
+              baiErrCb(e);
+            }
+            console.log(e);
+          });
           cmd.on('data', function(data, options) {
              data = data.split("\n");
              for (var i=0; i < data.length; i++)  {
@@ -470,7 +483,7 @@ var Bam = Class.extend({
 
    },
 
-   getHeader: function(callback) {
+   getHeader: function(callback, errCb) {
       var me = this;
       if (me.header)
          callback(me.header);
@@ -481,12 +494,12 @@ var Bam = Class.extend({
           var rawHeader = ""
           var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
 
-          var hadError = false;
-          cmd.on('error', function(error) {
+          cmd.on('error', (error) => {
             // only show the alert on the first error
-            if (!hadError) {
-              hadError = true;
-              alert("Error downloading file. Please check the URL and reload.")
+            if (!this.hadError) {
+              this.hadError = true;
+              alert("Error downloading file. Please check the URL.")
+              errCb(error);
             }
             console.log(error);
           })
