@@ -305,7 +305,7 @@ var Bam = Class.extend({
       // Filters BAM file(s) by user-specified criteria
    },
 
-   estimateBaiReadDepth: function(callback, baiErrCb) {
+   estimateBaiReadDepth: function(dataCallback, doneCallback, baiErrCb) {
       var me = this, readDepth = {};
       me.readDepth = {};
       var numRefSamples = 12;
@@ -317,14 +317,14 @@ var Bam = Class.extend({
             var keys = Object.keys(readDepth);
             for (var i=0; i < keys.length; i++) {
               var name = me.header.sq[parseInt(keys[i])].name;
-              // console.log('cb done = ' + done);
-              //console.log('before last callback');
               if ( me.readDepth[ name ] == undefined){
-                //console.log('last callback');
                 me.readDepth[ name ] = readDepth[keys[i]];
-                // check if request is done and this is the last iteration
-                done = (isdone && ( (i+1)==keys.length ) )
-                callback( name, readDepth[keys[i]], done );
+                dataCallback(name);
+              }
+
+              const lastIteration = i === keys.length - 1;
+              if (isdone && lastIteration) {
+                doneCallback();
               }
             }
          }
@@ -337,7 +337,7 @@ var Bam = Class.extend({
         baiErrCb(err);
       });
       if ( Object.keys(me.readDepth).length > 0 )
-         callback(me.readDepth)
+         dataCallback(me.readDepth)
       else if (me.sourceType == 'url') {
           var currentSequence;
           var indexUrl = this.baiUri || this.bamUri + ".bai";

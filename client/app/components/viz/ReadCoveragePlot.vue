@@ -99,11 +99,17 @@ export default {
       },
 
       draw: function() {
+        const selection = d3.select('#depth-distribution .chart');
+
         if (this.drawChart) {
-          var selection = d3.select('#depth-distribution .chart');
+          selection.style('display', 'block');
           this.readDepthChart(selection, this.getOptions());
           this.readDepthChart.setSelected(this.selectedSeqId, this.getOptions(true));
         }
+        else {
+          selection.style('display', 'none');
+        }
+
         this.setBrush();
         this.addAxisLabels();
       },
