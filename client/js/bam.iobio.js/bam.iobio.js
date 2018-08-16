@@ -318,7 +318,9 @@ var Bam = Class.extend({
             for (var i=0; i < keys.length; i++) {
               var name = me.header.sq[parseInt(keys[i])].name;
               if ( me.readDepth[ name ] == undefined){
-                me.readDepth[ name ] = readDepth[keys[i]];
+                me.readDepth[ name ] = {
+                  depths: readDepth[keys[i]],
+                }
                 dataCallback(name);
               }
 
@@ -386,7 +388,7 @@ var Bam = Class.extend({
               for (var count = 0; count < numRefSamples; count++) {
                 var randSeqInd = Math.floor(Math.random() * seq.length);
                 var randSeq = seq[randSeqInd];
-                var readDepthLength = me.readDepth[randSeq].length;
+                var readDepthLength = me.readDepth[randSeq].depths.length;
                 var randBinNumber = Math.floor(Math.random() * readDepthLength);
                 randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
                 me.getReferenceStats(randSeq, randBinNumber);
@@ -470,7 +472,7 @@ var Bam = Class.extend({
                 for (var count = 0; count < numRefSamples; count++) {
                   var randSeqInd = Math.floor(Math.random() * seq.length);
                   var randSeq = seq[randSeqInd];
-                  var readDepthLength = me.readDepth[randSeq].length;
+                  var readDepthLength = me.readDepth[randSeq].depths.length;
                   var randBinNumber = Math.floor(Math.random() * readDepthLength);
                   randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
                   me.getReferenceStats(randSeq, randBinNumber);

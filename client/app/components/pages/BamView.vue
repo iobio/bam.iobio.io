@@ -747,7 +747,7 @@
 
             var binNumber = data.binNumber;
             var chr = data.chr;
-            var bytes = readDepthData[chr][binNumber].depth;
+            var bytes = readDepthData[chr].depths[binNumber].depth;
 
             var aveDepth = data.averageDepth;
 
@@ -766,17 +766,17 @@
         var stats = this.sampleStats;
 
         if (this.selectedSeqId == 'all') {
-          if (this.bam.readDepth[Object.keys(this.bam.readDepth)[0]].mapped != undefined) {
+          if (this.bam.readDepth[Object.keys(this.bam.readDepth)[0]].depths.mapped != undefined) {
             mappedReads = unmappedReads = 0;
             for (var id  in this.bam.readDepth) {
-              mappedReads += this.bam.readDepth[id].mapped;
-              unmappedReads += this.bam.readDepth[id].unmapped;
+              mappedReads += this.bam.readDepth[id].depths.mapped;
+              unmappedReads += this.bam.readDepth[id].depths.unmapped;
             }
             unmappedReads = this.bam.n_no_coor;
           }
         } else {
-          mappedReads = this.bam.readDepth[this.selectedSeqId].mapped;
-          unmappedReads = this.bam.readDepth[this.selectedSeqId].unmapped;
+          mappedReads = this.bam.readDepth[this.selectedSeqId].depths.mapped;
+          unmappedReads = this.bam.readDepth[this.selectedSeqId].depths.unmapped;
         }
 
         var showMappedDataFromIndex = false;
@@ -930,7 +930,7 @@
             .filter(function (key) {
               if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
                 return false
-              if (this.bam.readDepth[key].length > 0)
+              if (this.bam.readDepth[key].depths.length > 0)
                 return true
             }.bind(this))
         } else
@@ -1057,11 +1057,11 @@
             .filter(function (key) {
               if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
                 return false
-              if (this.bam.readDepth[key].length > 0)
+              if (this.bam.readDepth[key].depths.length > 0)
                 return true
             }.bind(this))
             .map(function (key) {
-              return {"name": key, "data": this.bam.readDepth[key]}
+              return {"name": key, "data": this.bam.readDepth[key].depths}
             }.bind(this));
 
           var selection = d3.select('#depth-distribution .chart').datum(this.allPoints);
