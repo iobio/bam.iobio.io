@@ -316,10 +316,15 @@ var Bam = Class.extend({
          if (me.header) {
             var keys = Object.keys(readDepth);
             for (var i=0; i < keys.length; i++) {
-              var name = me.header.sq[parseInt(keys[i])].name;
+              const sqIndex = parseInt(keys[i]);
+              const name = me.header.sq[sqIndex].name;
+              const sqLength = me.header.sq[sqIndex].end;
+              me.header.sq[sqIndex].hasRecords = true;
+
               if ( me.readDepth[ name ] == undefined){
                 me.readDepth[ name ] = {
                   depths: readDepth[keys[i]],
+                  sqLength,
                 }
                 dataCallback(name);
               }
@@ -531,7 +536,11 @@ var Bam = Class.extend({
               var values = field.split(':');
               fHash[ values[0] ] = values[1]
             })
-            header.sq.push({name:fHash["SN"], end:1+parseInt(fHash["LN"])});
+            header.sq.push({
+              name:fHash["SN"],
+              end:1+parseInt(fHash["LN"]),
+              hasRecords: false,
+            });
          }
       }
       this.header = header;

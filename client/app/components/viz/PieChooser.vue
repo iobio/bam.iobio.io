@@ -62,7 +62,7 @@ export default {
 
       this.pie = d3.layout.pie()
         .sort(null)
-        .value(function(d,i) {return d.data.length });
+        .value(function(d, i) { return d.sqLength });
 
       this.pieChooserChart = iobio.viz.pieChooser()
         .radius(this.radius)

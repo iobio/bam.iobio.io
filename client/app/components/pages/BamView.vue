@@ -775,6 +775,9 @@
             unmappedReads = this.bam.n_no_coor;
           }
         } else {
+          if (this.bam.readDepth[this.selectedSeqId] === undefined) {
+            return;
+          }
           mappedReads = this.bam.readDepth[this.selectedSeqId].depths.mapped;
           unmappedReads = this.bam.readDepth[this.selectedSeqId].depths.unmapped;
         }
@@ -928,7 +931,7 @@
         if (this.selectedSeqId == 'all') {
           return Object.keys(this.bam.readDepth)
             .filter(function (key) {
-              if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
+              if (!validSqName(key))
                 return false
               if (this.bam.readDepth[key].depths.length > 0)
                 return true
@@ -1055,16 +1058,18 @@
           this.allPoints = Object.keys(this.bam.readDepth)
             .sort(this.sorter.compare)
             .filter(function (key) {
-              if (key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5")
+              if (!validSqName(key))
                 return false
               if (this.bam.readDepth[key].depths.length > 0)
                 return true
             }.bind(this))
             .map(function (key) {
-              return {"name": key, "data": this.bam.readDepth[key].depths}
+              return {
+                name: key,
+                data: this.bam.readDepth[key].depths,
+                sqLength: this.bam.readDepth[key].sqLength,
+              }
             }.bind(this));
-
-          var selection = d3.select('#depth-distribution .chart').datum(this.allPoints);
 
           $('#reference-select')
             .append($("<option></option>")
@@ -1075,9 +1080,46 @@
 
         function doneCallback() {
 
-          this.readDepthData = this.allPoints;
+          this.readDepthData = this.allPoints.slice();
 
-          this.sortReferenceSelect();
+          // For any header entries that don't have any actual records, add
+          // a dummy entry with 0 coverage to indicate to the user that the
+          // data is missing.
+          // NOTE: this is a bit of a hack. A better long-term solution would
+          // probably be to build functionality into the lower visualization
+          // layers for representing missing data.
+          if (this.bam.header) {
+            for (const sq of this.bam.header.sq) {
+              if (sq.hasRecords === false && validSqName(sq.name)) {
+
+                // this value matches what is used by the bamReadDepther
+                // backend service. See:
+                // https://github.com/iobio/minion-services/tree/master/bamReadDepther 
+                const BAM_INDEX_BIN_STEP = 16384;
+
+                // build dummy data
+                const data = [];
+                for (let i = 0; i < sq.end; i += BAM_INDEX_BIN_STEP) {
+                  data.push({
+                    pos: i,
+                    depth: 0,
+                  });
+                }
+                this.readDepthData.push({
+                  name: sq.name,
+                  //data: [],
+                  data,
+                  sqLength: sq.end,
+                });
+              }
+            }
+          }
+          else {
+            throw "bam header not ready";
+          }
+
+          this.readDepthData
+            .sort((a, b) => this.sorter.compare(a.name, b.name));
 
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
@@ -1246,6 +1288,10 @@
 
   function timeNowSeconds() {
     return performance.now() / 1000;
+  }
+
+  function validSqName(key) {
+    return !(key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5");
   }
 
 </script>

@@ -239,6 +239,7 @@ export default {
       },
 
       dataUpdate: function(){
+        d3.select('#depth-distribution .chart').datum(this.data);
         this.getBounds();
         this.update();
       }
