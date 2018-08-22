@@ -316,9 +316,16 @@ var Bam = Class.extend({
          if (me.header) {
             var keys = Object.keys(readDepth);
             for (var i=0; i < keys.length; i++) {
-              var name = me.header.sq[parseInt(keys[i])].name;
+              const sqIndex = parseInt(keys[i]);
+              const name = me.header.sq[sqIndex].name;
+              const sqLength = me.header.sq[sqIndex].end;
+              me.header.sq[sqIndex].hasRecords = true;
+
               if ( me.readDepth[ name ] == undefined){
-                me.readDepth[ name ] = readDepth[keys[i]];
+                me.readDepth[ name ] = {
+                  depths: readDepth[keys[i]],
+                  sqLength,
+                }
                 dataCallback(name);
               }
 
@@ -386,7 +393,7 @@ var Bam = Class.extend({
               for (var count = 0; count < numRefSamples; count++) {
                 var randSeqInd = Math.floor(Math.random() * seq.length);
                 var randSeq = seq[randSeqInd];
-                var readDepthLength = me.readDepth[randSeq].length;
+                var readDepthLength = me.readDepth[randSeq].depths.length;
                 var randBinNumber = Math.floor(Math.random() * readDepthLength);
                 randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
                 me.getReferenceStats(randSeq, randBinNumber);
@@ -470,7 +477,7 @@ var Bam = Class.extend({
                 for (var count = 0; count < numRefSamples; count++) {
                   var randSeqInd = Math.floor(Math.random() * seq.length);
                   var randSeq = seq[randSeqInd];
-                  var readDepthLength = me.readDepth[randSeq].length;
+                  var readDepthLength = me.readDepth[randSeq].depths.length;
                   var randBinNumber = Math.floor(Math.random() * readDepthLength);
                   randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
                   me.getReferenceStats(randSeq, randBinNumber);
@@ -529,7 +536,11 @@ var Bam = Class.extend({
               var values = field.split(':');
               fHash[ values[0] ] = values[1]
             })
-            header.sq.push({name:fHash["SN"], end:1+parseInt(fHash["LN"])});
+            header.sq.push({
+              name:fHash["SN"],
+              end:1+parseInt(fHash["LN"]),
+              hasRecords: false,
+            });
          }
       }
       this.header = header;
