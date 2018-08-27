@@ -327,6 +327,11 @@ var Bam = Class.extend({
               }
               // check if request is done and this is the last iteration
               done = (isdone && ( (i+1)==keys.length ) )
+              if (i %100 == 0) {
+                console.log("i = " + i);
+                console.log("isdone = " + isdone);
+                console.log("keys.length = " + keys.length)
+              }
               callback( name, readDepth[keys[i]], done );
             }
          }
@@ -339,15 +344,19 @@ var Bam = Class.extend({
          callback(me.readDepth)
       else if (me.sourceType == 'url') {
           var currentSequence;
+          var allData = "";
           var indexUrl = this.baiUri || this.getIndexUrl(this.bamUri);
           var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
           cmd.on('error', function(e){ console.log(e); });
           cmd.on('data', function(data, options) {
-             data = data.split("\n");
+            allData += data;
+          });
+          cmd.on('end', function() {
+             data = allData.split("\n");
              for (var i=0; i < data.length; i++)  {
                 if ( data[i][0] == '#' ) {
                    var numRefs = Object.keys(readDepth).length;
-                   if ( numRefs > 0 && ((numRefs+3) % 3 ==0) ) { cb() };
+                   // if ( numRefs > 0 && ((numRefs+3) % 3 ==0) ) { cb() };
                    var fields = data[i].substr(1).split("\t");
                    currentSequence = fields[0]
                    readDepth[currentSequence] = [];
@@ -366,8 +375,6 @@ var Bam = Class.extend({
                    }
                 }
              }
-          });
-          cmd.on('end', function() {
             isdone = true;
             cb();
           });
