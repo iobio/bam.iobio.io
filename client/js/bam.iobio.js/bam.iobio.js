@@ -347,7 +347,7 @@ var Bam = Class.extend({
          dataCallback(me.readDepth)
       else if (me.sourceType == 'url') {
           var currentSequence;
-          var indexUrl = this.baiUri || this.bamUri + ".bai";
+          var indexUrl = this.baiUri || this.getIndexUrl(this.bamUri);
           var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
           cmd.on('error', (e) => {
             if (!this.hadError) {
@@ -488,6 +488,15 @@ var Bam = Class.extend({
           });
       }
 
+   },
+
+   getIndexUrl: function(alignmentUrl) {
+    var supported_filetypes = {
+      'bam' : 'bai',
+      'cram' : 'crai'
+    }
+    var filetype = alignmentUrl.split('.').slice(-1);
+    return alignmentUrl + "." + supported_filetypes[filetype];
    },
 
    getHeader: function(callback, errCb) {
