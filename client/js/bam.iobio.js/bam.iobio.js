@@ -305,7 +305,7 @@ var Bam = Class.extend({
       // Filters BAM file(s) by user-specified criteria
    },
 
-   estimateBaiReadDepth: function(dataCallback, doneCallback, baiErrCb) {
+   estimateBaiReadDepth: function(doneCallback, baiErrCb) {
       var me = this, readDepth = {};
       me.readDepth = {};
       var numRefSamples = 12;
@@ -317,37 +317,36 @@ var Bam = Class.extend({
             var keys = Object.keys(readDepth);
             for (var i=0; i < keys.length; i++) {
               const sqIndex = parseInt(keys[i]);
-              const name = me.header.sq[sqIndex].name;
-              const sqLength = me.header.sq[sqIndex].end;
-              me.header.sq[sqIndex].hasRecords = true;
+              if (sqIndex < me.header.sq.length && me.header.sq[sqIndex]) {
+                const name = me.header.sq[sqIndex].name;
+                const sqLength = me.header.sq[sqIndex].end;
+                me.header.sq[sqIndex].hasRecords = true;
 
-              if ( me.readDepth[ name ] == undefined){
-                me.readDepth[ name ] = {
-                  depths: readDepth[keys[i]],
-                  sqLength,
+                if ( me.readDepth[ name ] == undefined){
+                  me.readDepth[ name ] = {
+                    depths: readDepth[keys[i]],
+                    sqLength,
+                  }
                 }
-                dataCallback(name);
-              }
-
-              const lastIteration = i === keys.length - 1;
-              if (isdone && lastIteration) {
-                doneCallback();
               }
             }
+
+           if (isdone) {
+             doneCallback();
+           }
          }
       }
 
       me.getHeader(function(header) {
-            cb();
+        cb();
       },
       (err) => {
         baiErrCb(err);
       });
-      if ( Object.keys(me.readDepth).length > 0 )
-         dataCallback(me.readDepth)
-      else if (me.sourceType == 'url') {
+      if (me.sourceType == 'url') {
           var currentSequence;
-          var indexUrl = this.baiUri || this.getIndexUrl(this.bamUri);
+          let allData = "";
+          const indexUrl = this.baiUri || this.getIndexUrl(this.bamUri);
           var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
           cmd.on('error', (e) => {
             if (!this.hadError) {
@@ -359,31 +358,32 @@ var Bam = Class.extend({
             console.log(e);
           });
           cmd.on('data', function(data, options) {
-             data = data.split("\n");
-             for (var i=0; i < data.length; i++)  {
-                if ( data[i][0] == '#' ) {
-                   var numRefs = Object.keys(readDepth).length;
-                   if ( numRefs > 0 && ((numRefs+3) % 3 ==0) ) { cb() };
-                   var fields = data[i].substr(1).split("\t");
-                   currentSequence = fields[0]
-                   readDepth[currentSequence] = [];
-                   if (fields[1]) {
-                     readDepth[currentSequence].mapped = +fields[1];
-                     readDepth[currentSequence].unmapped = +fields[2];
-                   }
-                }
-                else if (data[i][0] == '*') {
-                  me.n_no_coor = +data[i].split("\t")[2];
-                }
-                else {
-                   if (data[i] != "") {
-                      var d = data[i].split("\t");
-                      readDepth[currentSequence].push({ pos:parseInt(d[0]), depth:parseInt(d[1]) });
-                   }
-                }
-             }
+            allData += data; 
           }.bind(me));
           cmd.on('end', function() {
+
+            data = allData.split("\n");
+            for (var i=0; i < data.length; i++)  {
+               if ( data[i][0] == '#' ) {
+                  var numRefs = Object.keys(readDepth).length;
+                  var fields = data[i].substr(1).split("\t");
+                  currentSequence = fields[0]
+                  readDepth[currentSequence] = [];
+                  if (fields[1]) {
+                    readDepth[currentSequence].mapped = +fields[1];
+                    readDepth[currentSequence].unmapped = +fields[2];
+                  }
+               }
+               else if (data[i][0] == '*') {
+                 me.n_no_coor = +data[i].split("\t")[2];
+               }
+               else {
+                  if (data[i] != "") {
+                     var d = data[i].split("\t");
+                     readDepth[currentSequence].push({ pos:parseInt(d[0]), depth:parseInt(d[1]) });
+                  }
+               }
+            }
             isdone = true;
 
             // Get some random reference read depth data
