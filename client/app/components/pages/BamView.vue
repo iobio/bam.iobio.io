@@ -673,7 +673,6 @@
           sensitivity: 'base'
         }),
 
-        allPoints: [],
         totalPoints: 0,
       }
     },
@@ -931,7 +930,7 @@
         if (this.selectedSeqId == 'all') {
           return Object.keys(this.bam.readDepth)
             .filter(function (key) {
-              if (!validSqName(key))
+              if (filterRef(key))
                 return false
               if (this.bam.readDepth[key].depths.length > 0)
                 return true
@@ -1047,18 +1046,19 @@
         $("#showData").css("visibility", "visible");
 
         // get read depth
-        this.bam.estimateBaiReadDepth(function dataCallback(id) {
-          // setup first time and sample
+        this.bam.estimateBaiReadDepth(function doneCallback() {
 
-          if (Object.keys(this.bam.readDepth).length == 1) {
+          const keys = Object.keys(this.bam.readDepth);
+
+          if (keys.length == 1) {
             // turn on sampling message
             $(".samplingLoader").css("display", "block");
-
           }
-          this.allPoints = Object.keys(this.bam.readDepth)
-            .sort(this.sorter.compare)
+
+          const allPoints = keys
+            //.sort(this.sorter.compare)
             .filter(function (key) {
-              if (!validSqName(key))
+              if (filterRef(key))
                 return false
               if (this.bam.readDepth[key].depths.length > 0)
                 return true
@@ -1071,16 +1071,12 @@
               }
             }.bind(this));
 
-          $('#reference-select')
-            .append($("<option></option>")
-              .attr("value", id)
-              .text(id));
-
-        }.bind(this),
-
-        function doneCallback() {
-
-          this.readDepthData = this.allPoints.slice();
+          keys.forEach(function(id) {
+            $('#reference-select')
+              .append($("<option></option>")
+                .attr("value", id)
+                .text(id));
+          });
 
           // For any header entries that don't have any actual records, add
           // a dummy entry with 0 coverage to indicate to the user that the
@@ -1090,7 +1086,7 @@
           // layers for representing missing data.
           if (this.bam.header) {
             for (const sq of this.bam.header.sq) {
-              if (sq.hasRecords === false && validSqName(sq.name)) {
+              if (sq.hasRecords === false && !filterRef(sq.name)) {
 
                 // this value matches what is used by the bamReadDepther
                 // backend service. See:
@@ -1105,7 +1101,7 @@
                     depth: 0,
                   });
                 }
-                this.readDepthData.push({
+                allPoints.push({
                   name: sq.name,
                   //data: [],
                   data,
@@ -1118,8 +1114,10 @@
             throw "bam header not ready";
           }
 
-          this.readDepthData
+          allPoints
             .sort((a, b) => this.sorter.compare(a.name, b.name));
+
+          this.readDepthData = allPoints;
 
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
@@ -1292,6 +1290,19 @@
 
   function validSqName(key) {
     return !(key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5");
+  }
+
+  function filterRef(ref) {
+    return (
+      ref.substr(0,4) == 'GL00' ||
+      ref.substr(0,6).toLowerCase() == "hs37d5" ||
+      ref.includes('GL00') ||
+      ref.includes('KI2707') ||
+      ref.split("_").slice(-1)[0] == "alt" ||
+      ref.split("_").slice(-1)[0] == "decoy" ||
+      ref.includes('chrUn') ||
+      ref.substr(0,4) == 'HLA-'
+    );
   }
 
 </script>
