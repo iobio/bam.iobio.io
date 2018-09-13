@@ -76,7 +76,7 @@ export default {
           .yValue(function(d,i) { return d.depth; })
           .wValue(function() { return 1; })
           .transitionDuration(self.transitionDuration)
-          .epsilonRate(0.3)
+          .epsilonRate(0.1)
           .margin({top: 10, right: 0, bottom: 30, left:45})
           .height(this.height)
           .color(function(d,i) {return color(d.name); })
