@@ -103,6 +103,9 @@
 </template>
 
 <script>
+
+import { Hoster } from 'browserve-host';
+
 export default {
   name: 'file-select-button-bar',
   data() {
@@ -142,26 +145,53 @@ export default {
         // return;
       }
 
-      var fileType0 = /[^.]+$/.exec(event.target.files[0].name)[0];
-      var fileType1 = /[^.]+$/.exec(event.target.files[1].name)[0];
+      const file0 = event.target.files[0];
+      const file1 = event.target.files[1];
 
-      var bamFile;
-      var baiFile;
+      let bamFile;
+      let baiFile;
 
-      if (fileType0 == 'bam' && fileType1 == 'bai') {
-        bamFile = event.target.files[0];
-        baiFile = event.target.files[1];
-      } else if (fileType1 == 'bam' && fileType0 == 'bai') {
-        bamFile = event.target.files[1];
-        baiFile = event.target.files[0];
+      if (validBam(file0.name) && validIndex(file1.name)) {
+        bamFile = file0;
+        baiFile = file1;
+      } else if (validBam(file1.name) && validIndex(file0.name)) {
+        bamFile = file1;
+        baiFile = file0;
       } else {
-        alert('Must select both a .bam and .bai file.');
-        // return;
+        alert('Must select both a .bam/.cram and .bai/.crai file.');
+        return;
       }
 
-      self.$router.push({name: 'bam-view-file', params: { selectedBamFile: bamFile, selectedBaiFile: baiFile}});
+      const proxyAddress = 'lf-proxy.iobio.io';
+      const port = 80;
+      // TODO: shouldn't this be going out of scope and eventually garbage
+      // collected, which could lead to race conditions?
+      const hoster = new Hoster({ proxyAddress, port, secure: false }, () => {
+
+        const bamPath = '/' + bamFile.name;
+        hoster.hostFile(bamPath, bamFile);
+        const baiPath = '/' + baiFile.name;
+        hoster.hostFile(baiPath, baiFile);
+
+        const portStr = hoster.getPortStr();
+        const baseUrl = `${window.location.protocol}//${proxyAddress}${portStr}`;
+        this.selectedBamURL = `${baseUrl}${hoster.getHostedPath(bamPath)}`;
+        this.selectedBaiURL = `${baseUrl}${hoster.getHostedPath(baiPath)}`;
+
+        self.$router.push({name: 'bam-view', query: { bam: this.selectedBamURL, bai: this.selectedBaiURL}});
+      });
     }
   }
+}
+
+function validBam(filename) {
+  const extension = /[^.]+$/.exec(filename)[0];
+  return extension === 'bam' || extension === 'cram';
+}
+
+function validIndex(filename) {
+  const extension = /[^.]+$/.exec(filename)[0];
+  return extension === 'bai' || extension === 'crai';
 }
 
 // TODO: If we want to get serious about validating URLS we should probably use
