@@ -14,15 +14,6 @@
     width: 65%;
   }
 
-  .panel#depth-distribution .chart {
-    -webkit-flex: 1 1 auto;
-    flex: 1 1 auto;
-    -webkit-order: 2;
-    order: 2;
-    margin-left: 0px;
-    margin-right: 0px;
-  }
-
   .hint {
     height: 14px;
     margin-top: -7px;
@@ -74,19 +65,6 @@
     opacity: 0.01;
     visibility:hidden;
     cursor: pointer;
-  }
-
-  .chart rect {
-    fill: #2d8fc1;
-    shape-rendering: crispEdges;
-  }
-
-  .chart rect.unselected {
-    fill: #9C9E9F;
-  }
-
-  .chart text {
-    fill: 'black';
   }
 
   .vue-slider-component .vue-slider {
@@ -145,8 +123,11 @@
     <div v-if="notEnoughData" class="warning">Bam file is too small to read coverage information</div>
     <div v-if="tooManyRefs" class="warning">Too many references to display. Use the dropdown to the left to select the reference</div>
 
-    <div class='chart' style="width:100%; height:60%"></div>
-
+    <ReadDepthChart
+      :references='references'
+      :allPoints='chartData'>
+    </ReadDepthChart>
+    <!--
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
                         @setMaxZoomValue="updateMaxZoomValue"
                         @setUseMedianAsZoomInterval="setUseMedianAsZoomInterval"
@@ -157,6 +138,7 @@
                         :data="readDepthData"
                         :conversionRatio="conversionRatio"
                         :brushRange="brushRange"></read-coverage-plot>
+                      -->
   </div>
 </template>
 
@@ -165,12 +147,14 @@
 import HelpButton from "./HelpButton.vue";
 import ReadCoveragePlot from "../viz/ReadCoveragePlot.vue";
 import vueSlider from 'vue-slider-component';
+import ReadDepthChart from '../ReadDepthChart.vue';
 
 
 export default {
   components: {
     vueSlider,
     ReadCoveragePlot,
+    ReadDepthChart,
     HelpButton
   },
   name: 'read-coverage-box',
@@ -184,7 +168,10 @@ export default {
       type: Number,
       default: 0
     },
-    brushRange: {}
+    brushRange: {},
+
+    chartData: {},
+    references: {},
   },
   data() {
     return {
@@ -264,7 +251,7 @@ export default {
       const allSelected = this.selectedSeqId === 'all';
       return allSelected && this.readDepthData.length > 50;
     },
-  }
+  },
 }
 
 </script>

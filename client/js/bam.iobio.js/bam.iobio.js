@@ -142,14 +142,17 @@ var Bam = Class.extend({
                 depths: readDepth[refId],
                 sqLength,
               }
+
+              refCallback(name, sqIndex, me.readDepth[name]);
             }
           }
-
-          refCallback(me.readDepth[name]);
+        })
+        .catch((err) => {
+          console.log(err);
         })
       }
 
-      var currentSequence;
+      let currentSequence;
       const indexUrl = this.baiUri || this.getIndexUrl(this.bamUri);
       var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
 
@@ -168,6 +171,11 @@ var Bam = Class.extend({
 
         for (var i=0; i < data.length; i++)  {
            if ( data[i][0] == '#' ) {
+
+              if (currentSequence) {
+                submitRef(currentSequence); 
+              }
+
               var fields = data[i].substr(1).split("\t");
               currentSequence = fields[0]
               readDepth[currentSequence] = [];
@@ -175,8 +183,6 @@ var Bam = Class.extend({
                 readDepth[currentSequence].mapped = +fields[1];
                 readDepth[currentSequence].unmapped = +fields[2];
               }
-
-              submitRef(currentSequence); 
            }
            else if (data[i][0] == '*') {
              me.n_no_coor = +data[i].split("\t")[2];
@@ -191,6 +197,8 @@ var Bam = Class.extend({
 
       }.bind(me));
       cmd.on('end', function() {
+
+        submitRef(currentSequence); 
 
         // Get some random reference read depth data
         var seq = Object.keys(me.readDepth);

@@ -179,18 +179,6 @@
     animation:         nprogress-spinner 400ms linear infinite;
   }
 
-  .chart rect {
-    fill: #2d8fc1;
-    shape-rendering: crispEdges;
-  }
-
-  .chart rect.unselected {
-    fill: #9C9E9F;
-  }
-
-  .chart text {
-    fill: 'black';
-  }
 
   .iobio-multi-line.line-panel text { fill: black; }
   .iobio-multi-line.button-panel text { fill: white; }
@@ -298,6 +286,8 @@
                          :selectedSeqId="selectedSeqId"
                          :draw="draw"
                          :readDepthData="readDepthData"
+                         :chartData="readDepthChartData"
+                         :references="references"
                          :conversionRatio="readDepthConversionRatio"
                          :brushRange="coverageBrushRange"
                          v-tooltip.top-center="{content: clinTooltip.genome_wide_coverage.content, show: clinTooltip.genome_wide_coverage.show, trigger: 'manual'}">
@@ -579,6 +569,8 @@
   import PercentChartBox from "../partials/PercentChartBox.vue";
   import StackedHistogram from "../viz/StackedHistogram.vue";
 
+  import Vue from 'vue';
+
   export default {
     name: 'bam-view',
 
@@ -633,6 +625,9 @@
 
         bam: {},
         bed: {},
+
+        readDepthChartData: [],
+        references: [],
 
         readDepthData: [],
         selectedSeqId: 'all',
@@ -1045,8 +1040,38 @@
         $("#selectData").css("display", "none");
         $("#showData").css("visibility", "visible");
 
+        let refIndex = 0;
+
+        this.bam.getHeader().then((header) => {
+          this.references = header.sq.filter((sq) => {
+            return !filterRef(sq.name);
+          })
+          .map((sq) => {
+            return {
+              id: sq.name,
+              length: sq.end,
+            };
+          });
+        });
+
         // get read depth
-        this.bam.estimateBaiReadDepth(function doneCallback() {
+        this.bam.estimateBaiReadDepth((name, index, ref) => {
+
+            // turn off read depth loading msg
+            $("#readDepthLoadingMsg").css("display", "none");
+
+            //console.log(name, index, ref.depths.length, filterRef(name));
+            if (ref.depths.length > 0 && !filterRef(name)) {
+              const startTime = timeNowSeconds();
+              // Have to use Object.freeze here to prevent Vue from
+              // recursively setting up data listeners, which causes huge
+              // performance issues with data this big.
+              Vue.set(this.readDepthChartData, index, Object.freeze(ref.depths));
+            }
+          },
+          function doneCallback() {
+
+          const startTime = timeNowSeconds();
 
           const keys = Object.keys(this.bam.readDepth);
 
@@ -1085,7 +1110,12 @@
           // probably be to build functionality into the lower visualization
           // layers for representing missing data.
           if (this.bam.header) {
-            for (const sq of this.bam.header.sq) {
+            console.log("sq:");
+            console.log(this.bam.header.sq);
+            //for (const sq of this.bam.header.sq) {
+            for (let i = 0; i < this.bam.header.sq.length; i++) {
+              const sq = this.bam.header.sq[i];
+
               if (sq.hasRecords === false && !filterRef(sq.name)) {
 
                 // this value matches what is used by the bamReadDepther
@@ -1095,9 +1125,9 @@
 
                 // build dummy data
                 const data = [];
-                for (let i = 0; i < sq.end; i += BAM_INDEX_BIN_STEP) {
+                for (let j = 0; j < sq.end; j += BAM_INDEX_BIN_STEP) {
                   data.push({
-                    pos: i,
+                    pos: j,
                     depth: 0,
                   });
                 }
@@ -1107,6 +1137,9 @@
                   data,
                   sqLength: sq.end,
                 });
+
+
+                Vue.set(this.readDepthChartData, i, Object.freeze(data.slice()));
               }
             }
           }
@@ -1122,8 +1155,6 @@
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
 
-          // turn off read depth loading msg
-          $("#readDepthLoadingMsg").css("display", "none");
           // Draw read depth chart
           this.draw = true;
 
@@ -1134,6 +1165,9 @@
             this.setSelectedSeq(region.chr, start, end);
 
           this.referenceDepthData = this.bam.referenceDepthData;
+
+          const fullTime = timeNowSeconds() - startTime;
+          //console.log(`Full time: ${fullTime}`);
 
         }.bind(this),
         (err) => {
@@ -1288,21 +1322,31 @@
     return performance.now() / 1000;
   }
 
-  function validSqName(key) {
-    return !(key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5");
+  const validRefs = {};
+  for (let i = 1; i <= 22; i++) {
+    validRefs[i] = true;
+    validRefs['chr' + i] = true;
   }
+  validRefs['X'] = true;
+  validRefs['Y'] = true;
 
   function filterRef(ref) {
-    return (
-      ref.substr(0,4) == 'GL00' ||
-      ref.substr(0,6).toLowerCase() == "hs37d5" ||
-      ref.includes('GL00') ||
-      ref.includes('KI2707') ||
-      ref.split("_").slice(-1)[0] == "alt" ||
-      ref.split("_").slice(-1)[0] == "decoy" ||
-      ref.includes('chrUn') ||
-      ref.substr(0,4) == 'HLA-'
-    );
+    return validRefs[ref] === undefined;
   }
+
+  //function filterRef(ref) {
+  //  return (
+  //    ref.substr(0,4) == 'GL00' ||
+  //    ref.substr(0,6).toLowerCase() == "hs37d5" ||
+  //    ref.includes('GL00') ||
+  //    ref.includes('KI2707') ||
+  //    ref.split("_").slice(-1)[0] == "alt" ||
+  //    ref.split("_").slice(-1)[0] == "decoy" ||
+  //    ref.includes('chrUn') ||
+  //    ref.substr(0,4) == 'HLA-' ||
+  //    ref.substr(0,2) === 'MT' ||
+  //    ref.startsWith('NC_007605')
+  //  );
+  //}
 
 </script>
