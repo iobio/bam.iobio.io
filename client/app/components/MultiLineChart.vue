@@ -74,7 +74,6 @@ export default {
     const dim = this.$refs.container.getBoundingClientRect();
     this.width = dim.width;
     this.height = dim.height;
-    console.log(this.colorsFunc);
   },
   methods: {
     lineTransform: function(i) {
@@ -90,7 +89,7 @@ export default {
       return 'translate(' + pixelOffset + ', ' + yOffset + ')';
     },
     buttonClick: function(id) {
-      console.log(id);
+      this.$emit('setSelectedId', id);
     },
     rectStyle: function(id) {
       const color = this.colorFunc(id);

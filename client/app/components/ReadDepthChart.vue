@@ -10,7 +10,8 @@
       :domains='domains'
       :ranges='ranges'
       :colorFunc='colorFunc'
-      :totalLength='totalLength'/>
+      :totalLength='totalLength'
+      @setSelectedId='setSelectedId'/>
   </div>
 </template>
 
@@ -21,7 +22,7 @@ import d3 from 'd3';
 
 
 export default {
-  props: ['references', 'allPoints'],
+  props: ['references', 'allPoints', 'selectedSeqId'],
   data: function() {
     return {
       selectedRef: 'chr2',
@@ -64,14 +65,7 @@ export default {
       this.offsets = offsets;
       this.totalLength = totalLength;
 
-      console.log(refIds);
-
       //this.colorFunc.domain(refIds);
-    },
-    domains: function() {
-      console.log("domains: ");
-      console.log(JSON.stringify(this.references));
-      console.log(this.domains);
     },
   },
   methods: {
@@ -80,6 +74,9 @@ export default {
     },
     yAccessFunc: function(elem) {
       return elem.depth;
+    },
+    setSelectedId: function(id) {
+      this.$emit('setSelectedSeq', id);
     }
   },
 }

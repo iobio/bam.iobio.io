@@ -125,7 +125,9 @@
 
     <ReadDepthChart
       :references='references'
-      :allPoints='chartData'>
+      :allPoints='chartData'
+      :selectedSeqId='selectedSeqId'
+      @setSelectedSeq='setSelectedSeq'>
     </ReadDepthChart>
     <!--
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
