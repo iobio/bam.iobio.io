@@ -5,12 +5,12 @@
       :xAccessFunc='xAccessFunc'
       :yAccessFunc='yAccessFunc'
       :ids="refIds"
-      :selectedId="selectedRef"
       :offsets='offsets'
       :domains='domains'
       :ranges='ranges'
       :colorFunc='colorFunc'
       :totalLength='totalLength'
+      :selectedId="selectedSeqId"
       @setSelectedId='setSelectedId'/>
   </div>
 </template>
@@ -25,7 +25,6 @@ export default {
   props: ['references', 'allPoints', 'selectedSeqId'],
   data: function() {
     return {
-      selectedRef: 'chr2',
       refIds: [],
       offsets: [],
       totalLength: 0,

@@ -2,28 +2,31 @@
   <div class='multiline-chart' ref='container'>
     <svg class='multiline-chart__svg'>
       <g class='multiline-chart_lines'>
-        <g v-for="(points, i) in allPoints" :key="ids[i]"
+        <g v-for="(points, i) in shownPoints" :key="ids[i]"
           :transform="lineTransform(i)">
           <line-segment
             color="SteelBlue"
             :width='widths[i]'
             :height='height'
             :index="i"
-            :points="allPoints[i]"
+            :points="shownPoints[i]"
             :xAccessFunc='xAccessFunc'
             :yAccessFunc='yAccessFunc'
-            :domain='domains[i]'
+            :domain='shownDomains[i]'
             :range='ranges[i]'
             :selected="ids[i] === selectedId"/>
         </g>
       </g>
-      <g class='multiline-chart__buttons'>
-        <g v-for='(id, i) in ids' :key='ids[i]' :transform='buttonTransform(i)'>
-          <rect class='multiline-chart__button' :width='widths[i]' :height='buttonHeight' @click='buttonClick(ids[i])'
-            :style='rectStyle(ids[i])' />
-          <text class='multiline-chart__button__text' :x='widths[i] / 2' y='12' fill='#eee'
-              text-anchor='middle' alignment-baseline='middle' >
-            {{ ids[i] }}
+      <g v-if='shownPoints.length > 1' class='multiline-chart__buttons'>
+        <g v-for='(id, i) in shownIds' :key='shownIds[i]'
+            :transform='buttonTransform(i)'>
+          <rect class='multiline-chart__button' :width='widths[i]'
+            :height='buttonHeight' :style='rectStyle(shownIds[i])' 
+            @click='buttonClick(shownIds[i])'/>
+          <text class='multiline-chart__button__text' :x='widths[i] / 2'
+              y='12' fill='#eee' text-anchor='middle'
+              alignment-baseline='middle' >
+            {{ shownIds[i] }}
           </text>
         </g>
       </g>
@@ -51,23 +54,63 @@ export default {
     LineSegment,
   },
   computed: {
-    widths: function() {
-      const widths = [];
-      let totalWidth = 0;
-      for (let i = 0; i < this.ids.length; i++) {
-        const domain = this.domains[i];
-        const length = domain.max - domain.min;
-        const width = (length / this.totalLength) * this.width;
-        totalWidth += width;
-        widths.push(width);
-
-        //console.log(length);
+    shownPoints: function() {
+      if (this.selectedId === 'all') {
+        return this.allPoints;
       }
+      else {
+        const index = this.indicesForId[this.selectedId];
+        return [this.allPoints[index]];
+      }
+    },
+    shownIds: function() {
+      if (this.selectedId === 'all') {
+        return this.ids;
+      }
+      else {
+        return [this.selectedId];
+      }
+    },
+    shownDomains: function() {
+      if (this.selectedId === 'all') {
+        return this.domains;
+      }
+      else {
+        const index = this.indicesForId[this.selectedId];
+        return [this.domains[index]];
+      }
+    },
+    indicesForId: function(id) {
+      const indices = {};
+      for (let i = 0; i < this.ids.length; i++) {
+        const id = this.ids[i];
+        indices[id] = i;
+      }
+      return indices;
+    },
+    widths: function() {
+      if (this.selectedId === 'all') {
+        const widths = [];
+        let totalWidth = 0;
+        for (let i = 0; i < this.ids.length; i++) {
+          const domain = this.domains[i];
+          const length = domain.max - domain.min;
+          const width = (length / this.totalLength) * this.width;
+          totalWidth += width;
+          widths.push(width);
 
-      //console.log(widths);
-      //console.log("Total width: " + totalWidth);
-      //console.log("Total length: " + this.totalLength);
-      return widths;
+          //console.log(length);
+        }
+
+        //console.log(widths);
+        //console.log("Total width: " + totalWidth);
+        //console.log("Total length: " + this.totalLength);
+        return widths;
+      }
+      else {
+        // if a single id is selected, it gets allocated all the space
+        return [this.width];
+      }
     },
   },
   mounted: function() {
