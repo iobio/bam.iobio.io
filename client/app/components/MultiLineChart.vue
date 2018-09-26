@@ -7,13 +7,13 @@
           <line-segment
             color="SteelBlue"
             :width='widths[i]'
-            :height='height'
+            :height='lineHeight'
             :index="i"
             :points="shownPoints[i]"
             :xAccessFunc='xAccessFunc'
             :yAccessFunc='yAccessFunc'
             :domain='shownDomains[i]'
-            :range='ranges[i]'
+            :range='range'
             :selected="ids[i] === selectedId"/>
         </g>
       </g>
@@ -48,15 +48,23 @@ export default {
       width: 0,
       height: 0,
       buttonHeight: 20,
+      buttonPadding: 5,
+      haveInitialAverage: false,
+      range: { min: 0, max: 0 },
     };
   },
   components: {
     LineSegment,
   },
   computed: {
+    lineHeight: function() {
+      return this.height - (this.buttonHeight + this.buttonPadding);
+    },
     shownPoints: function() {
       if (this.selectedId === 'all') {
-        return this.allPoints;
+        return this.ids.map((id, i) => {
+          return this.allPoints[i] === undefined ? null : this.allPoints[i];
+        });
       }
       else {
         const index = this.indicesForId[this.selectedId];
@@ -113,6 +121,28 @@ export default {
       }
     },
   },
+  watch: {
+    allPoints: function() {
+
+      if (!this.haveInitialAverage) {
+        this.haveInitialAverage = true;
+
+        let sum = 0;
+        let len = 0;
+        // first average
+        for (const refPoints of this.allPoints) {
+          len += refPoints.length;
+          for (const point of refPoints) {
+            //console.log("points changed");
+            sum += this.yAccessFunc(point);
+          }
+        }
+
+        const average = sum / len;
+        this.range.max = average * 3;
+      }
+    }
+  },
   mounted: function() {
     const dim = this.$refs.container.getBoundingClientRect();
     this.width = dim.width;
@@ -122,7 +152,8 @@ export default {
     lineTransform: function(i) {
       const offsetRatio = this.offsets[i] / this.totalLength;
       const pixelOffset = offsetRatio * this.width;
-      const yOffset = -this.buttonHeight - 5;
+      //const yOffset = -this.buttonHeight - this.buttonPadding;
+      const yOffset = 0;
       return 'translate(' + pixelOffset + ', ' + yOffset + ')';
     },
     buttonTransform: function(i) {

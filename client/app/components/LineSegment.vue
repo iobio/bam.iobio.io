@@ -1,6 +1,7 @@
 <template>
   <g>
-    <polyline :points="pointStr" :stroke="color" stroke-width="2" fill="none"/>
+    <polyline v-if='points' :points="pointStr" :stroke="color" stroke-width="2" fill="none"/>
+    <rect v-else class='line-segment__missing-data' :width='width' :height='height'/>
   </g>
 </template>
 
@@ -61,6 +62,7 @@ export default {
     smoothed: function() {
       const startTime = timeNowSeconds();
       //const s = this.smoother(this.transformedPoints);
+      console.log(this.points);
       const s = this.smoother(this.points);
       //console.log("Full length: " + this.points.length);
       //console.log("Smooth length: " + s.length);
@@ -120,7 +122,6 @@ export default {
     },
   },
   beforeUpdate: function() {
-    console.log("even called?");
     this._beforeUpdateTime = timeNowSeconds();
   },
   updated: function() {
@@ -136,7 +137,6 @@ export default {
   },
   methods: {
     processData: function() {
-      //console.log("changed");
       //const points = this.points;
       const points = this.smoothed;
       //console.log(points);
@@ -176,3 +176,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.line-segment__missing-data {
+  fill: red;
+  fill-opacity: 0.4;
+}
+</style>

@@ -1103,50 +1103,6 @@
                 .text(id));
           });
 
-          // For any header entries that don't have any actual records, add
-          // a dummy entry with 0 coverage to indicate to the user that the
-          // data is missing.
-          // NOTE: this is a bit of a hack. A better long-term solution would
-          // probably be to build functionality into the lower visualization
-          // layers for representing missing data.
-          if (this.bam.header) {
-            console.log("sq:");
-            console.log(this.bam.header.sq);
-            //for (const sq of this.bam.header.sq) {
-            for (let i = 0; i < this.bam.header.sq.length; i++) {
-              const sq = this.bam.header.sq[i];
-
-              if (sq.hasRecords === false && !filterRef(sq.name)) {
-
-                // this value matches what is used by the bamReadDepther
-                // backend service. See:
-                // https://github.com/iobio/minion-services/tree/master/bamReadDepther 
-                const BAM_INDEX_BIN_STEP = 16384;
-
-                // build dummy data
-                const data = [];
-                for (let j = 0; j < sq.end; j += BAM_INDEX_BIN_STEP) {
-                  data.push({
-                    pos: j,
-                    depth: 0,
-                  });
-                }
-                allPoints.push({
-                  name: sq.name,
-                  //data: [],
-                  data,
-                  sqLength: sq.end,
-                });
-
-
-                Vue.set(this.readDepthChartData, i, Object.freeze(data.slice()));
-              }
-            }
-          }
-          else {
-            throw "bam header not ready";
-          }
-
           allPoints
             .sort((a, b) => this.sorter.compare(a.name, b.name));
 

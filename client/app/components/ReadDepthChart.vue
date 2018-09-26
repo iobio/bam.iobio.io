@@ -1,6 +1,7 @@
 <template>
   <div class='read-depth-chart'>
     <MultiLineChart
+      v-if='allPoints.length > 0'
       :allPoints='allPoints'
       :xAccessFunc='xAccessFunc'
       :yAccessFunc='yAccessFunc'
@@ -42,7 +43,8 @@ export default {
     },
     ranges: function() {
       return this.references.map((ref, i) => {
-        return { min: 0, max: 4000000 }; 
+        //return { min: 0, max: 3300000 }; 
+        return { min: 0, max: 1400000 }; 
       });
     },
   },
