@@ -17,7 +17,7 @@
             :selected="ids[i] === selectedId"/>
         </g>
       </g>
-      <g v-if='shownPoints.length > 1' class='multiline-chart__buttons'>
+      <g v-if='shownPoints.length > 0' class='multiline-chart__buttons'>
         <g v-for='(id, i) in shownIds' :key='shownIds[i]'
             :transform='buttonTransform(i)'>
           <rect class='multiline-chart__button' :width='widths[i]'
