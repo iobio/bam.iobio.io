@@ -144,9 +144,8 @@ export default {
     }
   },
   mounted: function() {
-    const dim = this.$refs.container.getBoundingClientRect();
-    this.width = dim.width;
-    this.height = dim.height;
+    window.addEventListener('resize', this.handleResize);
+    this.handleResize();
   },
   methods: {
     lineTransform: function(i) {
@@ -169,8 +168,16 @@ export default {
       const color = this.colorFunc(id);
       const rule = "fill: " + color + ";";
       return rule;
-    }
+    },
+    handleResize: function() {
+      const dim = this.$refs.container.getBoundingClientRect();
+      this.width = dim.width;
+      this.height = dim.height;
+    },
   },
+  beforeDestroy: function () {
+    window.removeEventListener('resize', this.handleResize)
+  }
 }
 
 </script>
