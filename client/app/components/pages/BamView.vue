@@ -271,12 +271,18 @@
     <section id="top">
 
       <div id="piechooser" class="panel" style="padding-top: 12px">
-        <pie-chooser @setSelectedSeq="setSelectedSeq"
-                     :selected-item="selectedSeqId"
-                     :data="readDepthData"></pie-chooser>
         <select @change="seqSelected" id="reference-select">
           <option value="all">all</option>
         </select>
+        <pie-chooser-chart
+          :data='references'
+          :selectedId="selectedSeqId"
+          @setSelectedId="setSelectedSeq" />
+        <!--
+        <pie-chooser @setSelectedSeq="setSelectedSeq"
+                     :selected-item="selectedSeqId"
+                     :data="readDepthData"></pie-chooser>
+                   -->
       </div>
 
       <read-coverage-box @removeBedFile="removeBedFile"
@@ -562,7 +568,8 @@
   import HelpButton from "../partials/HelpButton.vue";
   import ReadCoverageBox from "../partials/ReadCoverageBox.vue";
 
-  import PieChooser from "../viz/PieChooser.vue";
+  //import PieChooser from "../viz/PieChooser.vue";
+  import PieChooserChart from "../PieChooserChart.vue";
 
   import DefaultBed from '../../../../data/20130108.exome.targets.bed';
   import DonutChart from "../viz/DonutChart.vue";
@@ -578,7 +585,8 @@
       StackedHistogram,
       PercentChartBox,
       DonutChart,
-      PieChooser,
+      //PieChooser,
+      PieChooserChart,
       ReadCoverageBox,
       HelpButton,
       ReadsSampledBox
@@ -1263,7 +1271,7 @@
           }
         }
         return '';
-      }
+      },
     }
 
   }

@@ -62,7 +62,7 @@ export default {
     smoothed: function() {
       const startTime = timeNowSeconds();
       //const s = this.smoother(this.transformedPoints);
-      console.log(this.points);
+      //console.log(this.points);
       const s = this.smoother(this.points);
       //console.log("Full length: " + this.points.length);
       //console.log("Smooth length: " + s.length);
