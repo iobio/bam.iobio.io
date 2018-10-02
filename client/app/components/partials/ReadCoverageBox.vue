@@ -98,6 +98,7 @@
     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" style="font-weight:300" title="Add Bed format capture target definition file">Custom Bed</label>
 
     <!-- log toggle -->
+    <!--
     <div id="scale-switch"
          class="checkbox"
          v-if="draw"
@@ -118,6 +119,7 @@
                     :processStyle="sliderProcessStyle"></vue-slider>
 
     </div>
+    -->
 
     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
     <div v-if="notEnoughData" class="warning">Bam file is too small to read coverage information</div>
