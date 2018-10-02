@@ -179,7 +179,6 @@ export default {
 
 <style scoped>
 .line-segment__missing-data {
-  fill: red;
-  fill-opacity: 0.4;
+  fill: #ccc;
 }
 </style>
