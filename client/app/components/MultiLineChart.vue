@@ -24,6 +24,9 @@
               :selected="ids[i] === selectedId"/>
           </g>
         </g>
+        <g class='mean-line'>
+          <line x1='0' :y1='yScale(average)' :x2='width' :y2='yScale(average)'/>
+        </g>
         <g v-if='shownPoints.length > 0' class='multiline-chart__buttons'
             :transform='translateStr(0, 0)' >
           <g v-for='(id, i) in shownIds' :key='shownIds[i]'
@@ -62,6 +65,8 @@ export default {
       buttonPadding: 5,
       yAxisWidth: 60,
       yAxis: d3.svg.axis(),
+      averages: [],
+      weightedAverage: 0,
     };
   },
   components: {
@@ -117,13 +122,8 @@ export default {
           const width = (length / this.totalLength) * this.width;
           totalWidth += width;
           widths.push(width);
-
-          //console.log(length);
         }
 
-        //console.log(widths);
-        //console.log("Total width: " + totalWidth);
-        //console.log("Total length: " + this.totalLength);
         return widths;
       }
       else {
@@ -131,8 +131,26 @@ export default {
         return [this.width];
       }
     },
+    average: function() {
+      if (this.selectedId === 'all') {
+        return this.weightedAverage;
+      }
+      else {
+        const index = this.indicesForId[this.selectedId];
+        return this.averages[index];
+      }
+    },
   },
   watch: {
+    allPoints: function() {
+      for (let i = 0; i < this.allPoints.length; i++) {
+        if (this.allPoints[i] && !this.averages[i]) {
+          const points = this.allPoints[i];
+          this.averages[i] = this.calcAverage(points);
+          this.updateAverage();
+        }
+      }
+    },
     yAxisRange: function() {
 
       const scale = d3.scale.linear()
@@ -189,6 +207,35 @@ export default {
     yScale: function(value) {
       return this.lineHeight - ((value / this.range.max) * this.lineHeight);
     },
+    calcAverage: function(points) {
+      let sum = 0;
+      let len = 0;
+      // first average
+      for (const point of points) {
+        sum += this.yAccessFunc(point);
+      }
+
+      const average = sum / points.length;
+      return average;
+    },
+    updateAverage: function() {
+      let totalLength = 0;
+      for (let i = 0; i < this.allPoints.length; i++) {
+        if (this.allPoints[i]) {
+          totalLength += this.allPoints[i].length;
+        }
+      }
+
+      let weightedAverage = 0;
+      for (let i = 0; i < this.allPoints.length; i++) {
+        if (this.allPoints[i]) {
+          const weight = this.allPoints[i].length / totalLength;
+          weightedAverage += (weight * this.averages[i]);
+        }
+      }
+
+      this.weightedAverage = weightedAverage;
+    },
   },
   beforeDestroy: function () {
     window.removeEventListener('resize', this.handleResize)
@@ -214,6 +261,12 @@ export default {
 
 .multiline-chart__button__text {
   pointer-events: none;
+}
+
+.mean-line {
+  stroke: red;
+  stroke-width: 5px;
+  opacity: .6;
 }
 
 .y-axis {

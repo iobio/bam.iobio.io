@@ -12,6 +12,7 @@
       :totalLength='totalLength'
       :selectedId="selectedSeqId"
       :range='range'
+      :average='average'
       :yAxisRange='yAxisRange'
       @setSelectedId='setSelectedId'/>
   </div>
@@ -71,24 +72,8 @@ export default {
     allPoints: function() {
 
       if (!this.haveInitialAverage) {
-
-        let sum = 0;
-        let len = 0;
-        // first average
-        for (const refPoints of this.allPoints) {
-          len += refPoints.length;
-          for (const point of refPoints) {
-            sum += this.yAccessFunc(point);
-          }
-        }
-
-        // TODO: this value was arbitrarily selected.
-        const MIN_SAMPLES = 1000;
-        if (len > MIN_SAMPLES) {
-          this.haveInitialAverage = true;
-          this.average = sum / len;
-          this.range.max = this.average * 3;
-        }
+        this.haveInitialAverage = true;
+        this.updateAverage();
       }
     },
     conversionRatio: function() {
@@ -104,7 +89,22 @@ export default {
     },
     setSelectedId: function(id) {
       this.$emit('setSelectedSeq', id);
-    }
+    },
+    updateAverage: function() {
+      let sum = 0;
+      let len = 0;
+      // first average
+      for (const refPoints of this.allPoints) {
+        len += refPoints.length;
+        for (const point of refPoints) {
+          sum += this.yAccessFunc(point);
+        }
+      }
+
+      this.haveInitialAverage = true;
+      this.average = sum / len;
+      this.range.max = this.average * 3;
+    },
   },
 }
 
