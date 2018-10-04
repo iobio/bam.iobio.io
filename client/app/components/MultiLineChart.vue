@@ -1,33 +1,42 @@
 <template>
   <div class='multiline-chart' ref='container'>
     <svg class='multiline-chart__svg'>
-      <g class='multiline-chart_lines'>
-        <g v-for="(points, i) in shownPoints" :key="ids[i]"
-          :transform="lineTransform(i)">
-          <line-segment
-            color="SteelBlue"
-            :width='widths[i]'
-            :height='lineHeight'
-            :index="i"
-            :points="shownPoints[i]"
-            :xAccessFunc='xAccessFunc'
-            :yAccessFunc='yAccessFunc'
-            :domain='shownDomains[i]'
-            :range='range'
-            :selected="ids[i] === selectedId"/>
+      <g class='content' :transform='translateStr(yAxisWidth, 0)'>
+        <g class='y-axis'>
+          <g class='y-axis__label' transform='translate(-40, 80) rotate(-90)'>
+            <text>Estimated Coverage</text>
+          </g>
         </g>
-      </g>
-      <g v-if='shownPoints.length > 0' class='multiline-chart__buttons'>
-        <g v-for='(id, i) in shownIds' :key='shownIds[i]'
-            :transform='buttonTransform(i)'>
-          <rect class='multiline-chart__button' :width='widths[i]'
-            :height='buttonHeight' :style='rectStyle(shownIds[i])' 
-            @click='buttonClick(shownIds[i])'/>
-          <text class='multiline-chart__button__text' :x='widths[i] / 2'
-              y='12' fill='#eee' text-anchor='middle'
-              alignment-baseline='middle' >
-            {{ shownIds[i] }}
-          </text>
+        <g class='multiline-chart_lines'
+            :transform='translateStr(0, 0)' >
+          <g v-for="(points, i) in shownPoints" :key="ids[i]"
+            :transform="lineTransform(i)">
+            <line-segment
+              color="SteelBlue"
+              :width='widths[i]'
+              :height='lineHeight'
+              :index="i"
+              :points="shownPoints[i]"
+              :xAccessFunc='xAccessFunc'
+              :yAccessFunc='yAccessFunc'
+              :domain='shownDomains[i]'
+              :range='range'
+              :selected="ids[i] === selectedId"/>
+          </g>
+        </g>
+        <g v-if='shownPoints.length > 0' class='multiline-chart__buttons'
+            :transform='translateStr(0, 0)' >
+          <g v-for='(id, i) in shownIds' :key='shownIds[i]'
+              :transform='buttonTransform(i)'>
+            <rect class='multiline-chart__button' :width='widths[i]'
+              :height='buttonHeight' :style='rectStyle(shownIds[i])' 
+              @click='buttonClick(shownIds[i])'/>
+            <text class='multiline-chart__button__text' :x='widths[i] / 2'
+                y='12' fill='#eee' text-anchor='middle'
+                alignment-baseline='middle' >
+              {{ shownIds[i] }}
+            </text>
+          </g>
         </g>
       </g>
     </svg>
@@ -37,11 +46,13 @@
 <script>
 
 import LineSegment from './LineSegment.vue'
+import d3 from 'd3';
 
 export default {
   props: [
     'xAccessFunc', 'yAccessFunc', 'ids', 'selectedId', 'offsets',
-    'domains', 'ranges', 'totalLength', 'allPoints', 'colorFunc',
+    'domains', 'totalLength', 'allPoints', 'colorFunc', 'range',
+    'yAxisRange',
   ],
   data: function() {
     return {
@@ -49,8 +60,8 @@ export default {
       height: 0,
       buttonHeight: 20,
       buttonPadding: 5,
-      haveInitialAverage: false,
-      range: { min: 0, max: 0 },
+      yAxisWidth: 60,
+      yAxis: d3.svg.axis(),
     };
   },
   components: {
@@ -122,26 +133,22 @@ export default {
     },
   },
   watch: {
-    allPoints: function() {
+    yAxisRange: function() {
 
-      if (!this.haveInitialAverage) {
-        this.haveInitialAverage = true;
+      const scale = d3.scale.linear()
+        .domain([this.yAxisRange.min, this.yAxisRange.max])
+        .range([this.lineHeight, 0]);
 
-        let sum = 0;
-        let len = 0;
-        // first average
-        for (const refPoints of this.allPoints) {
-          len += refPoints.length;
-          for (const point of refPoints) {
-            //console.log("points changed");
-            sum += this.yAccessFunc(point);
-          }
-        }
+      const g = d3.select(this.$el).select('.y-axis');
 
-        const average = sum / len;
-        this.range.max = average * 3;
-      }
-    }
+      const defaultFormatter = d3.format();
+
+      this.yAxis = d3.svg.axis()
+        .scale(scale)
+        .orient('left')
+        .tickFormat((d) => defaultFormatter(d) + 'x')
+      this.yAxis(g);
+    },
   },
   mounted: function() {
     window.addEventListener('resize', this.handleResize);
@@ -161,6 +168,9 @@ export default {
       const yOffset = this.height - this.buttonHeight;
       return 'translate(' + pixelOffset + ', ' + yOffset + ')';
     },
+    translateStr: function(x, y) {
+      return 'translate(' + x + ', ' + y + ')';
+    },
     buttonClick: function(id) {
       this.$emit('setSelectedId', id);
     },
@@ -171,8 +181,11 @@ export default {
     },
     handleResize: function() {
       const dim = this.$refs.container.getBoundingClientRect();
-      this.width = dim.width;
+      this.width = dim.width - this.yAxisWidth;
       this.height = dim.height;
+    },
+    yScale: function(value) {
+      return this.lineHeight - ((value / this.range.max) * this.lineHeight);
     },
   },
   beforeDestroy: function () {
@@ -199,6 +212,12 @@ export default {
 
 .multiline-chart__button__text {
   pointer-events: none;
+}
+
+.y-axis__label text {
+  font-size: 12px;
+  font-weight: bold;
+  text-anchor: middle;
 }
 
 </style>

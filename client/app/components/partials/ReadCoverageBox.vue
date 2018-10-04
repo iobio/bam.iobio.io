@@ -125,12 +125,13 @@
     <div v-if="notEnoughData" class="warning">Bam file is too small to read coverage information</div>
     <div v-if="tooManyRefs" class="warning">Too many references to display. Use the dropdown to the left to select the reference</div>
 
-    <ReadDepthChart
+    <read-depth-chart
       :references='references'
       :allPoints='chartData'
       :selectedSeqId='selectedSeqId'
+      :conversionRatio='conversionRatio'
       @setSelectedSeq='setSelectedSeq'>
-    </ReadDepthChart>
+    </read-depth-chart>
     <!--
     <read-coverage-plot @setSelectedSeq="setSelectedSeq"
                         @setMaxZoomValue="updateMaxZoomValue"

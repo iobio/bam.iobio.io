@@ -8,10 +8,11 @@
       :ids="refIds"
       :offsets='offsets'
       :domains='domains'
-      :ranges='ranges'
       :colorFunc='colorFunc'
       :totalLength='totalLength'
       :selectedId="selectedSeqId"
+      :range='range'
+      :yAxisRange='yAxisRange'
       @setSelectedId='setSelectedId'/>
   </div>
 </template>
@@ -23,13 +24,18 @@ import d3 from 'd3';
 
 
 export default {
-  props: ['references', 'allPoints', 'selectedSeqId'],
+  name: 'read-depth-chart',
+  props: ['references', 'allPoints', 'selectedSeqId', 'conversionRatio'],
   data: function() {
     return {
       refIds: [],
       offsets: [],
       totalLength: 0,
       colorFunc: d3.scale.category20b(),
+      range: { min: 0, max: 0 },
+      haveInitialAverage: false,
+      average: 0,
+      yAxisRange: { min: 0, max: 0 },
     };
   },
   components: {
@@ -39,12 +45,6 @@ export default {
     domains: function() {
       return this.references.map((ref) => {
         return { min: 0, max: ref.length }; 
-      });
-    },
-    ranges: function() {
-      return this.references.map((ref, i) => {
-        //return { min: 0, max: 3300000 }; 
-        return { min: 0, max: 1400000 }; 
       });
     },
   },
@@ -67,6 +67,32 @@ export default {
       this.totalLength = totalLength;
 
       //this.colorFunc.domain(refIds);
+    },
+    allPoints: function() {
+
+      if (!this.haveInitialAverage) {
+
+        let sum = 0;
+        let len = 0;
+        // first average
+        for (const refPoints of this.allPoints) {
+          len += refPoints.length;
+          for (const point of refPoints) {
+            sum += this.yAccessFunc(point);
+          }
+        }
+
+        // TODO: this value was arbitrarily selected.
+        const MIN_SAMPLES = 1000;
+        if (len > MIN_SAMPLES) {
+          this.haveInitialAverage = true;
+          this.average = sum / len;
+          this.range.max = this.average * 3;
+        }
+      }
+    },
+    conversionRatio: function() {
+      this.yAxisRange = { min: 0, max: this.range.max / this.conversionRatio };
     },
   },
   methods: {
