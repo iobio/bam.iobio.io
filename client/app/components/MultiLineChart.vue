@@ -147,6 +147,8 @@ export default {
         .scale(scale)
         .orient('left')
         .tickFormat((d) => defaultFormatter(d) + 'x')
+        .outerTickSize(4)
+        .innerTickSize(8)
       this.yAxis(g);
     },
   },
@@ -214,10 +216,11 @@ export default {
   pointer-events: none;
 }
 
-.y-axis__label text {
-  font-size: 12px;
-  font-weight: bold;
+.y-axis {
   text-anchor: middle;
+  font-size: 12px;
+  stroke: #666;
+  fill: #666;
 }
 
 </style>
