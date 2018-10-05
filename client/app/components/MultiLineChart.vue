@@ -244,7 +244,7 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
 .multiline-chart {
   height: 100%;
 }
@@ -271,9 +271,7 @@ export default {
 
 .y-axis {
   text-anchor: middle;
-  font-size: 12px;
-  stroke: #666;
-  fill: #666;
+  fill: #000;
 }
 
 </style>
