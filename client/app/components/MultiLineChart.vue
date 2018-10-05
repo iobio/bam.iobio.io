@@ -137,7 +137,12 @@ export default {
       }
       else {
         const index = this.indicesForId[this.selectedId];
-        return this.averages[index];
+        if (this.averages[index]) {
+          return this.averages[index];
+        }
+        else {
+          return 0;
+        }
       }
     },
   },
@@ -221,14 +226,14 @@ export default {
     updateAverage: function() {
       let totalLength = 0;
       for (let i = 0; i < this.allPoints.length; i++) {
-        if (this.allPoints[i]) {
+        if (this.allPoints[i] && this.averages[i]) {
           totalLength += this.allPoints[i].length;
         }
       }
 
       let weightedAverage = 0;
       for (let i = 0; i < this.allPoints.length; i++) {
-        if (this.allPoints[i]) {
+        if (this.allPoints[i] && this.averages[i]) {
           const weight = this.allPoints[i].length / totalLength;
           weightedAverage += (weight * this.averages[i]);
         }
