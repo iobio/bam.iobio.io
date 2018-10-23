@@ -66,10 +66,6 @@
     visibility:hidden;
     cursor: pointer;
   }
-
-  .vue-slider-component .vue-slider {
-    background-color: #2687BE;
-  }
 </style>
 
 <template>
@@ -97,30 +93,6 @@
     <div id="default-bedfile-button" class="bedfile-button" @click="$emit('addDefaultBedFile')" title="1000G human exome targets file " style="right:100px">GRCh37 Exonic Regions</div>
     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" style="font-weight:300" title="Add Bed format capture target definition file">Custom Bed</label>
 
-    <!-- log toggle -->
-    <!--
-    <div id="zoom-buttons"
-         class="checkbox"
-         v-if="draw"
-         style="display: inline-block;vertical-align: middle"
-         title="Zoom y axis to better view read coverage data.">
-      <input type="checkbox" v-model="limitYAxes" >
-        <label for="scale-switch" style="padding-left: 0" @click="limitYAxes=!limitYAxes">
-          Zoom y axis
-        </label>
-
-        <vue-slider v-model="numberIntervalsToZoom"
-                    v-if="sliderMax>1"
-                    :min="1" :max="sliderMax" :dot-size="8" :height="3" :width="65" tooltip="hover" :reverse="true"
-                    :formatter="zoomMessage"
-                    :speed=".1"
-                    :tooltipStyle="sliderTooltipStyle"
-                    :style="sliderStyle"
-                    :processStyle="sliderProcessStyle"></vue-slider>
-
-    </div>
-    -->
-
     <div id='zoom-buttons' style="display: inline-block;vertical-align: middle">
       <label style="padding-left: 0">
         Zoom y axis
@@ -141,18 +113,7 @@
       :yZoom='yZoom'
       @setSelectedSeq='setSelectedSeq'>
     </read-depth-chart>
-    <!--
-    <read-coverage-plot @setSelectedSeq="setSelectedSeq"
-                        @setMaxZoomValue="updateMaxZoomValue"
-                        @setUseMedianAsZoomInterval="setUseMedianAsZoomInterval"
-                        :selectedSeqId="selectedSeqId"
-                        :limitYAxes="limitYAxes"
-                        :numberIntervalsToZoom="numberIntervalsToZoom"
-                        :drawChart="draw && !tooManyRefs"
-                        :data="readDepthData"
-                        :conversionRatio="conversionRatio"
-                        :brushRange="brushRange"></read-coverage-plot>
-                      -->
+
   </div>
 </template>
 
@@ -160,13 +121,11 @@
 
 import HelpButton from "./HelpButton.vue";
 import ReadCoveragePlot from "../viz/ReadCoveragePlot.vue";
-import vueSlider from 'vue-slider-component';
 import ReadDepthChart from '../ReadDepthChart.vue';
 
 
 export default {
   components: {
-    vueSlider,
     ReadCoveragePlot,
     ReadDepthChart,
     HelpButton
@@ -182,30 +141,12 @@ export default {
       type: Number,
       default: 0
     },
-    brushRange: {},
 
     chartData: {},
     references: {},
   },
   data() {
     return {
-      limitYAxes: true,
-      numberIntervalsToZoom: Number(4),
-      oldZoomValue: Number(-1),
-      sliderMax: Number(9),
-      useMedianAsZoomInterval: true,
-      // Styles for the slider component
-      sliderTooltipStyle: {
-        "backgroundColor": "#666",
-        "borderColor": "#666",
-        "font-size": "8pt"
-      },
-      sliderStyle: {
-        "display":"inline-block"
-      },
-      sliderProcessStyle: {
-        "backgroundColor": "#e2e2e2"
-      },
       yZoom: 1,
     }
   },
@@ -213,22 +154,6 @@ export default {
   methods: {
     setSelectedSeq: function( selected, start, end) {
       this.$emit('setSelectedSeq', selected, start, end);
-    },
-    updateMaxZoomValue: function(max) {
-      this.sliderMax = max < 19 ? (max > 1 ? max : 1) : 19;
-      if ( this.sliderMax > 15 && this.numberIntervalsToZoom <=5 && this.oldZoomValue == -1 ) {
-        this.numberIntervalsToZoom = 9;
-      }
-      if ( this.numberIntervalsToZoom > this.sliderMax ) {
-        this.oldZoomValue = this.numberIntervalsToZoom;
-        this.numberIntervalsToZoom = this.sliderMax;
-      } else if ( this.oldZoomValue != -1 ) {
-        this.numberIntervalsToZoom = this.oldZoomValue;
-        this.oldZoomValue = -1;
-      }
-    },
-    setUseMedianAsZoomInterval: function(medianIsZoom) {
-      this.useMedianAsZoomInterval = medianIsZoom;
     },
     processBedFile: function(event){
       if (event.target.files.length != 1) {
@@ -253,12 +178,6 @@ export default {
     },
   },
   computed: {
-    zoomMessage: function() {
-      return this.useMedianAsZoomInterval ?
-        ('show ' + (this.numberIntervalsToZoom+1) +  ' multiples of median') :
-        ('show ' + this.numberIntervalsToZoom + ' standard deviations');
-    },
-
     notEnoughData: function() {
       const totalPoints = this.readDepthData.reduce(function (acc, val) {
         return acc + val.data.length
