@@ -26,17 +26,16 @@ import d3 from 'd3';
 
 export default {
   name: 'read-depth-chart',
-  props: ['references', 'allPoints', 'selectedSeqId', 'conversionRatio'],
+  props: ['references', 'allPoints', 'selectedSeqId', 'conversionRatio',
+    'yZoom'],
   data: function() {
     return {
       refIds: [],
       offsets: [],
       totalLength: 0,
       colorFunc: d3.scale.category20b(),
-      range: { min: 0, max: 0 },
       haveInitialAverage: false,
       average: 0,
-      yAxisRange: { min: 0, max: 0 },
     };
   },
   components: {
@@ -47,6 +46,15 @@ export default {
       return this.references.map((ref) => {
         return { min: 0, max: ref.length }; 
       });
+    },
+    yAxisRange: function() {
+      return { min: 0, max: this.range.max / this.conversionRatio }
+    },
+    yScaleFactor: function() {
+      return 1 / this.yZoom;
+    },
+    range: function() {
+      return { min: 0, max: this.average * 3 * this.yScaleFactor };
     },
   },
   watch: {
@@ -72,12 +80,8 @@ export default {
     allPoints: function() {
 
       if (!this.haveInitialAverage) {
-        this.haveInitialAverage = true;
         this.updateAverage();
       }
-    },
-    conversionRatio: function() {
-      this.yAxisRange = { min: 0, max: this.range.max / this.conversionRatio };
     },
   },
   methods: {
@@ -103,7 +107,7 @@ export default {
 
       this.haveInitialAverage = true;
       this.average = sum / len;
-      this.range.max = this.average * 3;
+      //this.$set(this.range, 'max', this.average * 3);
     },
   },
 }

@@ -38,7 +38,7 @@
   }
 
   /* power scale */
-  #scale-switch {
+  #zoom-buttons {
     position: absolute;
     top:28px;
     left:52px;
@@ -99,7 +99,7 @@
 
     <!-- log toggle -->
     <!--
-    <div id="scale-switch"
+    <div id="zoom-buttons"
          class="checkbox"
          v-if="draw"
          style="display: inline-block;vertical-align: middle"
@@ -121,6 +121,14 @@
     </div>
     -->
 
+    <div id='zoom-buttons' style="display: inline-block;vertical-align: middle">
+      <label style="padding-left: 0">
+        Zoom y axis
+      </label>
+      <button @click='zoomOut'>-</button>
+      <button @click='zoomIn'>+</button>
+    </div>
+
     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
     <div v-if="notEnoughData" class="warning">Bam file is too small to read coverage information</div>
     <div v-if="tooManyRefs" class="warning">Too many references to display. Use the dropdown to the left to select the reference</div>
@@ -130,6 +138,7 @@
       :allPoints='chartData'
       :selectedSeqId='selectedSeqId'
       :conversionRatio='conversionRatio'
+      :yZoom='yZoom'
       @setSelectedSeq='setSelectedSeq'>
     </read-depth-chart>
     <!--
@@ -196,7 +205,8 @@ export default {
       },
       sliderProcessStyle: {
         "backgroundColor": "#e2e2e2"
-      }
+      },
+      yZoom: 1,
     }
   },
 
@@ -234,7 +244,13 @@ export default {
       }
 
       this.$emit('processBedFile', event.target.files[0]);
-    }
+    },
+    zoomIn: function() {
+      this.yZoom *= 2;
+    },
+    zoomOut: function() {
+      this.yZoom /= 2;
+    },
   },
   computed: {
     zoomMessage: function() {
