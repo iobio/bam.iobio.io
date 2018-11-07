@@ -682,7 +682,7 @@
 
                 if (getUrlParameter('source') !== undefined) {
                   const source = getUrlParameter('source');
-                  window.history.pushState({'index.html' : 'bar'},null,"?source="+source+"&sample_uuid=" + getUrlParameter('sample_uuid') + "&region=" + regionStr + extraParams);
+                  window.history.pushState({'index.html' : 'bar'},null,"?source="+source+"&sample_id=" + getUrlParameter('sample_id') + "&region=" + regionStr + extraParams);
 
                 } else if (window.bam.baiUri != undefined) {
                   window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
@@ -869,8 +869,9 @@
             function getHubIobioUrls(source, callback) {
               let api = decodeURIComponent(source) + "/apiv1";
 
+              let project_id = '1';
               let access_token = getUrlParameter('access_token');
-              let sample_uuid = getUrlParameter('sample_uuid');
+              let sample_id = getUrlParameter('sample_id');
               let token_type = getUrlParameter('token_type');
 
               if (access_token !== undefined) {
@@ -880,14 +881,14 @@
               if (localStorage.getItem('hub-iobio-tkn')) {
 
               // Get VCF File
-                getFilesForSample(sample_uuid).done(data => {
+                getFilesForSample(sample_id).done(data => {
                   bam = data.data.filter(f => f.type == 'bam')[0];
                   bai = data.data.filter(f => f.type == 'bai')[0];
 
                   // Get Signed Url
-                  getSignedUrlForFile(bam).done(bamUrlData => {
+                  getSignedUrlForFile(project_id, bam).done(bamUrlData => {
                     bamUrl = bamUrlData.url;
-                    getSignedUrlForFile(bai).done(baiUrlData => {
+                    getSignedUrlForFile(project_id, bai).done(baiUrlData => {
                       baiUrl = baiUrlData.url;
                       callback(bamUrl, baiUrl);
                     })
@@ -898,9 +899,9 @@
 
               }
 
-              function getFilesForSample(sample_uuid) {
+              function getFilesForSample(sample_id) {
                 return $.ajax({
-                  url: api + '/samples/' + sample_uuid + '/files',
+                  url: api + '/samples/' + sample_id + '/files',
                   type: 'GET',
                   contentType: 'application/json',
                   headers: {
@@ -914,9 +915,10 @@
                 });
               }
 
-              function getSignedUrlForFile (file) {
+              function getSignedUrlForFile (project_id, file) {
                 return $.ajax({
-                  url: api + '/files/' + file.uuid + '/url',
+                  // url: api + '/files/' + file.id + '/url',
+                  url: api + '/projects/' + project_id + '/files/' + file.id + '/url',
                   type: 'GET',
                   contentType: 'application/json',
                   headers: {
