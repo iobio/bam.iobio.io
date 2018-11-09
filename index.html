@@ -340,11 +340,21 @@
                   //   let newUrl = window.location.href.replace('#', '&')
                   //   window.location.href = newUrl;
                   // }
-                  getOldHubIobioUrls(source, function(bamUrl, baiUrl) {
-                    window.bam = new Bam(bamUrl, { bai: baiUrl});
-                    let region = parseRegionParam(getUrlParameter('region'));
-                    goBam(region);
-                  })
+                  var project_id = getUrlParameter('project_id')
+
+                  if(project_id === undefined) {
+                    getOldHubIobioUrls(source, function(bamUrl, baiUrl) {
+                      window.bam = new Bam(bamUrl, { bai: baiUrl});
+                      let region = parseRegionParam(getUrlParameter('region'));
+                      goBam(region);
+                    })
+                  } else {
+                    getMosaicIobioUrls(source, function(bamUrl, baiUrl) {
+                      window.bam = new Bam(bamUrl, { bai: baiUrl});
+                      let region = parseRegionParam(getUrlParameter('region'));
+                      goBam(region);
+                    })
+                  }
                 }
 
                 // check if url is present
@@ -880,7 +890,7 @@
               if (localStorage.getItem('hub-iobio-tkn')) {
 
               // Get VCF File
-                getOldFilesForSample(sample_uuid).done(data => {
+                getFilesForSample(sample_uuid).done(data => {
                   bam = data.data.filter(f => f.type == 'bam')[0];
                   bai = data.data.filter(f => f.type == 'bai')[0];
 
@@ -898,7 +908,7 @@
 
               }
 
-              function getOldFilesForSample(sample_uuid) {
+              function getFilesForSample(sample_uuid) {
                 return $.ajax({
                   url: api + '/samples/' + sample_uuid + '/files',
                   type: 'GET',
@@ -917,6 +927,69 @@
               function getSignedUrlForFile (file) {
                 return $.ajax({
                   url: api + '/files/' + file.uuid + '/url',
+                  type: 'GET',
+                  contentType: 'application/json',
+                  headers: {
+                    'Authorization': localStorage.getItem('hub-iobio-tkn')
+                  }
+                });
+              }
+
+            }
+
+            function getMosaicIobioUrls(source, callback) {
+              let api = decodeURIComponent(source) + "/apiv1";
+
+              let project_id = '1';
+              let access_token = getUrlParameter('access_token');
+              let sample_id = getUrlParameter('sample_id');
+              let token_type = getUrlParameter('token_type');
+
+              if (access_token !== undefined) {
+                localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
+              }
+
+              if (localStorage.getItem('hub-iobio-tkn')) {
+
+              // Get VCF File
+                getFilesForSample(sample_id).done(data => {
+                  bam = data.data.filter(f => f.type == 'bam')[0];
+                  bai = data.data.filter(f => f.type == 'bai')[0];
+
+                  // Get Signed Url
+                  getSignedUrlForFile(project_id, bam).done(bamUrlData => {
+                    bamUrl = bamUrlData.url;
+                    getSignedUrlForFile(project_id, bai).done(baiUrlData => {
+                      baiUrl = baiUrlData.url;
+                      callback(bamUrl, baiUrl);
+                    })
+                  })
+                })
+              } else {
+                window.location.href = buildOauthLink();
+
+              }
+
+              function getFilesForSample(sample_id) {
+                return $.ajax({
+                  url: api + '/samples/' + sample_id + '/files',
+                  type: 'GET',
+                  contentType: 'application/json',
+                  headers: {
+                    'Authorization': localStorage.getItem('hub-iobio-tkn')
+                  }
+                }).fail(function(xhr,status,error) {
+                  let = link = buildOauthLink();
+                  $('#warning-authorize')
+                    .append('Your access to hub.iobio has expired. Please click <a href='+link+'>here</a> to renew your access.')
+                    .css('display', 'block');
+                });
+              }
+
+              function getSignedUrlForFile (project_id, file) {
+                return $.ajax({
+                  // url: api + '/files/' + file.id + '/url',
+                  url: api + '/projects/' + project_id + '/files/' + file.id + '/url',
                   type: 'GET',
                   contentType: 'application/json',
                   headers: {
