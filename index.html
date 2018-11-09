@@ -940,7 +940,7 @@
             function getMosaicIobioUrls(source, callback) {
               let api = decodeURIComponent(source) + "/apiv1";
 
-              let project_id = '1';
+              let project_id = getUrlParameter('project_id');
               let access_token = getUrlParameter('access_token');
               let sample_id = getUrlParameter('sample_id');
               let token_type = getUrlParameter('token_type');
