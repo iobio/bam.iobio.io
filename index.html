@@ -340,7 +340,7 @@
                   //   let newUrl = window.location.href.replace('#', '&')
                   //   window.location.href = newUrl;
                   // }
-                  getHubIobioUrls(source, function(bamUrl, baiUrl) {
+                  getOldHubIobioUrls(source, function(bamUrl, baiUrl) {
                     window.bam = new Bam(bamUrl, { bai: baiUrl});
                     let region = parseRegionParam(getUrlParameter('region'));
                     goBam(region);
@@ -866,7 +866,7 @@
                     .run()
             }
 
-            function getHubIobioUrls(source, callback) {
+            function getOldHubIobioUrls(source, callback) {
               let api = decodeURIComponent(source) + "/apiv1";
 
               let access_token = getUrlParameter('access_token');
@@ -880,7 +880,7 @@
               if (localStorage.getItem('hub-iobio-tkn')) {
 
               // Get VCF File
-                getFilesForSample(sample_uuid).done(data => {
+                getOldFilesForSample(sample_uuid).done(data => {
                   bam = data.data.filter(f => f.type == 'bam')[0];
                   bai = data.data.filter(f => f.type == 'bai')[0];
 
@@ -898,7 +898,7 @@
 
               }
 
-              function getFilesForSample(sample_uuid) {
+              function getOldFilesForSample(sample_uuid) {
                 return $.ajax({
                   url: api + '/samples/' + sample_uuid + '/files',
                   type: 'GET',
