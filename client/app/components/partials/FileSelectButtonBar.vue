@@ -104,7 +104,7 @@
 
 <script>
 
-import { Hoster } from 'browserve-host';
+import { Hoster } from 'fibridge-host';
 
 export default {
   name: 'file-select-button-bar',
