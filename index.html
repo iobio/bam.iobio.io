@@ -692,7 +692,16 @@
 
                 if (getUrlParameter('source') !== undefined) {
                   const source = getUrlParameter('source');
-                  window.history.pushState({'index.html' : 'bar'},null,"?source="+source+"&sample_uuid=" + getUrlParameter('sample_uuid') + "&region=" + regionStr + extraParams);
+
+                  const oldId = getUrlParameter('sample_uuid');
+                  let query;
+                  if (oldId) {
+                    query = `sample_uuid=${oldId}`;
+                  } else {
+                    query = `sample_id=${getUrlParameter('sample_id')}&&project_id=${getUrlParameter('project_id')}`;
+                  }
+
+                  window.history.pushState({'index.html' : 'bar'},null,"?source="+source+"&" + query + "&region=" + regionStr + extraParams);
 
                 } else if (window.bam.baiUri != undefined) {
                   window.history.pushState({'index.html' : 'bar'},null,"?bam=" + encodeURIComponent(window.bam.bamUri) + "&bai=" + encodeURIComponent(window.bam.baiUri) + "&region=" + regionStr + extraParams);
