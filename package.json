@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
-    "fibridge-host": "^0.9.0",
+    "fibridge-host": "^0.10.0",
     "connect-history-api-fallback": "^1.5.0",
     "d3": "^3.5.17",
     "debug": "^2.6.9",
