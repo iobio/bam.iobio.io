@@ -27,10 +27,19 @@ var Bam = Class.extend({
       // set iobio servers
       this.iobio = {}
 
-      this.iobio.samtools       = "nv-prod.iobio.io/samtools/";
-      this.iobio.od_samtools    = "nv-prod.iobio.io/od_samtools/";
-      this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
-      this.iobio.bamstatsAlive  = "nv-prod.iobio.io/bamstatsalive/";
+      var urlParams = new URLSearchParams(window.location.search);
+
+      var backendSource = 'nv-prod.iobio.io';
+      var alternateBackend = 'mosaic.chcp.utah.edu';
+      if (urlParams.has('iobio_source') &&
+          urlParams.get('iobio_source') === alternateBackend) {
+        backendSource = alternateBackend;
+      }
+
+      this.iobio.samtools       = backendSource + "/samtools/";
+      this.iobio.od_samtools    = backendSource + "/od_samtools/";
+      this.iobio.bamReadDepther = backendSource + "/bamreaddepther/";
+      this.iobio.bamstatsAlive  = backendSource + "/bamstatsalive/";
 
       return this;
    },
