@@ -962,8 +962,8 @@
 
               // Get VCF File
                 getFilesForSample(sample_id).done(data => {
-                  bam = data.data.filter(f => f.type == 'bam')[0];
-                  bai = data.data.filter(f => f.type == 'bai')[0];
+                  bam = data.data.filter(f => (f.type == 'bam' || f.type == 'cram'))[0];
+                  bai = data.data.filter(f => (f.type == 'bai' || f.type == 'crai'))[0];
 
                   // Get Signed Url
                   getSignedUrlForFile(project_id, bam).done(bamUrlData => {
