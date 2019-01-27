@@ -3,14 +3,6 @@
 var Bam = Class.extend({
 
    init: function(bamUri, options) {
-
-      this.hubToIobioSources = {
-        "https://mosaic.chpc.utah.edu":          {iobio: "mosaic.chpc.utah.edu", batchSize: 10},
-        "https://mosaic-dev.genetics.utah.edu":  {iobio: "mosaic.chpc.utah.edu", batchSize: 10},
-        "http://mosaic-dev.genetics.utah.edu":   {iobio: "mosaic.chpc.utah.edu", batchSize: 10},
-        "https://staging.frameshift.io":         {iobio: "nv-prod.iobio.io",     batchSize: 10}
-      };
-
       this.bamUri = bamUri;
       this.ssl = true;
       this.options = options; // *** add options mapper ***
@@ -42,17 +34,12 @@ var Bam = Class.extend({
       if (urlParams.has('iobio_source') &&
           urlParams.get('iobio_source') === alternateBackend) {
         backendSource = alternateBackend;
-      } else if (urlParams.get('source') && this.hubToIobioSources[urlParams.get('source')]) {
-        backendSource =  this.hubToIobioSources[urlParams.get('source')].iobio;
       }
-
 
       this.iobio.samtools       = backendSource + "/samtools/";
       this.iobio.od_samtools    = backendSource + "/od_samtools/";
       this.iobio.bamReadDepther = backendSource + "/bamreaddepther/";
       this.iobio.bamstatsAlive  = backendSource + "/bamstatsalive/";
-
-
 
       return this;
    },
