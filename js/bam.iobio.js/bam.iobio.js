@@ -41,13 +41,14 @@ var Bam = Class.extend({
       var urlParams = new URLSearchParams(window.location.search);
 
       var backendSource = 'nv-prod.iobio.io';
-      var alternateBackend = 'mosaic.chcp.utah.edu';
+      var alternateBackend = 'mosaic.chpc.utah.edu';
       if (urlParams.has('iobio_source') &&
           urlParams.get('iobio_source') === alternateBackend) {
         backendSource = alternateBackend;
       }  else if (urlParams.get('source') && this.hubToIobioSources[urlParams.get('source')]) {
         backendSource =  this.hubToIobioSources[urlParams.get('source')].iobio;
       }
+
 
 
       this.iobio.samtools       = backendSource + "/samtools/";
