@@ -480,8 +480,14 @@ var Bam = Class.extend({
          me.promise(function() { me.getHeader(callback); })
       else {
 
-          var rawHeader = ""
-          var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
+          var rawHeader = "";
+          var cmd = null;
+          if (this.baiUri) {
+            cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"', '"' + this.baiUri + '"'], {ssl:this.ssl,})
+          } else {
+            cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
+
+          }
           cmd.on('error', function(error) {
             console.log(error);
           })
