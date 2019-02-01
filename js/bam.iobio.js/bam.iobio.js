@@ -50,7 +50,6 @@ var Bam = Class.extend({
       }
 
 
-
       this.iobio.samtools       = backendSource + "/samtools/";
       this.iobio.od_samtools    = backendSource + "/od_samtools/";
       this.iobio.bamReadDepther = backendSource + "/bamreaddepther/";
@@ -103,7 +102,7 @@ var Bam = Class.extend({
           samtools_service = this.iobio.od_samtools;
           args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' '), '"'+this.baiUri+'"'];
         } else {
-          samtools_service = this.iobio.samtools;
+          samtools_service = this.iobio.od_samtools;
           args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' ')];
         }
         var cmd = new iobio.cmd(
@@ -371,7 +370,7 @@ var Bam = Class.extend({
           var allData = "";
           window.allGData = "";
           var indexUrl = this.baiUri || this.getIndexUrl(this.bamUri);
-          var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
+          var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl})
           cmd.on('error', function(e){ console.log(e); });
           cmd.on('data', function(data, options) {
             allData += data;
@@ -500,9 +499,9 @@ var Bam = Class.extend({
           var rawHeader = "";
           var cmd = null;
           if (this.baiUri) {
-            cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"', '"' + this.baiUri + '"'], {ssl:this.ssl,})
+            cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"', '"' + this.baiUri + '"'], {ssl:this.ssl})
           } else {
-            cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
+            cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl})
 
           }
           cmd.on('error', function(error) {
