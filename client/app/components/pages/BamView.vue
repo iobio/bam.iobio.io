@@ -278,11 +278,6 @@
           :data='references'
           :selectedId="selectedSeqId"
           @setSelectedId="setSelectedSeq" />
-        <!--
-        <pie-chooser @setSelectedSeq="setSelectedSeq"
-                     :selected-item="selectedSeqId"
-                     :data="readDepthData"></pie-chooser>
-                   -->
       </div>
 
       <read-coverage-box @removeBedFile="removeBedFile"
@@ -291,7 +286,6 @@
                          @setSelectedSeq="setSelectedSeq"
                          :selectedSeqId="selectedSeqId"
                          :draw="draw"
-                         :readDepthData="readDepthData"
                          :chartData="readDepthChartData"
                          :references="references"
                          :conversionRatio="readDepthConversionRatio"
@@ -637,7 +631,6 @@
         readDepthChartData: [],
         references: [],
 
-        readDepthData: [],
         selectedSeqId: 'all',
         region: {},
         coverageBrushRange: {},
@@ -1070,16 +1063,19 @@
 
             //console.log(name, index, ref.depths.length, filterRef(name));
             if (ref.depths.length > 0 && !filterRef(name)) {
-              const startTime = timeNowSeconds();
               // Have to use Object.freeze here to prevent Vue from
               // recursively setting up data listeners, which causes huge
               // performance issues with data this big.
               Vue.set(this.readDepthChartData, index, Object.freeze(ref.depths));
+
+              if (!this.draw) {
+                this.draw = true;
+              }
             }
           },
           function doneCallback() {
 
-          const startTime = timeNowSeconds();
+          //const startTime = timeNowSeconds();
 
           const keys = Object.keys(this.bam.readDepth);
 
@@ -1114,23 +1110,23 @@
           allPoints
             .sort((a, b) => this.sorter.compare(a.name, b.name));
 
-          this.readDepthData = allPoints;
-
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
 
           // Draw read depth chart
-          this.draw = true;
+          //this.draw = true;
 
-          // Set selected seq & region
-          if (!region || (region && region.chr == 'all'))
-            this.setSelectedSeq('all', start, end);
-          else
-            this.setSelectedSeq(region.chr, start, end);
+          this.bam.getHeader().then(() => {
+            // Set selected seq & region
+            if (!region || (region && region.chr == 'all'))
+              this.setSelectedSeq('all', start, end);
+            else
+              this.setSelectedSeq(region.chr, start, end);
+          });
 
           this.referenceDepthData = this.bam.referenceDepthData;
 
-          const fullTime = timeNowSeconds() - startTime;
+          //const fullTime = timeNowSeconds() - startTime;
           //console.log(`Full time: ${fullTime}`);
 
         }.bind(this),

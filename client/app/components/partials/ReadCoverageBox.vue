@@ -132,7 +132,6 @@ export default {
   },
   name: 'read-coverage-box',
   props: {
-    readDepthData: {},
     selectedSeqId: '',
     draw: {
       type: Boolean,
@@ -179,8 +178,8 @@ export default {
   },
   computed: {
     notEnoughData: function() {
-      const totalPoints = this.readDepthData.reduce(function (acc, val) {
-        return acc + val.data.length
+      const totalPoints = this.chartData.reduce(function (acc, val) {
+        return acc + val.length
       }, 0);
 
       return this.draw && totalPoints <= 1;
@@ -189,7 +188,7 @@ export default {
     tooManyRefs: function() {
       const maxRefs = 50;
       const allSelected = this.selectedSeqId === 'all';
-      return allSelected && this.readDepthData.length > 50;
+      return allSelected && this.chartData.length > 50;
     },
   },
 }
