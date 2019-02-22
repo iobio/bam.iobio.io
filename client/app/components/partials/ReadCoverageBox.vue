@@ -120,13 +120,11 @@
 <script>
 
 import HelpButton from "./HelpButton.vue";
-import ReadCoveragePlot from "../viz/ReadCoveragePlot.vue";
-import ReadDepthChart from '../ReadDepthChart.vue';
+import ReadDepthChart from '../viz/ReadDepthChart.vue';
 
 
 export default {
   components: {
-    ReadCoveragePlot,
     ReadDepthChart,
     HelpButton
   },

@@ -562,8 +562,7 @@
   import HelpButton from "../partials/HelpButton.vue";
   import ReadCoverageBox from "../partials/ReadCoverageBox.vue";
 
-  //import PieChooser from "../viz/PieChooser.vue";
-  import PieChooserChart from "../PieChooserChart.vue";
+  import PieChooserChart from "../viz/PieChooserChart.vue";
 
   import DefaultBed from '../../../../data/20130108.exome.targets.bed';
   import DonutChart from "../viz/DonutChart.vue";
@@ -579,7 +578,6 @@
       StackedHistogram,
       PercentChartBox,
       DonutChart,
-      //PieChooser,
       PieChooserChart,
       ReadCoverageBox,
       HelpButton,
@@ -1075,8 +1073,6 @@
           },
           function doneCallback() {
 
-          //const startTime = timeNowSeconds();
-
           const keys = Object.keys(this.bam.readDepth);
 
           if (keys.length == 1) {
@@ -1113,9 +1109,6 @@
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
 
-          // Draw read depth chart
-          //this.draw = true;
-
           this.bam.getHeader().then(() => {
             // Set selected seq & region
             if (!region || (region && region.chr == 'all'))
@@ -1125,10 +1118,6 @@
           });
 
           this.referenceDepthData = this.bam.referenceDepthData;
-
-          //const fullTime = timeNowSeconds() - startTime;
-          //console.log(`Full time: ${fullTime}`);
-
         }.bind(this),
         (err) => {
           // if there's an error start over on the home page
@@ -1278,10 +1267,6 @@
     return Math.round(number * factor) / factor;
   }
 
-  function timeNowSeconds() {
-    return performance.now() / 1000;
-  }
-
   const validRefs = {};
   for (let i = 1; i <= 22; i++) {
     validRefs[i] = true;
@@ -1293,20 +1278,5 @@
   function filterRef(ref) {
     return validRefs[ref] === undefined;
   }
-
-  //function filterRef(ref) {
-  //  return (
-  //    ref.substr(0,4) == 'GL00' ||
-  //    ref.substr(0,6).toLowerCase() == "hs37d5" ||
-  //    ref.includes('GL00') ||
-  //    ref.includes('KI2707') ||
-  //    ref.split("_").slice(-1)[0] == "alt" ||
-  //    ref.split("_").slice(-1)[0] == "decoy" ||
-  //    ref.includes('chrUn') ||
-  //    ref.substr(0,4) == 'HLA-' ||
-  //    ref.substr(0,2) === 'MT' ||
-  //    ref.startsWith('NC_007605')
-  //  );
-  //}
 
 </script>
