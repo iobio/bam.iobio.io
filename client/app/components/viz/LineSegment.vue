@@ -7,8 +7,6 @@
 
 <script>
 
-import pointSmooth from '../../../js/pointSmooth';
-
 
 export default {
   props: [
@@ -18,7 +16,8 @@ export default {
   ],
   computed: {
     smoother: function() {
-      const points = pointSmooth()
+      // TODO: make this not depend on the iobio global
+      const points = iobio.viz.layout.pointSmooth()
         .size(this.width*this.height/5)
         .epsilonRate(0.1);
       return points;
