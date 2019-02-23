@@ -104,7 +104,7 @@
 
 <script>
 
-import { Hoster } from 'browserve-host';
+import { createHoster } from 'fibridge-host';
 
 export default {
   name: 'file-select-button-bar',
@@ -166,12 +166,12 @@ export default {
       const port = 80;
       // TODO: shouldn't this be going out of scope and eventually garbage
       // collected, which could lead to race conditions?
-      const hoster = new Hoster({ proxyAddress, port, secure: false }, () => {
+      createHoster({ proxyAddress, port, secure: false }).then((hoster) => {
 
         const bamPath = '/' + bamFile.name;
-        hoster.hostFile(bamPath, bamFile);
+        hoster.hostFile({ path: bamPath, file: bamFile });
         const baiPath = '/' + baiFile.name;
-        hoster.hostFile(baiPath, baiFile);
+        hoster.hostFile({ path: baiPath, file: baiFile });
 
         const portStr = hoster.getPortStr();
         const baseUrl = `${window.location.protocol}//${proxyAddress}${portStr}`;

@@ -179,18 +179,6 @@
     animation:         nprogress-spinner 400ms linear infinite;
   }
 
-  .chart rect {
-    fill: #2d8fc1;
-    shape-rendering: crispEdges;
-  }
-
-  .chart rect.unselected {
-    fill: #9C9E9F;
-  }
-
-  .chart text {
-    fill: 'black';
-  }
 
   .iobio-multi-line.line-panel text { fill: black; }
   .iobio-multi-line.button-panel text { fill: white; }
@@ -283,12 +271,13 @@
     <section id="top">
 
       <div id="piechooser" class="panel" style="padding-top: 12px">
-        <pie-chooser @setSelectedSeq="setSelectedSeq"
-                     :selected-item="selectedSeqId"
-                     :data="readDepthData"></pie-chooser>
         <select @change="seqSelected" id="reference-select">
           <option value="all">all</option>
         </select>
+        <pie-chooser-chart
+          :data='references'
+          :selectedId="selectedSeqId"
+          @setSelectedId="setSelectedSeq" />
       </div>
 
       <read-coverage-box @removeBedFile="removeBedFile"
@@ -297,7 +286,8 @@
                          @setSelectedSeq="setSelectedSeq"
                          :selectedSeqId="selectedSeqId"
                          :draw="draw"
-                         :readDepthData="readDepthData"
+                         :chartData="readDepthChartData"
+                         :references="references"
                          :conversionRatio="readDepthConversionRatio"
                          :brushRange="coverageBrushRange"
                          v-tooltip.top-center="{content: clinTooltip.genome_wide_coverage.content, show: clinTooltip.genome_wide_coverage.show, trigger: 'manual'}">
@@ -572,12 +562,14 @@
   import HelpButton from "../partials/HelpButton.vue";
   import ReadCoverageBox from "../partials/ReadCoverageBox.vue";
 
-  import PieChooser from "../viz/PieChooser.vue";
+  import PieChooserChart from "../viz/PieChooserChart.vue";
 
   import DefaultBed from '../../../../data/20130108.exome.targets.bed';
   import DonutChart from "../viz/DonutChart.vue";
   import PercentChartBox from "../partials/PercentChartBox.vue";
   import StackedHistogram from "../viz/StackedHistogram.vue";
+
+  import Vue from 'vue';
 
   export default {
     name: 'bam-view',
@@ -586,7 +578,7 @@
       StackedHistogram,
       PercentChartBox,
       DonutChart,
-      PieChooser,
+      PieChooserChart,
       ReadCoverageBox,
       HelpButton,
       ReadsSampledBox
@@ -634,7 +626,9 @@
         bam: {},
         bed: {},
 
-        readDepthData: [],
+        readDepthChartData: [],
+        references: [],
+
         selectedSeqId: 'all',
         region: {},
         coverageBrushRange: {},
@@ -1045,8 +1039,39 @@
         $("#selectData").css("display", "none");
         $("#showData").css("visibility", "visible");
 
+        let refIndex = 0;
+
+        this.bam.getHeader().then((header) => {
+          this.references = header.sq.filter((sq) => {
+            return !filterRef(sq.name);
+          })
+          .map((sq) => {
+            return {
+              id: sq.name,
+              length: sq.end,
+            };
+          });
+        });
+
         // get read depth
-        this.bam.estimateBaiReadDepth(function doneCallback() {
+        this.bam.estimateBaiReadDepth((name, index, ref) => {
+
+            // turn off read depth loading msg
+            $("#readDepthLoadingMsg").css("display", "none");
+
+            //console.log(name, index, ref.depths.length, filterRef(name));
+            if (ref.depths.length > 0 && !filterRef(name)) {
+              // Have to use Object.freeze here to prevent Vue from
+              // recursively setting up data listeners, which causes huge
+              // performance issues with data this big.
+              Vue.set(this.readDepthChartData, index, Object.freeze(ref.depths));
+
+              if (!this.draw) {
+                this.draw = true;
+              }
+            }
+          },
+          function doneCallback() {
 
           const keys = Object.keys(this.bam.readDepth);
 
@@ -1078,63 +1103,21 @@
                 .text(id));
           });
 
-          // For any header entries that don't have any actual records, add
-          // a dummy entry with 0 coverage to indicate to the user that the
-          // data is missing.
-          // NOTE: this is a bit of a hack. A better long-term solution would
-          // probably be to build functionality into the lower visualization
-          // layers for representing missing data.
-          if (this.bam.header) {
-            for (const sq of this.bam.header.sq) {
-              if (sq.hasRecords === false && !filterRef(sq.name)) {
-
-                // this value matches what is used by the bamReadDepther
-                // backend service. See:
-                // https://github.com/iobio/minion-services/tree/master/bamReadDepther 
-                const BAM_INDEX_BIN_STEP = 16384;
-
-                // build dummy data
-                const data = [];
-                for (let i = 0; i < sq.end; i += BAM_INDEX_BIN_STEP) {
-                  data.push({
-                    pos: i,
-                    depth: 0,
-                  });
-                }
-                allPoints.push({
-                  name: sq.name,
-                  //data: [],
-                  data,
-                  sqLength: sq.end,
-                });
-              }
-            }
-          }
-          else {
-            throw "bam header not ready";
-          }
-
           allPoints
             .sort((a, b) => this.sorter.compare(a.name, b.name));
-
-          this.readDepthData = allPoints;
 
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
 
-          // turn off read depth loading msg
-          $("#readDepthLoadingMsg").css("display", "none");
-          // Draw read depth chart
-          this.draw = true;
-
-          // Set selected seq & region
-          if (!region || (region && region.chr == 'all'))
-            this.setSelectedSeq('all', start, end);
-          else
-            this.setSelectedSeq(region.chr, start, end);
+          this.bam.getHeader().then(() => {
+            // Set selected seq & region
+            if (!region || (region && region.chr == 'all'))
+              this.setSelectedSeq('all', start, end);
+            else
+              this.setSelectedSeq(region.chr, start, end);
+          });
 
           this.referenceDepthData = this.bam.referenceDepthData;
-
         }.bind(this),
         (err) => {
           // if there's an error start over on the home page
@@ -1273,7 +1256,7 @@
           }
         }
         return '';
-      }
+      },
     }
 
   }
@@ -1284,25 +1267,16 @@
     return Math.round(number * factor) / factor;
   }
 
-  function timeNowSeconds() {
-    return performance.now() / 1000;
+  const validRefs = {};
+  for (let i = 1; i <= 22; i++) {
+    validRefs[i] = true;
+    validRefs['chr' + i] = true;
   }
-
-  function validSqName(key) {
-    return !(key.substr(0, 4) == 'GL00' || key.substr(0, 6).toLowerCase() == "hs37d5");
-  }
+  validRefs['X'] = true;
+  validRefs['Y'] = true;
 
   function filterRef(ref) {
-    return (
-      ref.substr(0,4) == 'GL00' ||
-      ref.substr(0,6).toLowerCase() == "hs37d5" ||
-      ref.includes('GL00') ||
-      ref.includes('KI2707') ||
-      ref.split("_").slice(-1)[0] == "alt" ||
-      ref.split("_").slice(-1)[0] == "decoy" ||
-      ref.includes('chrUn') ||
-      ref.substr(0,4) == 'HLA-'
-    );
+    return validRefs[ref] === undefined;
   }
 
 </script>

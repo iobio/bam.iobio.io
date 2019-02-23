@@ -26,7 +26,7 @@
       </help-button>
       Reads Sampled
     </div>
-    <div style="font-size:5.5vw;color:#2687BE;text-align:center;margin-bottom:-11px;margin-top:-11px">
+    <div style="font-size:3.5vw;color:#2687BE;text-align:center;margin-bottom:-11px;margin-top:-11px">
       {{totalReadsValue}}
     </div>
     <div style="font-size:1.4vw;color:#2687BE;text-align:center;">

@@ -14,15 +14,6 @@
     width: 65%;
   }
 
-  .panel#depth-distribution .chart {
-    -webkit-flex: 1 1 auto;
-    flex: 1 1 auto;
-    -webkit-order: 2;
-    order: 2;
-    margin-left: 0px;
-    margin-right: 0px;
-  }
-
   .hint {
     height: 14px;
     margin-top: -7px;
@@ -47,7 +38,7 @@
   }
 
   /* power scale */
-  #scale-switch {
+  #zoom-buttons {
     position: absolute;
     top:28px;
     left:52px;
@@ -74,23 +65,6 @@
     opacity: 0.01;
     visibility:hidden;
     cursor: pointer;
-  }
-
-  .chart rect {
-    fill: #2d8fc1;
-    shape-rendering: crispEdges;
-  }
-
-  .chart rect.unselected {
-    fill: #9C9E9F;
-  }
-
-  .chart text {
-    fill: 'black';
-  }
-
-  .vue-slider-component .vue-slider {
-    background-color: #2687BE;
   }
 </style>
 
@@ -119,63 +93,43 @@
     <div id="default-bedfile-button" class="bedfile-button" @click="$emit('addDefaultBedFile')" title="1000G human exome targets file " style="right:100px">GRCh37 Exonic Regions</div>
     <label id="add-bedfile-button" class="bedfile-button" for="bedfile" style="font-weight:300" title="Add Bed format capture target definition file">Custom Bed</label>
 
-    <!-- log toggle -->
-    <div id="scale-switch"
-         class="checkbox"
-         v-if="draw"
-         style="display: inline-block;vertical-align: middle"
-         title="Zoom y axis to better view read coverage data.">
-      <input type="checkbox" v-model="limitYAxes" >
-        <label for="scale-switch" style="padding-left: 0" @click="limitYAxes=!limitYAxes">
-          Zoom y axis
-        </label>
-
-        <vue-slider v-model="numberIntervalsToZoom"
-                    v-if="sliderMax>1"
-                    :min="1" :max="sliderMax" :dot-size="8" :height="3" :width="65" tooltip="hover" :reverse="true"
-                    :formatter="zoomMessage"
-                    :speed=".1"
-                    :tooltipStyle="sliderTooltipStyle"
-                    :style="sliderStyle"
-                    :processStyle="sliderProcessStyle"></vue-slider>
-
+    <div id='zoom-buttons' style="display: inline-block;vertical-align: middle">
+      <label style="padding-left: 0">
+        Zoom y axis
+      </label>
+      <button @click='zoomOut'>-</button>
+      <button @click='zoomIn'>+</button>
     </div>
 
     <div id="readDepthLoadingMsg" style="font-size:50px;margin-top:30px;color:#2687BE">Initializing data <img style="height:18px" src="../../../images/loading_dots.gif"/></div>
     <div v-if="notEnoughData" class="warning">Bam file is too small to read coverage information</div>
     <div v-if="tooManyRefs" class="warning">Too many references to display. Use the dropdown to the left to select the reference</div>
 
-    <div class='chart' style="width:100%; height:60%"></div>
+    <read-depth-chart
+      :references='references'
+      :allPoints='chartData'
+      :selectedSeqId='selectedSeqId'
+      :conversionRatio='conversionRatio'
+      :yZoom='yZoom'
+      @setSelectedSeq='setSelectedSeq'>
+    </read-depth-chart>
 
-    <read-coverage-plot @setSelectedSeq="setSelectedSeq"
-                        @setMaxZoomValue="updateMaxZoomValue"
-                        @setUseMedianAsZoomInterval="setUseMedianAsZoomInterval"
-                        :selectedSeqId="selectedSeqId"
-                        :limitYAxes="limitYAxes"
-                        :numberIntervalsToZoom="numberIntervalsToZoom"
-                        :drawChart="draw && !tooManyRefs"
-                        :data="readDepthData"
-                        :conversionRatio="conversionRatio"
-                        :brushRange="brushRange"></read-coverage-plot>
   </div>
 </template>
 
 <script>
 
 import HelpButton from "./HelpButton.vue";
-import ReadCoveragePlot from "../viz/ReadCoveragePlot.vue";
-import vueSlider from 'vue-slider-component';
+import ReadDepthChart from '../viz/ReadDepthChart.vue';
 
 
 export default {
   components: {
-    vueSlider,
-    ReadCoveragePlot,
+    ReadDepthChart,
     HelpButton
   },
   name: 'read-coverage-box',
   props: {
-    readDepthData: {},
     selectedSeqId: '',
     draw: {
       type: Boolean,
@@ -184,49 +138,19 @@ export default {
       type: Number,
       default: 0
     },
-    brushRange: {}
+
+    chartData: {},
+    references: {},
   },
   data() {
     return {
-      limitYAxes: true,
-      numberIntervalsToZoom: Number(4),
-      oldZoomValue: Number(-1),
-      sliderMax: Number(9),
-      useMedianAsZoomInterval: true,
-      // Styles for the slider component
-      sliderTooltipStyle: {
-        "backgroundColor": "#666",
-        "borderColor": "#666",
-        "font-size": "8pt"
-      },
-      sliderStyle: {
-        "display":"inline-block"
-      },
-      sliderProcessStyle: {
-        "backgroundColor": "#e2e2e2"
-      }
+      yZoom: 1,
     }
   },
 
   methods: {
     setSelectedSeq: function( selected, start, end) {
       this.$emit('setSelectedSeq', selected, start, end);
-    },
-    updateMaxZoomValue: function(max) {
-      this.sliderMax = max < 19 ? (max > 1 ? max : 1) : 19;
-      if ( this.sliderMax > 15 && this.numberIntervalsToZoom <=5 && this.oldZoomValue == -1 ) {
-        this.numberIntervalsToZoom = 9;
-      }
-      if ( this.numberIntervalsToZoom > this.sliderMax ) {
-        this.oldZoomValue = this.numberIntervalsToZoom;
-        this.numberIntervalsToZoom = this.sliderMax;
-      } else if ( this.oldZoomValue != -1 ) {
-        this.numberIntervalsToZoom = this.oldZoomValue;
-        this.oldZoomValue = -1;
-      }
-    },
-    setUseMedianAsZoomInterval: function(medianIsZoom) {
-      this.useMedianAsZoomInterval = medianIsZoom;
     },
     processBedFile: function(event){
       if (event.target.files.length != 1) {
@@ -242,18 +166,18 @@ export default {
       }
 
       this.$emit('processBedFile', event.target.files[0]);
-    }
+    },
+    zoomIn: function() {
+      this.yZoom *= 2;
+    },
+    zoomOut: function() {
+      this.yZoom /= 2;
+    },
   },
   computed: {
-    zoomMessage: function() {
-      return this.useMedianAsZoomInterval ?
-        ('show ' + (this.numberIntervalsToZoom+1) +  ' multiples of median') :
-        ('show ' + this.numberIntervalsToZoom + ' standard deviations');
-    },
-
     notEnoughData: function() {
-      const totalPoints = this.readDepthData.reduce(function (acc, val) {
-        return acc + val.data.length
+      const totalPoints = this.chartData.reduce(function (acc, val) {
+        return acc + val.length
       }, 0);
 
       return this.draw && totalPoints <= 1;
@@ -262,9 +186,9 @@ export default {
     tooManyRefs: function() {
       const maxRefs = 50;
       const allSelected = this.selectedSeqId === 'all';
-      return allSelected && this.readDepthData.length > 50;
+      return allSelected && this.chartData.length > 50;
     },
-  }
+  },
 }
 
 </script>

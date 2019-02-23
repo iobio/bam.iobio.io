@@ -19,6 +19,8 @@ var Bam = Class.extend({
 
       this.hadError = false;
 
+      this._startFetchingHeader();
+
       return this;
    },
 
@@ -118,48 +120,42 @@ var Bam = Class.extend({
 
    // *** bamtools functionality ***
 
-   estimateBaiReadDepth: function(doneCallback, baiErrCb) {
+   estimateBaiReadDepth: function(refCallback, doneCallback, baiErrCb) {
       var me = this, readDepth = {};
       me.readDepth = {};
       var numRefSamples = 12;
 
-      var isdone = false;
-      function cb() {
+      // This needs to be in a function like this in order to capture the
+      // value of refId. Otherwise it was a race condition since read depth
+      // data sometimes starts coming in before the header arrives. This is
+      // especially true when handling local files.
+      function submitRef(refId) {
+        me.getHeader().then(() => {
+          const sqIndex = parseInt(refId);
+          if (sqIndex < me.header.sq.length && me.header.sq[sqIndex]) {
+            const name = me.header.sq[sqIndex].name;
+            const sqLength = me.header.sq[sqIndex].end;
+            me.header.sq[sqIndex].hasRecords = true;
 
-         if (me.header) {
-            var keys = Object.keys(readDepth);
-            for (var i=0; i < keys.length; i++) {
-              const sqIndex = parseInt(keys[i]);
-              if (sqIndex < me.header.sq.length && me.header.sq[sqIndex]) {
-                const name = me.header.sq[sqIndex].name;
-                const sqLength = me.header.sq[sqIndex].end;
-                me.header.sq[sqIndex].hasRecords = true;
-
-                if ( me.readDepth[ name ] == undefined){
-                  me.readDepth[ name ] = {
-                    depths: readDepth[keys[i]],
-                    sqLength,
-                  }
-                }
+            if ( me.readDepth[ name ] == undefined){
+              me.readDepth[ name ] = {
+                depths: readDepth[refId],
+                sqLength,
               }
-            }
 
-           if (isdone) {
-             doneCallback();
-           }
-         }
+              refCallback(name, sqIndex, me.readDepth[name]);
+            }
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
       }
 
-      me.getHeader(function(header) {
-        cb();
-      },
-      (err) => {
-        baiErrCb(err);
-      });
-      var currentSequence;
-      let allData = "";
+      let currentSequence;
       const indexUrl = this.baiUri || this.getIndexUrl(this.bamUri);
       var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
+
       cmd.on('error', (e) => {
         if (!this.hadError) {
           alert("Error accessing the BAM index file. Please provide an " +
@@ -170,14 +166,16 @@ var Bam = Class.extend({
         console.log(e);
       });
       cmd.on('data', function(data, options) {
-        allData += data; 
-      }.bind(me));
-      cmd.on('end', function() {
 
-        data = allData.split("\n");
+        data = data.split('\n');
+
         for (var i=0; i < data.length; i++)  {
            if ( data[i][0] == '#' ) {
-              var numRefs = Object.keys(readDepth).length;
+
+              if (currentSequence) {
+                submitRef(currentSequence); 
+              }
+
               var fields = data[i].substr(1).split("\t");
               currentSequence = fields[0]
               readDepth[currentSequence] = [];
@@ -196,7 +194,11 @@ var Bam = Class.extend({
               }
            }
         }
-        isdone = true;
+
+      }.bind(me));
+      cmd.on('end', function() {
+
+        submitRef(currentSequence); 
 
         // Get some random reference read depth data
         var seq = Object.keys(me.readDepth);
@@ -212,7 +214,7 @@ var Bam = Class.extend({
           }
         }
 
-        cb();
+        doneCallback();
       }.bind(me));
       cmd.run();
 
@@ -227,32 +229,39 @@ var Bam = Class.extend({
     return alignmentUrl + "." + supported_filetypes[filetype];
    },
 
-   getHeader: function(callback, errCb) {
-      var me = this;
-      var rawHeader = ""
-      var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
+   _startFetchingHeader: function() {
+     this._headerPromise = new Promise((resolve, reject) => {
 
-      cmd.on('error', (error) => {
-        // only show the alert on the first error
-        if (!this.hadError) {
-          this.hadError = true;
-          alert("Error downloading file. Please check the URL.")
-          errCb(error);
-        }
-        console.log(error);
-      })
-      cmd.on('data', function(data, options) {
-         rawHeader += data;
-      });
-      cmd.on('end', function() {
-         me.setHeader(rawHeader);
-         callback( me.header);
-      });
+       var me = this;
+       var rawHeader = ""
+       var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
 
-      cmd.run();
+       cmd.on('error', (error) => {
+         // only show the alert on the first error
+         if (!this.hadError) {
+           this.hadError = true;
+           alert("Error downloading file. Please check the URL.")
+           reject(error);
+         }
+         console.log(error);
+       })
+       cmd.on('data', function(data, options) {
+          rawHeader += data;
+       });
+       cmd.on('end', function() {
+          me.setHeader(rawHeader);
+          resolve(me.header);
+       });
 
-      // need to make this work for URL bams
-      // need to incorporate real promise framework throughout
+       cmd.run();
+
+       // need to make this work for URL bams
+       // need to incorporate real promise framework throughout
+     });
+   },
+
+   getHeader: function() {
+     return this._headerPromise; 
    },
 
    setHeader: function(headerStr) {
@@ -379,7 +388,7 @@ var Bam = Class.extend({
       if ( options.sequenceNames != undefined && options.sequenceNames.length == 1 && options.end != undefined) {
          goSampling([{name:options.sequenceNames[0], end:options.end}]);
       } else  if (options.sequenceNames != undefined){
-         this.getHeader(function(header){
+         this.getHeader().then(function(header){
             var seqs = options.sequenceNames.map(function(sq) {
               return header.sq.find( function(d) { return (d.name == sq) })
             })
@@ -387,7 +396,7 @@ var Bam = Class.extend({
             goSampling( seqs );
          });
       } else {
-         this.getHeader(function(header){
+         this.getHeader().then(function(header){
             goSampling(header.sq);
          });
       }
