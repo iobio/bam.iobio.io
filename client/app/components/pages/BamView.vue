@@ -1,6 +1,6 @@
 <style module lang="scss">
   .bootstrap-css {
-    @import url("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css");
+    @import url("https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css");
     @font-face {
       font-family: 'Glyphicons Halflings';
     }
@@ -23,7 +23,7 @@
 </style>
 
 <style lang="scss">
-  @import url('http://fonts.googleapis.com/css?family=Quicksand:300');
+  @import url('https://fonts.googleapis.com/css?family=Quicksand:300');
 
   body {
     font-family: Quicksand;
