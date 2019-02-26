@@ -36,7 +36,7 @@ var Bam = Class.extend({
         samtools_service = this.iobio.od_samtools;
         args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' '), '"'+this.baiUri+'"'];
       } else {
-        samtools_service = this.iobio.samtools;
+        samtools_service = this.iobio.od_samtools;
         args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' ')];
       }
       var cmd = new iobio.cmd(
@@ -233,8 +233,14 @@ var Bam = Class.extend({
      this._headerPromise = new Promise((resolve, reject) => {
 
        var me = this;
-       var rawHeader = ""
-       var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
+       var rawHeader = "";
+       var cmd = null;
+       if (this.baiUri) {
+         cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"', '"' + this.baiUri + '"'], {ssl:this.ssl})
+       } else {
+         cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl})
+
+       }
 
        cmd.on('error', (error) => {
          // only show the alert on the first error
