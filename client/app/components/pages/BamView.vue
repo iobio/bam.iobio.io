@@ -964,7 +964,7 @@
       setUrlRegion: function (region) {
         this.region = region;
 
-        if (this.bam.sourceType == 'url' && region != undefined) {
+        if (region != undefined) {
           if (region.start != undefined && region.end != undefined) {
             var regionStr = region.chr + ':' + region.start + '-' + region.end;
           } else {
