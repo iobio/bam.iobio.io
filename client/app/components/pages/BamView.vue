@@ -593,7 +593,6 @@
         showFullURL: false,
 
         // default sampling values
-        samplingBinSize: 40000,
         binNumber: 20,
         binSize: 40000,
         sampleMultiplier: 1,
@@ -651,8 +650,6 @@
           numeric: true,
           sensitivity: 'base'
         }),
-
-        totalPoints: 0,
       }
     },
 
