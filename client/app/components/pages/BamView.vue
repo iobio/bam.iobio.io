@@ -263,9 +263,6 @@
             style="margin-top: -19pt"
             @mouseover="showFullURL=true"
             @mouseleave="showFullURL=false"></span>
-      <div style="margin-top: 16px" v-show="selectedBamFile.size>0">
-        {{selectedBamFile.name}}
-      </div>
     </div>
 
     <section id="top">
@@ -587,18 +584,6 @@
     props: {
       selectedBamURL: '',
       selectedBaiURL: '',
-      selectedBamFile: {
-        default: function() {
-          return new File([""], "emptyfile");
-        },
-        type: File
-      },
-      selectedBaiFile: {
-        default: function() {
-          return new File([""], "emptyfile");
-        },
-        type: File
-      },
       regionURLParam: '',
       sampling: '',
     },
@@ -1030,11 +1015,6 @@
         reader.readAsText(file)
       },
 
-      openBamFile: function () {
-        this.bam = new Bam(this.selectedBamFile, {bai: this.selectedBaiFile});
-        this.goBam(this.region);
-      },
-
       goBam: function (region) {
         $("#selectData").css("display", "none");
         $("#showData").css("visibility", "visible");
@@ -1166,9 +1146,6 @@
 
           this.goBam(this.region);
 
-        } else if ( this.selectedBamFile.size>0 && this.selectedBaiFile.size>0 ){
-          // Local files, so properties set by router params instead of query
-          this.openBamFile();
         }
       },
 
