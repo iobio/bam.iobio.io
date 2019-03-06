@@ -124,8 +124,14 @@ export default {
     },
 
     launchDemoData : function () {
-      let self = this;
-      self.$router.push({name: 'bam-view', query: { bam: this.demoFileURL}});
+      //let self = this;
+      //self.$router.push({name: 'bam-view', query: { bam: this.demoFileURL}});
+      this.$router.push({
+        name: 'alignment-page',
+        query: {
+          bam: this.demoFileURL
+        }
+      });
     },
 
     openBamURL : function() {

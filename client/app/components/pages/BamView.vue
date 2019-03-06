@@ -585,6 +585,7 @@
       selectedBamURL: '',
       selectedBaiURL: '',
       regionURLParam: '',
+      regionObj: null,
       sampling: '',
     },
 
@@ -928,7 +929,7 @@
 
         // reset brush
         this.resetBrush();
-        this.setUrlRegion({chr: selected, 'start': start, 'end': end});
+        this.$emit('region-change', { chr: selected, start, end });
 
         // start sampling
         if (start != undefined && end != undefined) {
@@ -940,29 +941,6 @@
           }.bind(this), 200);
         } else {
           this.goSampling({sampling: this.sampling, sequenceNames: seqDataIds});
-        }
-      },
-
-      setUrlRegion: function (region) {
-        this.region = region;
-
-        if (region != undefined) {
-          if (region.start != undefined && region.end != undefined) {
-            var regionStr = region.chr + ':' + region.start + '-' + region.end;
-          } else {
-            var regionStr = region.chr;
-          }
-
-          var queryParams = {
-            bam: this.selectedBamURL,
-            region: regionStr};
-
-          if ( this.selectedBaiURL != '') queryParams.bai = this.selectedBaiURL;
-          if ( this.sampling != '') queryParams.sampling = this.sampling;
-
-          this.$router.push({
-            name: "bam-view",
-            query: queryParams});
         }
       },
 
@@ -1097,8 +1075,7 @@
           this.referenceDepthData = this.bam.referenceDepthData;
         }.bind(this),
         (err) => {
-          // if there's an error start over on the home page
-          this.$router.push({ path: '/' });
+          this.$emit('error');
         })
       },
 

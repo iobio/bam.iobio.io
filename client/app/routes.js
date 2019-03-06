@@ -8,6 +8,7 @@ import VueRouter from 'vue-router'
 
 import App from './App.vue'
 import BamView from './components/pages/BamView.vue'
+import AlignmentPage from './components/pages/AlignmentPage.vue'
 import Help from './components/pages/Help.vue'
 import Home from './components/pages/Home.vue'
 import License from './components/pages/License.vue'
@@ -22,6 +23,17 @@ const routes = [
   {
     path: '/',
     component: Home
+  },
+  {
+    path: '/',
+    name: 'alignment-page',
+    component: AlignmentPage,
+    props: (route) => ({
+      selectedBamURL: route.query.bam,
+      selectedBaiURL: route.query.bai,
+      regionURLParam: route.query.region,
+      sampling: route.query.sampling,
+    })
   },
   {
     path: '/bamview',
