@@ -32,17 +32,23 @@
 
     computed: {
       region: function() {
-        var region = undefined;
+        let region = undefined;
         const regionParam = this.regionURLParam;
-        if (regionParam != undefined) {
-          if (regionParam.split(":").length == 1)
-            region = { chr: regionParam.split(":")[0]}
-          else
+        if (regionParam !== undefined) {
+          const paramParts = regionParam.split(":");
+          if (paramParts.length === 1) {
             region = {
-              chr: regionParam.split(":")[0],
-              start: parseInt(regionParam.split(":")[1].split('-')[0]),
-              end: parseInt(regionParam.split(":")[1].split('-')[1])
+              chr: paramParts[0]
             };
+          }
+          else {
+            const rangeParts = paramParts[1].split('-');
+            region = {
+              chr: paramParts[0],
+              start: parseInt(rangeParts[0]),
+              end: parseInt(rangeParts[1])
+            };
+          }
         }
         return region;
       },
@@ -52,18 +58,26 @@
       onRegionChange: function(region) {
 
         if (region != undefined) {
+          let regionStr;
+
           if (region.start != undefined && region.end != undefined) {
-            var regionStr = region.chr + ':' + region.start + '-' + region.end;
+            regionStr = region.chr + ':' + region.start + '-' + region.end;
           } else {
-            var regionStr = region.chr;
+            regionStr = region.chr;
           }
 
-          var queryParams = {
+          const queryParams = {
             bam: this.selectedBamURL,
-            region: regionStr};
+            region: regionStr
+          };
 
-          if ( this.selectedBaiURL != '') queryParams.bai = this.selectedBaiURL;
-          if ( this.sampling != '') queryParams.sampling = this.sampling;
+          if (this.selectedBaiURL != '') {
+            queryParams.bai = this.selectedBaiURL;
+          }
+
+          if (this.sampling != '') {
+            queryParams.sampling = this.sampling;
+          }
 
           this.$router.push({
             name: "alignment-page",
