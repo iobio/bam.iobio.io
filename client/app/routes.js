@@ -26,15 +26,17 @@ const routes = [
     component: Home
   },
   {
-    path: '/',
+    path: '/alignment',
     name: 'alignment-page',
     component: AlignmentPage,
-    props: (route) => ({
-      selectedBamURL: route.query.bam,
-      selectedBaiURL: route.query.bai,
-      regionURLParam: route.query.region,
-      sampling: route.query.sampling,
-    })
+    props: (route) => {
+      return {
+        selectedBamURL: route.query.bam ? route.query.bam : route.params.bam,
+        selectedBaiURL: route.query.bai ? route.query.bai : route.params.bai,
+        regionURLParam: route.query.region ? route.query.region : route.params.region,
+        sampling: route.query.sampling ? route.query.sampling : route.params.sampling,
+      };
+    }
   },
   {
     path: '/help',

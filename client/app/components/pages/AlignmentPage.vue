@@ -3,6 +3,7 @@
 
 <template>
   <bam-view
+    v-if='ready'
     :selectedBamURL='selectedBamURL'
     :selectedBaiURL='selectedBaiURL'
     :region='region'
@@ -15,6 +16,7 @@
 <script>
 
   import BamView from "./BamView.vue";
+  import { createIntegration } from '../../../js/integration';
 
   export default {
     name: 'alignment-page',
@@ -30,7 +32,17 @@
       sampling: '',
     },
 
+    data: function() {
+      return {
+        integration: null,
+      };
+    },
+
     computed: {
+      ready: function() {
+        return this.selectedBamURL && this.selectedBamURL.length > 0;
+      },
+
       region: function() {
         let region = undefined;
         const regionParam = this.regionURLParam;
@@ -54,7 +66,25 @@
       },
     },
 
+    mounted: function () {
+
+      this.integration = createIntegration(this.$route.query);
+
+      this.integration.init().then(() => {
+
+        const query = this.integration.buildQuery();
+        const params = this.integration.buildParams();
+
+        this.$router.push({
+          name: "alignment-page",
+          query, 
+          params,
+        });
+      });
+    },
+
     methods: {
+
       onRegionChange: function(region) {
 
         if (region != undefined) {
@@ -66,12 +96,15 @@
             regionStr = region.chr;
           }
 
-          const query = Object.assign({}, this.$route.query);
+          const query = this.integration.buildQuery();
+          const params = this.integration.buildParams();
+
           query.region = regionStr;
 
           this.$router.push({
             name: "alignment-page",
-            query, 
+            query,
+            params,
           });
         }
       },

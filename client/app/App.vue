@@ -15,33 +15,28 @@
 
 <script>
 
-  import AppHeader from "./components/partials/AppHeader.vue";
+import AppHeader from "./components/partials/AppHeader.vue";
 
-  export default {
-    name: 'app',
+export default {
+  name: 'app',
 
-    components: {
-      AppHeader
-    },
+  components: {
+    AppHeader
+  },
 
-    data() {
-      return {
-      }
-    },
-    mounted: function () {
+  mounted: function() {
+    if (this.$route.query.source || this.$route.query.bam) {
+      this.$router.push({
+        name: 'alignment-page',
+        query: Object.assign({}, this.$route.query),
+      });
+    }
+    else {
+      this.$router.push({ name: 'home' });
+    }
+  },
+}
 
-      if (!this.$route.query.bam) {
-        this.$router.push({ name: 'home' });
-      }
-      else {
-        const query = Object.assign({}, this.$route.query);
 
-        this.$router.push({
-          name: "alignment-page",
-          query,
-        });
-      }
-    },
-  }
 </script>
 
