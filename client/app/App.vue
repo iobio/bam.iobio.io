@@ -47,8 +47,9 @@
         if ( sampling != '') queryParams.sampling = sampling;
 
         self.$router.push({
-          name: "bam-view",
-          query: queryParams});
+          name: "alignment-page",
+          query: queryParams,
+        });
 
       }
     },

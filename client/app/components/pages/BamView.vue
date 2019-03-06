@@ -585,7 +585,7 @@
       selectedBamURL: '',
       selectedBaiURL: '',
       regionURLParam: '',
-      regionObj: null,
+      region: null,
       sampling: '',
     },
 
@@ -615,7 +615,6 @@
         references: [],
 
         selectedSeqId: 'all',
-        region: {},
         coverageBrushRange: {},
 
         // Percent Chart Data
@@ -1101,25 +1100,12 @@
 
       load: function() {
         this.bed = undefined;
-        this.region = undefined;
 
         if ( this.selectedBamURL && this.selectedBamURL != '' ) {
           // Props should be set by query params
           this.bam = new Bam(this.selectedBamURL, {bai: this.selectedBaiURL});
 
-          if (this.regionURLParam != undefined && this.regionURLParam != '') {
-            if (this.regionURLParam.split(":").length == 1)
-              this.region = {chr: this.regionURLParam.split(":")[0]}
-            else
-              this.region = {
-                chr: this.regionURLParam.split(":")[0],
-                start: parseInt(this.regionURLParam.split(":")[1].split('-')[0]),
-                end: parseInt(this.regionURLParam.split(":")[1].split('-')[1])
-              };
-          }
-
           this.goBam(this.region);
-
         }
       },
 

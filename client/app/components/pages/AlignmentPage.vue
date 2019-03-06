@@ -6,7 +6,7 @@
     :selectedBamURL='selectedBamURL'
     :selectedBaiURL='selectedBaiURL'
     :regionURLParam='regionURLParam'
-    :regionObj='region'
+    :region='region'
     :sampling='sampling'
     @region-change='onRegionChange'
     @error='onError'
