@@ -5,7 +5,6 @@
   <bam-view
     :selectedBamURL='selectedBamURL'
     :selectedBaiURL='selectedBaiURL'
-    :regionURLParam='regionURLParam'
     :region='region'
     :sampling='sampling'
     @region-change='onRegionChange'

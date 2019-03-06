@@ -584,7 +584,6 @@
     props: {
       selectedBamURL: '',
       selectedBaiURL: '',
-      regionURLParam: '',
       region: null,
       sampling: '',
     },
