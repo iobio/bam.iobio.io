@@ -124,8 +124,6 @@ export default {
     },
 
     launchDemoData : function () {
-      //let self = this;
-      //self.$router.push({name: 'bam-view', query: { bam: this.demoFileURL}});
       this.$router.push({
         name: 'alignment-page',
         query: {
@@ -135,12 +133,17 @@ export default {
     },
 
     openBamURL : function() {
-      let self = this;
       if (!validURL(this.selectedBamURL)) {
         alert('Please enter a valid bam/cram url, including http:// or https:// in front');
         return;
       }
-      self.$router.push({name: 'bam-view', query: { bam: this.selectedBamURL, bai: this.selectedBaiURL}});
+      this.$router.push({
+        name: 'alignment-page',
+        query: {
+          bam: this.selectedBamURL,
+          bai: this.selectedBaiURL
+        }
+      });
     },
 
     processBamFile: function(event){
@@ -184,7 +187,13 @@ export default {
         this.selectedBamURL = `${baseUrl}${hoster.getHostedPath(bamPath)}`;
         this.selectedBaiURL = `${baseUrl}${hoster.getHostedPath(baiPath)}`;
 
-        self.$router.push({name: 'bam-view', query: { bam: this.selectedBamURL, bai: this.selectedBaiURL}});
+        self.$router.push({
+          name: 'alignment-page',
+          query: {
+            bam: this.selectedBamURL,
+            bai: this.selectedBaiURL
+          }
+        });
       });
     }
   }

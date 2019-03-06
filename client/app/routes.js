@@ -36,24 +36,6 @@ const routes = [
     })
   },
   {
-    path: '/bamview',
-    name: 'bam-view',
-    component: BamView,
-    props: (route) => ({
-      selectedBamURL: route.query.bam,
-      selectedBaiURL: route.query.bai,
-      regionURLParam: route.query.region,
-      sampling: route.query.sampling,
-    })
-  },
-  {
-    // File objects not working sending in as query params like above, so use properties instead.
-    path: '/bamview?bamFile=:selectedBamFile?&baiFile=:selectedBaiFile?',
-    name: 'bam-view-file',
-    component: BamView,
-    props: true
-  },
-  {
     path: '/help',
     name: 'help',
     component: Help
