@@ -21,7 +21,8 @@ Vue.use(VueRouter);
 
 const routes = [
   {
-    path: '/',
+    path: '/home',
+    name: 'home',
     component: Home
   },
   {
@@ -49,7 +50,6 @@ const routes = [
 
 const router = new VueRouter({
   mode: 'history',
-  base: window.location.pathname.replace('/bamview',''),
   routes: routes
 })
 

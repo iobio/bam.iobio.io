@@ -26,7 +26,7 @@
     props: {
       selectedBamURL: '',
       selectedBaiURL: '',
-      regionURLParam: '',
+      regionURLParam: String,
       sampling: '',
     },
 
@@ -66,22 +66,12 @@
             regionStr = region.chr;
           }
 
-          const queryParams = {
-            bam: this.selectedBamURL,
-            region: regionStr
-          };
-
-          if (this.selectedBaiURL != '') {
-            queryParams.bai = this.selectedBaiURL;
-          }
-
-          if (this.sampling != '') {
-            queryParams.sampling = this.sampling;
-          }
+          const query = Object.assign({}, this.$route.query);
+          query.region = regionStr;
 
           this.$router.push({
             name: "alignment-page",
-            query: queryParams
+            query, 
           });
         }
       },

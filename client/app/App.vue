@@ -29,28 +29,17 @@
       }
     },
     mounted: function () {
-      // Check for URL query parameters.  If present, forward to bam view.
-      let self = this;
 
-      var selectedBamURL = self.$route.query.bam;
-      var selectedBaiURL = self.$route.query.bai;
-      var region = self.$route.query.region;
-      var sampling = self.$route.query.sampling;
+      if (!this.$route.query.bam) {
+        this.$router.push({ name: 'home' });
+      }
+      else {
+        const query = Object.assign({}, this.$route.query);
 
-
-      if (selectedBamURL != undefined && selectedBamURL != '') {
-        var queryParams = {
-          bam: selectedBamURL};
-
-        if ( region != '') queryParams.region = region;
-        if ( selectedBaiURL != '') queryParams.bai = selectedBaiURL;
-        if ( sampling != '') queryParams.sampling = sampling;
-
-        self.$router.push({
+        this.$router.push({
           name: "alignment-page",
-          query: queryParams,
+          query,
         });
-
       }
     },
   }
