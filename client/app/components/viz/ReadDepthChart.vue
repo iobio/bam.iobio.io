@@ -99,9 +99,12 @@ export default {
       let len = 0;
       // first average
       for (const refPoints of this.allPoints) {
-        len += refPoints.length;
-        for (const point of refPoints) {
-          sum += this.yAccessFunc(point);
+        // entire chromosome might be missing (!refPoints)
+        if (refPoints) {
+          len += refPoints.length;
+          for (const point of refPoints) {
+            sum += this.yAccessFunc(point);
+          }
         }
       }
 
