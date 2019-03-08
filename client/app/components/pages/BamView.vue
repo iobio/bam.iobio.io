@@ -257,6 +257,7 @@
 
 <template>
   <div class="$style.bootstrap-css">
+    <!--
     <div class="file-name" >
       <span v-show="selectedBamURL!=undefined"
             v-html="shortenedBamFileURL"
@@ -264,6 +265,7 @@
             @mouseover="showFullURL=true"
             @mouseleave="showFullURL=false"></span>
     </div>
+    -->
 
     <section id="top">
 
@@ -1156,43 +1158,44 @@
     },
 
     computed: {
-      shortenedBamFileURL: function() {
-        if (this.selectedBamURL !== undefined) {
-          const protocolDiv = this.selectedBamURL.split('//');
+      // TODO: Determine if this is needed
+      //shortenedBamFileURL: function() {
+      //  if (this.selectedBamURL !== undefined) {
+      //    const protocolDiv = this.selectedBamURL.split('//');
 
-          const protocol = protocolDiv[0];
-          const withoutProtocol = protocolDiv[1];
+      //    const protocol = protocolDiv[0];
+      //    const withoutProtocol = protocolDiv[1];
 
-          let pathDivision = withoutProtocol.split('/');
+      //    let pathDivision = withoutProtocol.split('/');
 
-          // Edge case for '/' ending causing empty item
-          if (pathDivision[pathDivision.length - 1] === '') {
-            pathDivision.splice(pathDivision.length - 1, 1);
-          }
+      //    // Edge case for '/' ending causing empty item
+      //    if (pathDivision[pathDivision.length - 1] === '') {
+      //      pathDivision.splice(pathDivision.length - 1, 1);
+      //    }
 
-          const host = pathDivision.shift();
-          const fileName = pathDivision.pop();
-          const middlePart = pathDivision.join("/");
+      //    const host = pathDivision.shift();
+      //    const fileName = pathDivision.pop();
+      //    const middlePart = pathDivision.join("/");
 
-          const fontSize = 25;
-          const sizingStr = `<span style="font-size: ${fontSize}pt"></span>`;
+      //    const fontSize = 25;
+      //    const sizingStr = `<span style="font-size: ${fontSize}pt"></span>`;
 
-          if (middlePart.length === 0) {
-            return sizingStr + this.selectedBamURL;
-          }
-          else if (this.showFullURL) {
-            return protocol + "//" + host +
-              sizingStr + "/" + middlePart + "/" +
-              (fileName !== undefined ? fileName : "")
-          }
-          else {
-            return protocol + "//" + host +
-              `/<span style="font-size: ${fontSize}pt;color:#2687BE;" >...</span> /` +
-              (fileName !== undefined ? fileName : "")
-          }
-        }
-        return '';
-      },
+      //    if (middlePart.length === 0) {
+      //      return sizingStr + this.selectedBamURL;
+      //    }
+      //    else if (this.showFullURL) {
+      //      return protocol + "//" + host +
+      //        sizingStr + "/" + middlePart + "/" +
+      //        (fileName !== undefined ? fileName : "")
+      //    }
+      //    else {
+      //      return protocol + "//" + host +
+      //        `/<span style="font-size: ${fontSize}pt;color:#2687BE;" >...</span> /` +
+      //        (fileName !== undefined ? fileName : "")
+      //    }
+      //  }
+      //  return '';
+      //},
     }
 
   }
