@@ -8,17 +8,18 @@
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
-    "fibridge-host": "^0.10.0",
     "connect-history-api-fallback": "^1.5.0",
     "d3": "^3.5.17",
     "debug": "^2.6.9",
     "express": "^4.16.2",
+    "fibridge-host": "^0.10.0",
     "jquery": "^3.3.1",
     "less-loader": "^4.0.5",
     "qs": "^6.5.1",
     "serve-favicon": "^2.4.5",
     "v-tooltip": "^2.0.0-rc.31",
     "vue": "^2.5.13",
+    "vue-analytics": "^5.16.4",
     "vue-router": "^2.5.3"
   },
   "devDependencies": {

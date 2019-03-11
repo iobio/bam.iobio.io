@@ -5,6 +5,7 @@ global.$ = jQuery
 import d3 from 'd3'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import VueAnalytics from 'vue-analytics'
 
 import App from './App.vue'
 import BamView from './components/pages/BamView.vue'
@@ -53,6 +54,12 @@ const routes = [
 const router = new VueRouter({
   mode: 'history',
   routes: routes
+})
+
+// Google analytics
+Vue.use(VueAnalytics, {
+  id: 'UA-47481907-9',
+  router
 })
 
 new Vue({
