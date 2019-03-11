@@ -3,6 +3,7 @@ var webpack = require('webpack')
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CleanWebpackPlugin = require('clean-webpack-plugin');
 var inProduction = process.env.NODE_ENV === 'production';
+const { VueLoaderPlugin } = require('vue-loader');
 
 module.exports = {
   entry: {
@@ -65,7 +66,8 @@ module.exports = {
     ]
   },
   plugins: [
-    new CleanWebpackPlugin(['client/dist'], {})
+    new CleanWebpackPlugin(['client/dist'], {}),
+    new VueLoaderPlugin(),
   ],
   // resolve: {
   //   alias: {
