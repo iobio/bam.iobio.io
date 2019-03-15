@@ -200,21 +200,24 @@ var Bam = Class.extend({
 
         submitRef(currentSequence); 
 
-        // Get some random reference read depth data
-        var seq = Object.keys(me.readDepth);
+        me.getHeader().then(() => {
+          // Get some random reference read depth data
+          var seq = Object.keys(me.readDepth);
 
-        if ( seq != undefined && seq.length > 0 ) {
-          for (var count = 0; count < numRefSamples; count++) {
-            var randSeqInd = Math.floor(Math.random() * seq.length);
-            var randSeq = seq[randSeqInd];
-            var readDepthLength = me.readDepth[randSeq].depths.length;
-            var randBinNumber = Math.floor(Math.random() * readDepthLength);
-            randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
-            me.getReferenceStats(randSeq, randBinNumber);
+          if ( seq != undefined && seq.length > 0 ) {
+            for (var count = 0; count < numRefSamples; count++) {
+              var randSeqInd = Math.floor(Math.random() * seq.length);
+              var randSeq = seq[randSeqInd];
+              var readDepthLength = me.readDepth[randSeq].depths.length;
+              var randBinNumber = Math.floor(Math.random() * readDepthLength);
+              randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
+              me.getReferenceStats(randSeq, randBinNumber);
+            }
           }
-        }
 
-        doneCallback();
+          doneCallback();
+        });
+
       }.bind(me));
       cmd.run();
 
@@ -410,6 +413,7 @@ var Bam = Class.extend({
 
 
   getReferenceStats: function(chr, binNumber) {
+
     var me = this;
     var binSize = 16384;
 
