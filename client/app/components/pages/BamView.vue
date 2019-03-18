@@ -588,6 +588,7 @@
       selectedBaiURL: '',
       region: null,
       sampling: '',
+      backendSource: String,
     },
 
     data() {
@@ -1104,7 +1105,9 @@
 
         if ( this.selectedBamURL && this.selectedBamURL != '' ) {
           // Props should be set by query params
-          this.bam = new Bam(this.selectedBamURL, {bai: this.selectedBaiURL});
+          this.bam = new Bam(this.backendSource, this.selectedBamURL, {
+            bai: this.selectedBaiURL
+          });
 
           this.goBam(this.region);
         }

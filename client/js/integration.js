@@ -10,6 +10,7 @@ export function createIntegration(query) {
 
 class Integration {
   constructor(query) {
+
     this.query = query;
   }
 }
@@ -39,6 +40,12 @@ class StandardIntegration extends Integration {
 class MosaicIntegration extends Integration {
 
   init() {
+    this.hubToIobioSources = {
+      "https://mosaic.chpc.utah.edu":         "mosaic.chpc.utah.edu",
+      "https://mosaic-dev.genetics.utah.edu": "mosaic.chpc.utah.edu",
+      "http://mosaic-dev.genetics.utah.edu":  "mosaic.chpc.utah.edu",
+      "https://staging.frameshift.io":        "nv-prod.iobio.io",
+    };
 
     return new Promise((resolve, reject) => {
       const projectId = this.query.project_id;
@@ -57,6 +64,7 @@ class MosaicIntegration extends Integration {
     return {
       bam: this.alignmentURL,
       bai: this.alignmentIndexURL,
+      backendSource: this.hubToIobioSources[this.query.source],
     };
   }
 

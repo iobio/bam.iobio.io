@@ -2,7 +2,7 @@
 
 var Bam = Class.extend({
 
-   init: function(bamUri, options) {
+   init: function(backendSource, bamUri, options) {
       this.bamUri = bamUri;
       this.ssl = true;
       this.options = options; // *** add options mapper ***
@@ -12,10 +12,10 @@ var Bam = Class.extend({
       // set iobio servers
       this.iobio = {}
 
-      this.iobio.samtools       = "nv-prod.iobio.io/samtools/";
-      this.iobio.od_samtools    = "nv-prod.iobio.io/od_samtools/";
-      this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
-      this.iobio.bamstatsAlive  = "nv-prod.iobio.io/bamstatsalive/";
+      this.iobio.samtools       = backendSource + "/samtools/";
+      this.iobio.od_samtools    = backendSource + "/od_samtools/";
+      this.iobio.bamReadDepther = backendSource + "/bamreaddepther/";
+      this.iobio.bamstatsAlive  = backendSource + "/bamstatsalive/";
 
       this.hadError = false;
 

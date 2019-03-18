@@ -8,6 +8,7 @@
     :selectedBaiURL='selectedBaiURL'
     :region='region'
     :sampling='sampling'
+    :backendSource='backendSource'
     @region-change='onRegionChange'
     @error='onError'
     />
@@ -30,6 +31,7 @@
       selectedBaiURL: '',
       regionURLParam: String,
       sampling: '',
+      backendSource: String,
     },
 
     data: function() {

@@ -36,6 +36,8 @@ const routes = [
         selectedBaiURL: route.query.bai ? route.query.bai : route.params.bai,
         regionURLParam: route.query.region ? route.query.region : route.params.region,
         sampling: route.query.sampling ? route.query.sampling : route.params.sampling,
+        // TODO: default backendSource should probably be defined in integrations.js
+        backendSource: route.params.backendSource ? route.params.backendSource : "nv-prod.iobio.io",
       };
     }
   },
