@@ -42,7 +42,7 @@
 
     computed: {
       ready: function() {
-        return this.selectedBamURL && this.selectedBamURL.length > 0;
+        return this.selectedBamURL && this.selectedBamURL.length > 0 && this.backendSource;
       },
 
       region: function() {
@@ -76,6 +76,11 @@
 
         const query = this.integration.buildQuery();
         const params = this.integration.buildParams();
+
+        // TODO: This is an ugly hack to force a re-route in Vue. If only the
+        // params change, re-route doesn't happen, so we have to manually
+        // ensure the query changes.
+        query.forceReroute = true;
 
         this.$router.push({
           name: "alignment-page",
