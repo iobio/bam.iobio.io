@@ -126,9 +126,9 @@ export default {
     launchDemoData : function () {
       this.$router.push({
         name: 'alignment-page',
-        query: {
+        query: Object.assign({
           bam: this.demoFileURL
-        }
+        }, this.$route.query),
       });
     },
 
@@ -139,10 +139,10 @@ export default {
       }
       this.$router.push({
         name: 'alignment-page',
-        query: {
+        query: Object.assign({
           bam: this.selectedBamURL,
           bai: this.selectedBaiURL
-        }
+        }, this.$route.query),
       });
     },
 
@@ -189,10 +189,10 @@ export default {
 
         self.$router.push({
           name: 'alignment-page',
-          query: {
+          query: Object.assign({
             bam: this.selectedBamURL,
             bai: this.selectedBaiURL
-          }
+          }, this.$route.query),
         });
       });
     }

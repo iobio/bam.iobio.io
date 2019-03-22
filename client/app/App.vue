@@ -32,7 +32,10 @@ export default {
       });
     }
     else {
-      this.$router.push({ name: 'home' });
+      this.$router.push({
+        name: 'home',
+        query: Object.assign({}, this.$route.query),
+      });
     }
   },
 }

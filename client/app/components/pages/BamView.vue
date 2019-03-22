@@ -1015,7 +1015,6 @@
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
 
-            //console.log(name, index, ref.depths.length, filterRef(name));
             if (ref.depths.length > 0 && !filterRef(name)) {
               // Have to use Object.freeze here to prevent Vue from
               // recursively setting up data listeners, which causes huge
