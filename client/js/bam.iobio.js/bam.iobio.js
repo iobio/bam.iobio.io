@@ -209,9 +209,22 @@ var Bam = Class.extend({
               var randSeqInd = Math.floor(Math.random() * seq.length);
               var randSeq = seq[randSeqInd];
               var readDepthLength = me.readDepth[randSeq].depths.length;
-              var randBinNumber = Math.floor(Math.random() * readDepthLength);
-              randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
-              me.getReferenceStats(randSeq, randBinNumber);
+
+              // TODO: sometimes bamReadDepther returns references with no
+              // lines for depths, even though there are some alignments for
+              // the reference. This results in an empty array here, which
+              // chokes. So we're manually skipping those ones. There's
+              // probably a better way to do this.
+              //
+              // TODO: What if there aren't at least numRefSamples references?
+              if (readDepthLength > 0) {
+                var randBinNumber = Math.floor(Math.random() * readDepthLength);
+                randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
+                me.getReferenceStats(randSeq, randBinNumber);
+              }
+              else {
+                count--;
+              }
             }
           }
 
