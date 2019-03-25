@@ -6,7 +6,7 @@
     <g v-if='points'>
       <rect v-for='point in screenPoints' :x='point.x' :y='point.y' width='1' :height='point.height' />
     </g>
-    <rect v-else class='line-segment__missing-data' :width='width' :height='height'/>
+    <rect v-else class='minibar-segment__missing-data' :width='width' :height='height'/>
   </g>
 </template>
 
@@ -105,7 +105,7 @@ export default {
 </script>
 
 <style scoped>
-.line-segment__missing-data {
+.minibar-segment__missing-data {
   fill: #ccc;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class='read-depth-chart'>
-    <MultiLineChart
+    <MultiMinibarChart
       v-if='allPoints.length > 0'
       :allPoints='allPoints'
       :xAccessFunc='xAccessFunc'
@@ -20,7 +20,7 @@
 
 <script>
 
-import MultiLineChart from './MultiLineChart.vue';
+import MultiMinibarChart from './MultiMinibarChart.vue';
 import d3 from 'd3';
 
 
@@ -39,7 +39,7 @@ export default {
     };
   },
   components: {
-    MultiLineChart,
+    MultiMinibarChart,
   },
   computed: {
     domains: function() {
