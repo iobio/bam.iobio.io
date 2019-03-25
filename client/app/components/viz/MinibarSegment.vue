@@ -1,10 +1,8 @@
 <template>
   <g>
-    <!--
-    <polyline v-if='points' :points="pointStr" :stroke="color" stroke-width="2" fill="none"/>
-    -->
     <g v-if='points'>
-      <rect v-for='point in screenPoints' :x='point.x' :y='point.y' width='1' :height='point.height' />
+      <rect v-for='(point, i) in screenPoints' :x='point.x' :y='point.y' width='1'
+        :height='point.height' :key='i' />
     </g>
     <rect v-else class='minibar-segment__missing-data' :width='width' :height='height'/>
   </g>
@@ -20,13 +18,6 @@ export default {
     'selected', 'domain', 'range',
   ],
   computed: {
-    smoother: function() {
-      // TODO: make this not depend on the iobio global
-      const points = iobio.viz.layout.pointSmooth()
-        .size(this.width*this.height/5)
-        .epsilonRate(0.1);
-      return points;
-    },
     smoothed: function() {
       const numBins = this.width;
       if (numBins === 0) {
@@ -50,33 +41,14 @@ export default {
       }
 
       return smoothed;
-      //return this.smoother(this.points);
-    },
-    pointStr: function() {
-      return this.processData();
     },
     screenPoints: function() {
-      return this.processData();
-    },
-  },
-  methods: {
-    processData: function() {
-
-      console.log(this.index + " points", this.width);
-      console.log(this.points);
-      console.log("smoothed");
-      console.log(this.smoothed);
-
       const points = this.smoothed;
 
-      //let pointStr = "";
       const screenPoints = [];
 
       for (let i = 0; i < points.length; i++) {
         const point = points[i];
-
-        //const x = this.xAccessFunc(point);
-        //const y = this.yAccessFunc(point);
         const x = point.x;
         const y = point.y;
 
@@ -84,20 +56,14 @@ export default {
         const screenX = (x / spanX) * this.width;
         const spanY = this.range.max - this.range.min;
         const screenY = ((spanY - y) / spanY) * this.height;
-        //const screenY = (y / spanY) * this.height;
-
-        //const str = screenX + ',' + screenY;
 
         screenPoints.push({
           x: screenX,
           y: screenY,
           height: this.height - screenY,
         });
-        //pointStr += str + ' ';
       }
 
-      console.log("screenPoints");
-      console.log(screenPoints);
       return screenPoints;
     },
   },
