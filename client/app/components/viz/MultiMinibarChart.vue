@@ -270,7 +270,8 @@ export default {
 
 .mean-line {
   stroke: red;
-  stroke-width: 5px;
+  stroke-dasharray: 4 2;
+  stroke-width: 3px;
   opacity: .6;
 }
 
