@@ -250,13 +250,8 @@ var Bam = Class.extend({
 
        var me = this;
        var rawHeader = "";
-       var cmd = null;
-       if (this.baiUri) {
-         cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"', '"' + this.baiUri + '"'], {ssl:this.ssl})
-       } else {
-         cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl})
 
-       }
+       const cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl});
 
        cmd.on('error', (error) => {
          // only show the alert on the first error
