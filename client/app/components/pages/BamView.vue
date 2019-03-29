@@ -288,6 +288,7 @@
                          :chartData="readDepthChartData"
                          :references="references"
                          :conversionRatio="readDepthConversionRatio"
+                         :averageCoverage="coverageMean"
                          :brushRange="coverageBrushRange"
                          v-tooltip.top-center="{content: clinTooltip.genome_wide_coverage.content, show: clinTooltip.genome_wide_coverage.show, trigger: 'manual'}">
                          </read-coverage-box>
@@ -652,6 +653,8 @@
           numeric: true,
           sensitivity: 'base'
         }),
+
+        coverageMean: 0,
       }
     },
 
@@ -690,6 +693,13 @@
           } else {
 
             this.sampleStats = data;
+            let freqs = 0;
+            let coverageMean = 0;
+            for (const coverage in data.coverage_hist) {
+              const freq = data.coverage_hist[coverage];
+              coverageMean += (coverage * freq);
+            }
+            this.coverageMean = Math.floor(coverageMean);
 
             // update progress bar
             if (options.start != null && options.end != null) {

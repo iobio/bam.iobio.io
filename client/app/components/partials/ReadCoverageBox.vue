@@ -110,6 +110,7 @@
       :allPoints='chartData'
       :selectedSeqId='selectedSeqId'
       :conversionRatio='conversionRatio'
+      :averageCoverage='averageCoverage'
       :yZoom='yZoom'
       @setSelectedSeq='setSelectedSeq'>
     </read-depth-chart>
@@ -135,6 +136,10 @@ export default {
       type: Boolean,
     },
     conversionRatio: {
+      type: Number,
+      default: 0
+    },
+    averageCoverage: {
       type: Number,
       default: 0
     },

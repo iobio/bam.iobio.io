@@ -26,7 +26,7 @@ import d3 from 'd3';
 
 export default {
   name: 'read-depth-chart',
-  props: ['references', 'allPoints', 'selectedSeqId', 'conversionRatio',
+  props: ['references', 'allPoints', 'selectedSeqId', 'averageCoverage',
     'yZoom'],
   data: function() {
     return {
@@ -55,6 +55,9 @@ export default {
     },
     range: function() {
       return { min: 0, max: this.average * 3 * this.yScaleFactor };
+    },
+    conversionRatio: function() {
+      return this.average / this.averageCoverage;
     },
   },
   watch: {
