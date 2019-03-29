@@ -608,7 +608,6 @@
 
         sampleStats: {},
 
-        referenceDepthData: [],
         readDepthConversionRatio: 0,
 
         bam: {},
@@ -721,30 +720,6 @@
             this.updateHistogramCharts(undefined, "sampleBar");
           }
         }.bind(this), options);
-      },
-
-      calculateReferenceRatio: function() {
-        if ( this.referenceDepthData.length == 0 || this.bam.readDepth == undefined ) return;
-
-        var convRatios = [];
-        var readDepthData = this.bam.readDepth;
-        this.referenceDepthData.forEach( data => {
-            if ( !data.hasOwnProperty('averageDepth') || data.averageDepth == -1 ||
-                 !data.hasOwnProperty('binNumber') || data.binNumber == -1 ) return;
-
-            var binNumber = data.binNumber;
-            var chr = data.chr;
-            var bytes = readDepthData[chr].depths[binNumber].depth;
-
-            var aveDepth = data.averageDepth;
-
-            if ( bytes != 0 && aveDepth > 1 ) {
-              var convRatio = bytes / aveDepth;
-              convRatios.push(convRatio);
-            }
-          }
-        )
-        this.readDepthConversionRatio = d3.mean(convRatios);
       },
 
       updatePercentCharts: function () {
@@ -1082,7 +1057,6 @@
               this.setSelectedSeq(region.chr, start, end);
           });
 
-          this.referenceDepthData = this.bam.referenceDepthData;
         }.bind(this),
         (err) => {
           this.$emit('error');
@@ -1159,14 +1133,6 @@
       readOutliers: function() {
         this.updateLengthHistograms();
       },
-      referenceDepthData: {
-        handler: function (val, oldVal) {
-          if ( val ) {
-            this.calculateReferenceRatio();
-          }
-        },
-        deep: true,
-      }
     },
 
     computed: {

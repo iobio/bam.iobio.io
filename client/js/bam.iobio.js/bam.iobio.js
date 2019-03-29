@@ -199,37 +199,7 @@ var Bam = Class.extend({
       cmd.on('end', function() {
 
         submitRef(currentSequence); 
-
-        me.getHeader().then(() => {
-          // Get some random reference read depth data
-          var seq = Object.keys(me.readDepth);
-
-          if ( seq != undefined && seq.length > 0 ) {
-            for (var count = 0; count < numRefSamples; count++) {
-              var randSeqInd = Math.floor(Math.random() * seq.length);
-              var randSeq = seq[randSeqInd];
-              var readDepthLength = me.readDepth[randSeq].depths.length;
-
-              // TODO: sometimes bamReadDepther returns references with no
-              // lines for depths, even though there are some alignments for
-              // the reference. This results in an empty array here, which
-              // chokes. So we're manually skipping those ones. There's
-              // probably a better way to do this.
-              //
-              // TODO: What if there aren't at least numRefSamples references?
-              if (readDepthLength > 0) {
-                var randBinNumber = Math.floor(Math.random() * readDepthLength);
-                randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
-                me.getReferenceStats(randSeq, randBinNumber);
-              }
-              else {
-                count--;
-              }
-            }
-          }
-
-          doneCallback();
-        });
+        doneCallback();
 
       }.bind(me));
       cmd.run();
@@ -418,53 +388,4 @@ var Bam = Class.extend({
          });
       }
    },
-
-
-  getReferenceStats: function(chr, binNumber) {
-
-    var me = this;
-    var binSize = 16384;
-
-    var r =  {
-      'name': chr,
-      'start': binNumber + binNumber * binSize,
-      'end': (binNumber + binNumber * binSize) + binSize
-    };
-
-    if(!me.referenceDepthData) me.referenceDepthData = [];
-
-    var refDepthObject = {};
-    refDepthObject.chr = chr;
-    refDepthObject.binNumber = binNumber;
-
-    var refDepthData = "";
-
-    var cmd; //samtools depth -a -r [region] [bamfile]
-
-    cmd = new iobio.cmd(this.iobio.samtools,
-      ['depth', '-a', '-r', r.name + ":"+ r.start + '-' + r.end, '"' + this.bamUri + '"'],
-      {ssl:this.ssl,});
-
-    cmd.on('error', function(error) {
-      console.log(error);
-    })
-    cmd.on('data', function(data, options) {
-      refDepthData += data;
-    });
-    cmd.on('end', function() {
-      if ( refDepthData != "" ) {
-        var depthData = [];
-        refDepthData.split('\n').forEach(function (line) {
-          depthData.push(line.split('\t')[2]);
-        });
-        refDepthObject.data = refDepthData;
-        refDepthObject.averageDepth = d3.mean(depthData);
-        me.referenceDepthData.push(refDepthObject);
-      }
-    });
-
-    cmd.run();
-
-  },
-
 });
