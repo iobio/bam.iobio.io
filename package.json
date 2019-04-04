@@ -2,9 +2,9 @@
   "name": "bam.iobio",
   "version": "1.0.0",
   "scripts": {
-    "start": "webpack --mode production && DEBUG=http ./node_modules/nodemon/bin/nodemon.js --debug=127.0.0.1:5862 --inspect --ignore client/ www.js",
-    "webpack": "webpack --mode production --watch",
-    "webpack-dev": "webpack --mode development --watch",
+    "serve": "DEBUG=http nodemon --debug=127.0.0.1:5862 --inspect --ignore client/ www.js",
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
     "test": "mocha-webpack --webpack-config webpack.test.config.js --require client/spec/spec_helper.js \"client/spec/**/*_spec.js\""
   },
   "dependencies": {
@@ -16,10 +16,10 @@
     "fibridge-host": "^0.10.0",
     "jquery": "^3.3.1",
     "less-loader": "^4.1.0",
-    "qs": "^6.6.0",
+    "qs": "^6.7.0",
     "serve-favicon": "^2.5.0",
     "v-tooltip": "^2.0.0-rc.33",
-    "vue": "^2.6.8",
+    "vue": "^2.6.10",
     "vue-analytics": "^5.16.4",
     "vue-router": "^2.5.3"
   },
@@ -27,7 +27,7 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
     "babel-preset-latest": "^6.24.1",
-    "bluebird": "^3.5.3",
+    "bluebird": "^3.5.4",
     "chai": "^4.2.0",
     "chai-almost": "^1.0.1",
     "clean-webpack-plugin": "^0.1.19",
@@ -48,9 +48,9 @@
     "style-loader": "^0.18.2",
     "url-loader": "^1.1.2",
     "vue-loader": "^15.7.0",
-    "vue-template-compiler": "^2.6.8",
+    "vue-template-compiler": "^2.6.10",
     "vue-test-utils": "^1.0.0-beta.11",
     "webpack": "^4.29.6",
-    "webpack-cli": "^3.2.3"
+    "webpack-cli": "^3.3.0"
   }
 }
