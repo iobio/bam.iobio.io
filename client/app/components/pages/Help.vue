@@ -95,7 +95,7 @@ textarea {
       onSubmit: function() {
 
         if (validEmailAddress(this.email)) {
-          fetch('http://localhost:3000/submit_issue', {
+          fetch('http://nv-dev-new.iobio.io/issued/submit_issue', {
             method: 'POST',
             body: JSON.stringify({
               email: this.email,
