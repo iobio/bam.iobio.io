@@ -1,6 +1,9 @@
 <style lang='scss' scoped>
+
+$main-color: #2d8fc1;
+
 #main {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 textarea {
@@ -18,17 +21,37 @@ textarea {
   width: 500px;
 }
 
+#old-bam-link {
+  font-size: 22px;
+  font-weight: bold;
+  color: $main-color;
+  text-decoration: underline;
+}
+#old-bam-link:hover {
+  cursor: pointer;
+}
+
+#submit-btn {
+  margin-bottom: 20px;
+}
+
 </style>
 
 <template>
   <div id='main' style="width: 500px; margin-left:auto;margin-right:auto;margin-top: 100px">
-    You can use the form below to submit an issue. Please include a brief
-    description of your problem. We'll email you as soon as possible to follow
-    up, and get more information if necessary. If you think your problem is
-    related to the new version of bam, you can click the link below to
-    temporarily access the old bam. Please note that old bam is on its way out.
-    If you can provide us with any information by submitting an issue, it will
-    help the transition to new bam go more smoothly for everyone. Thank you!
+
+    <h1>Submit an issue</h1>
+
+    <p>
+      You can use the form below to submit an issue. Please include a brief
+      description of your problem. We'll email you as soon as possible to
+      follow up, and get more information if necessary. If you think your
+      problem is related to the new version of bam, you can click the link
+      below to temporarily access the old bam. Please note that old bam is on
+      its way out.  If you can provide us with any information by submitting an
+      issue, it will help the transition to new bam go more smoothly for
+      everyone. Thank you!
+    </p>
 
     <div class='input-container'>
       Email:
@@ -38,14 +61,18 @@ textarea {
     <div class='input-container'>
       Problem Description:
       <textarea v-model='message'></textarea>
-      <button @click='onSubmit' >Submit</button>
+      <button id='submit-btn' @click='onSubmit' >Submit</button>
     </div>
 
-    <a @click='oldBam'>Take me to the old bam</a>
+    <span id='old-bam-link' @click='oldBam'>Take me to the old bam</span>
   </div>
 </template>
 
 <script>
+
+  function validEmailAddress(email) {
+    return /\S+@\S+\.\S+/.test(email);
+  }
 
   export default {
     name: 'help',
@@ -62,23 +89,36 @@ textarea {
     methods: {
       oldBam: function() {
         console.log("to old bam");
+        console.log(document.cookie);
       },
 
       onSubmit: function() {
-        console.log("submit");
-        fetch('http://localhost:3000/submit_issue', {
-          method: 'POST',
-          body: JSON.stringify({
-            email: this.email,
-            message: this.message,
-          }),
-        })
-        .then(response => {
-          console.log("submit response");
-        })
-        .catch(err => {
-          throw new Error(err);
-        });
+
+        if (validEmailAddress(this.email)) {
+          fetch('http://localhost:3000/submit_issue', {
+            method: 'POST',
+            body: JSON.stringify({
+              email: this.email,
+              message: this.message,
+            }),
+          })
+          .then(response => {
+            if (response.status !== 200) {
+              alert("Submission failed. Please make sure you provide a description and try again");
+            }
+            else {
+              alert("Submission successful. We'll be in touch soon. Thank you!");
+              this.email = '';
+              this.message = '';
+            }
+          })
+          .catch(err => {
+            throw new Error(err);
+          });
+        }
+        else {
+          alert("Invalid email address");
+        }
       }
     }
   }
