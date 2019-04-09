@@ -101,7 +101,7 @@
         <div id="info">
           <ul>
             <li><a href="http://www.nature.com/nmeth/journal/v11/n12/full/nmeth.3174.html">Publication</a></li>
-            <li><router-link :to="{name: 'help'}"><a >File Requirements</a> </router-link></li>
+            <li><router-link :to="{name: 'file-requirements'}"><a >File Requirements</a> </router-link></li>
             <li><router-link :to="{name: 'license'}"><a>License</a></router-link></li>
             <li><a :href="require('../../../images/browserCompatability.png')">Compatible Browsers</a></li>
           </ul>

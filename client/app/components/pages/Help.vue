@@ -1,67 +1,47 @@
-<style>
-  #help header {
-    font-family: Quicksand;
-    font-size: 46px;
-  }
-  #help h1, h2, h3, h4 {
-    font-family: Muli;
+<style lang='scss' scoped>
+#main {
+  font-size: 16px;
+}
 
-  }
-  #help h1 {
-    font-size: 26px;
-    font-weight: normal;
+textarea {
+  width: 500px;
+  height: 200px;
+}
 
-  }
-  #help h2 {
-    font-size: 24px;
-  }
-  #help h3 {
-    font-size: 18px;
-    margin-top: 40px;
-  }
-  #help h4 {
-    margin-bottom: 5px;
-  }
-  #help body {
-    margin: 20px;
-    font-family: Open Sans;
-    width: 900px;
-    font-weight: 300;
-  }
-  a:visited {
-    color:none;
-  }
-  a, a:hover {
-    text-decoration:none;
-    color:#2d8fc1;
-  }
+.input-container {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.email-input {
+  width: 500px;
+}
+
 </style>
 
 <template>
-  <div id="help">
+  <div id='main' style="width: 500px; margin-left:auto;margin-right:auto;margin-top: 100px">
+    You can use the form below to submit an issue. Please include a brief
+    description of your problem. We'll email you as soon as possible to follow
+    up, and get more information if necessary. If you think your problem is
+    related to the new version of bam, you can click the link below to
+    temporarily access the old bam. Please note that old bam is on its way out.
+    If you can provide us with any information by submitting an issue, it will
+    help the transition to new bam go more smoothly for everyone. Thank you!
 
-    <body>
+    <div class='input-container'>
+      Email:
+      <input v-model='email' type='text' class='email-input' />
+    </div>
 
-    <header><a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span><span color>&nbsp;</span></a></header>
+    <div class='input-container'>
+      Problem Description:
+      <textarea v-model='message'></textarea>
+      <button @click='onSubmit' >Submit</button>
+    </div>
 
-    <h1>The indexed BAM</h1>
-
-    bam.iobio needs indexed bam files so that it can sample regions from the entire file. Follow the instructions below to index your bam file and use bam.iobio.
-
-    <h3>Install Bamtools</h3>
-
-    Download and install bamtools using the instructions <a href="https://github.com/pezmaster31/bamtools/wiki/Building-and-installing">here</a>.
-
-    <h3>Indexing your BAM</h3>
-
-    Once you have successfully compiled bamtools, you can index your bam files with the following command:
-    <pre style="border: none;background: none">
-	$ /path/to/bamtools index -in mybam.bam
-    </pre>
-    This commands will create a new file, the index file (.bam.bai).  Now you are ready to run <a href="../../../../index.html">bam.iobio</a>, selecting this file and your bam file when prompted.
-    <p></p>
-
-    </body>
+    <a @click='oldBam'>Take me to the old bam</a>
   </div>
 </template>
 
@@ -74,10 +54,32 @@
     },
     props: [],
     data() {
-      return {}
+      return {
+        email: '',
+        message: '',
+      }
     },
     methods: {
+      oldBam: function() {
+        console.log("to old bam");
+      },
 
+      onSubmit: function() {
+        console.log("submit");
+        fetch('http://localhost:3000/submit_issue', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: this.email,
+            message: this.message,
+          }),
+        })
+        .then(response => {
+          console.log("submit response");
+        })
+        .catch(err => {
+          throw new Error(err);
+        });
+      }
     }
   }
 </script>

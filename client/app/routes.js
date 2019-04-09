@@ -11,6 +11,7 @@ import App from './App.vue'
 import BamView from './components/pages/BamView.vue'
 import AlignmentPage from './components/pages/AlignmentPage.vue'
 import Help from './components/pages/Help.vue'
+import FileRequirements from './components/pages/FileRequirements.vue'
 import Home from './components/pages/Home.vue'
 import License from './components/pages/License.vue'
 
@@ -22,12 +23,12 @@ Vue.use(VueRouter);
 
 const routes = [
   {
-    path: '/home',
+    path: '/',
     name: 'home',
     component: Home
   },
   {
-    path: '/alignment',
+    path: '/',
     name: 'alignment-page',
     component: AlignmentPage,
     props: (route) => {
@@ -43,7 +44,12 @@ const routes = [
   {
     path: '/help',
     name: 'help',
-    component: Help
+    component: Help,
+  },
+  {
+    path: '/file-requirements',
+    name: 'file-requirements',
+    component: FileRequirements,
   },
   {
     path: '/license',

@@ -4,12 +4,18 @@
   @import url('https://fonts.googleapis.com/css?family=Overlock+SC');
   @import url('https://fonts.googleapis.com/css?family=Open+Sans');
   @import url('https://fonts.googleapis.com/css?family=Muli');
+
+  #main {
+    margin-top: 40px;
+  }
 </style>
 
 <template>
   <div id="app">
     <app-header></app-header>
-    <router-view></router-view>
+    <div id='main'>
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
@@ -28,13 +34,9 @@ export default {
     if (this.$route.query.source || this.$route.query.bam) {
       this.$router.push({
         name: 'alignment-page',
-        query: Object.assign({}, this.$route.query),
-      });
-    }
-    else {
-      this.$router.push({
-        name: 'home',
-        query: Object.assign({}, this.$route.query),
+        query: Object.assign({
+          forceReroute: true,
+        }, this.$route.query),
       });
     }
   },
