@@ -70,6 +70,9 @@ textarea {
 
 <script>
 
+  import Cookie from 'js-cookie';
+
+
   function validEmailAddress(email) {
     return /\S+@\S+\.\S+/.test(email);
   }
@@ -88,8 +91,16 @@ textarea {
     },
     methods: {
       oldBam: function() {
-        console.log("to old bam");
-        console.log(document.cookie);
+
+        this.$ga.event({
+          eventCategory: 'Outbound Link',
+          eventAction: 'Click',
+          eventLabel: 'Go to old bam',
+        });
+
+        Cookie.set('X-Source', 'main');
+
+        window.location.href = '/';
       },
 
       onSubmit: function() {
