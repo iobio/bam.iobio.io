@@ -70,27 +70,37 @@
 
     mounted: function () {
 
-      this.integration = createIntegration(this.$route.query);
+      if (!this.launchedFromIntegration()) {
+        this.$router.push('/home');
+      }
+      else {
 
-      this.integration.init().then(() => {
+        this.integration = createIntegration(this.$route.query);
 
-        const query = this.integration.buildQuery();
-        const params = this.integration.buildParams();
+        this.integration.init().then(() => {
 
-        // TODO: This is an ugly hack to force a re-route in Vue. If only the
-        // params change, re-route doesn't happen, so we have to manually
-        // ensure the query changes.
-        query.forceReroute = true;
+          const query = this.integration.buildQuery();
+          const params = this.integration.buildParams();
 
-        this.$router.push({
-          name: "alignment-page",
-          query, 
-          params,
+          // TODO: This is an ugly hack to force a re-route in Vue. If only the
+          // params change, re-route doesn't happen, so we have to manually
+          // ensure the query changes.
+          query.forceReroute = true;
+
+          this.$router.push({
+            name: "alignment-page",
+            query, 
+            params,
+          });
         });
-      });
+      }
     },
 
     methods: {
+
+      launchedFromIntegration: function() {
+        return this.$route.query.source || this.$route.query.bam;
+      },
 
       onRegionChange: function(region) {
 

@@ -29,17 +29,6 @@ export default {
   components: {
     AppHeader
   },
-
-  mounted: function() {
-    if (this.$route.query.source || this.$route.query.bam) {
-      this.$router.push({
-        name: 'alignment-page',
-        query: Object.assign({
-          forceReroute: true,
-        }, this.$route.query),
-      });
-    }
-  },
 }
 
 
