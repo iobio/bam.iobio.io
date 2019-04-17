@@ -53,7 +53,7 @@
 
 <template>
     <transition name="modal">
-      <div class="modal" style="display: block" @click="$emit('close')">
+      <div class="modal" style="display: block">
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-dialog">
@@ -61,7 +61,7 @@
 
                 <div class="modal-header">
                   <slot name="header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close" @click="$emit('close')" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">{{modalTitle}}</h4>
                   </slot>
                 </div>
