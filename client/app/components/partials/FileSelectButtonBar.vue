@@ -85,9 +85,9 @@
   <div>
     <div class="file" @click="showUrl=false">
       <input type="file" name="files[]" id="file"  multiple @change="processBamFile" />
-      <label class="file-button" for="file" >choose bam/cram file</label>
+      <label class="file-button" for="file" >local bam/cram file</label>
     </div>
-    <div class="file-button" style="text-align:center" @click="displayBamUrlBox()">choose bam/cram url</div>
+    <div class="file-button" style="text-align:center" @click="displayBamUrlBox()">remote bam/cram url</div>
     <div style="clear:both"></div>
     <div v-if="showUrl" id='bam-url' style="margin-top:18px;width:700px;margin-left:auto;margin-right:auto" class="arrow_box">
       <input id="url-input" placeholder="BAM/CRAM URL" v-model="selectedBamURL"></input>
