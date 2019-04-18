@@ -564,7 +564,6 @@
 
   import PieChooserChart from "../viz/PieChooserChart.vue";
 
-  import DefaultBed from '../../../../data/20130108.exome.targets.bed';
   import DonutChart from "../viz/DonutChart.vue";
   import PercentChartBox from "../partials/PercentChartBox.vue";
   import StackedHistogram from "../viz/StackedHistogram.vue";
@@ -953,9 +952,13 @@
         $(".iobio-bar-1").css("display", "none");
         $(".samplingLoader").css("display", "block");
 
-        var defaultBed = DefaultBed.replace(/chr/g, '');
-        this.bed = defaultBed;
-        this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
+        fetch('/data/20130108.exome.targets.bed')
+        .then(response => response.text())
+        .then(bed => {
+          const defaultBed = bed.replace(/chr/g, '');
+          this.bed = defaultBed;
+          this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
+        });
       },
 
       openBedFile: function (file) {
