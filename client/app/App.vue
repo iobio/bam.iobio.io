@@ -75,6 +75,10 @@ export default {
     else {
       this.showWelcomeModal = true;
     }
+
+    if (this.$route.query.reset) {
+      window.location.reload(true);
+    }
   },
 
   methods: {

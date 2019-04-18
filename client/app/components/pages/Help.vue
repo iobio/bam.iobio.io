@@ -105,7 +105,7 @@ textarea {
 
         Cookie.set('X-Source', 'main');
 
-        window.location.href = '/';
+        window.location.href = '/?reset=true';
       },
 
       onSubmit: function() {
