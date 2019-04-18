@@ -22,7 +22,7 @@ textarea {
 }
 
 #old-bam-link {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: bold;
   color: $main-color;
   text-decoration: underline;
@@ -43,14 +43,19 @@ textarea {
     <h1>Submit an issue</h1>
 
     <p>
-      You can use the form below to submit an issue. Please include a brief
+      You can use the form below to submit an issue. Please include a
       description of your problem. We'll email you as soon as possible to
       follow up, and get more information if necessary. If you think your
-      problem is related to the new version of bam, you can click the link
-      below to temporarily access the old bam. Please note that old bam is on
-      its way out.  If you can provide us with any information by submitting an
-      issue, it will help the transition to new bam go more smoothly for
-      everyone. Thank you!
+      problem is related to the new version of bam.iobio, you can click the
+      link below to temporarily access the old bam.iobio. Please note that the
+      old version is on its way out.  If you can provide us with any
+      information by submitting an issue, it will help the transition to the
+      new bam.iobio go more smoothly for everyone. Thank you!
+    </p>
+
+    <p>
+      If you have any trouble with the form, you can also email us directly
+      at <a href='mailto:iobioproject@gmail.com'>iobioproject@gmail.com</a>. 
     </p>
 
     <div class='input-container'>
