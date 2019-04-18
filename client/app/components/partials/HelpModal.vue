@@ -1,9 +1,5 @@
 <style type="text/css">
 
-  .modal {
-    transition: all .3s ease;
-  }
-
   .modal-header {
     text-align: left;
   }
@@ -30,7 +26,6 @@
     height: 100%;
     background-color: rgba(0, 0, 0, .5);
     display: table;
-    transition: opacity .3s ease;
   }
   .modal-wrapper {
      vertical-align: top;
@@ -38,7 +33,6 @@
 
   .modal-content {
     width: 700px;
-    transition: all .3s ease;
   }
 
   button.close {
@@ -52,9 +46,8 @@
 </style>
 
 <template>
-    <transition name="modal">
       <div class="modal" style="display: block">
-        <div class="modal-mask">
+        <div class="modal-mask" @click="$emit('close')">
           <div class="modal-wrapper">
             <div class="modal-dialog">
               <div class="modal-content" >
@@ -84,7 +77,6 @@
           </div>
         </div>
       </div>
-    </transition>
 
 </template>
 
