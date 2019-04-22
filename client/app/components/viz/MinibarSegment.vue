@@ -24,7 +24,7 @@ export default {
         return [];
       }
 
-      const samplesPerBin = Math.floor(this.points.length / numBins);
+      const samplesPerBin = Math.max(1, Math.floor(this.points.length / numBins));
 
       const smoothed = [];
       for (let i = 0; i < this.points.length; i += samplesPerBin) {
