@@ -69,7 +69,16 @@ textarea {
       <button id='submit-btn' @click='onSubmit' >Submit</button>
     </div>
 
-    <span id='old-bam-link' @click='oldBam'>Take me to the old bam</span>
+    <p>
+      You can use this link to go to the old version of bam.iobio. Please note
+      that you will need to clear your browser cache for this to work properly.
+      This can usually be done by first clicking on the link, then hitting
+      CTRL-F5 (or COMMAND-R in Safari). If that doesn't work, you can Google
+      "clear cache" for your browser. Feel free to submit an issue using the
+      form above if you run into trouble.
+    </p>
+
+    <span id='old-bam-link' @click='oldBam'>Take me to the old bam.iobio</span>
   </div>
 </template>
 
