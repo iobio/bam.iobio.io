@@ -389,3 +389,5 @@ var Bam = Class.extend({
       }
    },
 });
+
+export { Bam };

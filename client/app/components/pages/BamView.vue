@@ -570,6 +570,8 @@
 
   import Vue from 'vue';
 
+  import { Bam } from '../../../js/bam.iobio.js/bam.iobio.js';
+
   export default {
     name: 'bam-view',
 
