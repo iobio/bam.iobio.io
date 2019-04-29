@@ -172,10 +172,14 @@ export default {
       }
 
       const proxyAddress = 'lf-proxy.iobio.io';
-      const port = 80;
+      const port = 443;
+      const secure = true;
+
+      const protocol = secure ? 'https:' : 'http:';
+
       // TODO: shouldn't this be going out of scope and eventually garbage
       // collected, which could lead to race conditions?
-      createHoster({ proxyAddress, port, secure: false }).then((hoster) => {
+      createHoster({ proxyAddress, port, secure }).then((hoster) => {
 
         const bamPath = '/' + bamFile.name;
         hoster.hostFile({ path: bamPath, file: bamFile });
@@ -183,7 +187,7 @@ export default {
         hoster.hostFile({ path: baiPath, file: baiFile });
 
         const portStr = hoster.getPortStr();
-        const baseUrl = `${window.location.protocol}//${proxyAddress}${portStr}`;
+        const baseUrl = `${protocol}//${proxyAddress}${portStr}`;
         this.selectedBamURL = `${baseUrl}${hoster.getHostedPath(bamPath)}`;
         this.selectedBaiURL = `${baseUrl}${hoster.getHostedPath(baiPath)}`;
 

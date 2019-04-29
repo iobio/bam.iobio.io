@@ -13,7 +13,7 @@
     "d3": "^3.5.17",
     "debug": "^2.6.9",
     "express": "^4.16.4",
-    "fibridge-host": "^0.11.0",
+    "fibridge-host": "^0.16.0",
     "jquery": "^3.3.1",
     "js-cookie": "^2.2.0",
     "less-loader": "^4.1.0",
