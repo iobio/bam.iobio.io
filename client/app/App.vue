@@ -18,7 +18,7 @@
 <template>
   <div id="app">
     <app-header></app-header>
-    <help-modal v-if='showWelcomeModal' @close='modalClosed' modalTitle="Welcome to the new bam.iobio!">
+    <help-modal v-if='showWelcomeModal' @close='modalClosed' modalTitle="Welcome to bam.iobio 2.0!">
       <div class='welcome-modal-body' slot='body'>
         <h3>We've cooked up a bunch of new features for you:</h3>
 
@@ -41,6 +41,12 @@
             </ul>
           </li>
         </ul>
+
+        <p>
+          Check out our
+          <a href="http://iobio.io/2019/05/01/bam.iobio-2.0-launch/">blog post</a>
+          for more details.
+        </p>
       </div>
     </help-modal>
     <div id='main'>
