@@ -44,7 +44,7 @@
 
         <p>
           Check out our
-          <a href="http://iobio.io/2019/05/01/bam.iobio-2.0-launch/">blog post</a>
+          <a target="_blank" href="http://iobio.io/2019/05/01/bam.iobio-2.0-launch/">blog post</a>
           for more details.
         </p>
       </div>
