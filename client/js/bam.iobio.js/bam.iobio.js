@@ -1,5 +1,8 @@
 // extending Thomas Down's original BAM js work
 
+import { Api } from 'iobio-client';
+
+
 var Bam = Class.extend({
 
    init: function(backendSource, bamUri, options) {
@@ -8,6 +11,8 @@ var Bam = Class.extend({
       this.options = options; // *** add options mapper ***
       if (this.options && this.options.bai)
          this.baiUri = this.options.bai;
+
+      this.api = new Api('localhost:9001');
 
       // set iobio servers
       this.iobio = {}
@@ -31,27 +36,28 @@ var Bam = Class.extend({
 
       var args,
       samtools_service;
-      if (this.baiUri) {
-        // explciity set bai url
-        samtools_service = this.iobio.od_samtools;
-        args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' '), '"'+this.baiUri+'"'];
-      } else {
-        samtools_service = this.iobio.od_samtools;
-        args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' ')];
-      }
-      var cmd = new iobio.cmd(
-            samtools_service,
-            args,
-            { ssl:this.ssl, 'urlparams': {'encoding':'binary'} }
-          )
+      //if (this.baiUri) {
+      //  // explciity set bai url
+      //  samtools_service = this.iobio.od_samtools;
+      //  args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' '), '"'+this.baiUri+'"'];
+      //} else {
+      //  samtools_service = this.iobio.od_samtools;
+      //  args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' ')];
+      //}
+      //var cmd = new iobio.cmd(
+      //      samtools_service,
+      //      args,
+      //      { ssl:this.ssl, 'urlparams': {'encoding':'binary'} }
+      //    )
 
-      cmd = cmd.pipe(
-              this.iobio.bamstatsAlive,
-              ['-u', '500', '-k', '1', '-r', regStr],
-              { ssl:this.ssl}
-              // { ssl:this.ssl, urlparams: {cache:'stats.json', partialCache:true}}
-            );
+      //cmd = cmd.pipe(
+      //        this.iobio.bamstatsAlive,
+      //        ['-u', '500', '-k', '1', '-r', regStr],
+      //        { ssl:this.ssl}
+      //        // { ssl:this.ssl, urlparams: {cache:'stats.json', partialCache:true}}
+      //      );
 
+      const cmd = this.api.alignmentStatsStream(this.bamUri, regions);
 
       if (window.lastCmd) {
         window.lastCmd.closeClient();
@@ -154,7 +160,16 @@ var Bam = Class.extend({
 
       let currentSequence;
       const indexUrl = this.baiUri || this.getIndexUrl(this.bamUri);
-      var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
+      //var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
+
+      let cmd;
+
+      if (indexUrl.endsWith('.bai')) {
+        cmd = this.api.baiReadDepth(indexUrl);
+      }
+      else {
+        cmd = this.api.craiReadDepth(indexUrl);
+      }
 
       cmd.on('error', (e) => {
         if (!this.hadError) {
@@ -221,7 +236,8 @@ var Bam = Class.extend({
        var me = this;
        var rawHeader = "";
 
-       const cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl});
+       //const cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl});
+       const cmd = this.api.alignmentHeader(this.bamUri);
 
        cmd.on('error', (error) => {
          // only show the alert on the first error
