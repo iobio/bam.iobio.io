@@ -59,7 +59,7 @@ var Bam = Class.extend({
       if (this.options && this.options.bai)
          this.baiUri = this.options.bai;
 
-      this.api = new Api('localhost:9001');
+      this.api = new Api('backend.iobio.io', { secure: true });
 
       // set iobio servers
       this.iobio = {}
