@@ -107,7 +107,8 @@ var Bam = Class.extend({
       const cmd = this.api.alignmentStatsStream(this.bamUri, regions);
 
       if (window.lastCmd) {
-        window.lastCmd.closeClient();
+        //window.lastCmd.closeClient();
+        window.lastCmd.cancel();
       }
       window.lastCmd = cmd;
       return cmd;
