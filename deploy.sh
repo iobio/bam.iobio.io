@@ -18,7 +18,7 @@ fi
 if [[ $1 == "stage" ]]; then
 
   echo "** Uploading to stage s3 bucket **"
-  aws s3 cp . s3://static.iobio.io/stage/bam.iobio.io/ --recursive --exclude '.git/*'
+  aws s3 cp ./client s3://static.iobio.io/stage/bam.iobio.io/stage/ --recursive --cache-control 'public, max-age=86400'
   echo "** Renew cloudfrount cache **"
   aws cloudfront create-invalidation --distribution-id EW1T1HDKHSTBF --paths /\*
 
