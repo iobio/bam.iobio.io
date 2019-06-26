@@ -85,9 +85,9 @@
   <div>
     <div class="file" @click="showUrl=false">
       <input type="file" name="files[]" id="file"  multiple @change="processBamFile" />
-      <label class="file-button" for="file" >choose bam/cram file</label>
+      <label class="file-button" for="file" >local bam/cram file</label>
     </div>
-    <div class="file-button" style="text-align:center" @click="displayBamUrlBox()">choose bam/cram url</div>
+    <div class="file-button" style="text-align:center" @click="displayBamUrlBox()">remote bam/cram url</div>
     <div style="clear:both"></div>
     <div v-if="showUrl" id='bam-url' style="margin-top:18px;width:700px;margin-left:auto;margin-right:auto" class="arrow_box">
       <input id="url-input" placeholder="BAM/CRAM URL" v-model="selectedBamURL"></input>
@@ -124,17 +124,26 @@ export default {
     },
 
     launchDemoData : function () {
-      let self = this;
-      self.$router.push({name: 'bam-view', query: { bam: this.demoFileURL}});
+      this.$router.push({
+        name: 'alignment-page',
+        query: Object.assign({
+          bam: this.demoFileURL
+        }, this.$route.query),
+      });
     },
 
     openBamURL : function() {
-      let self = this;
       if (!validURL(this.selectedBamURL)) {
         alert('Please enter a valid bam/cram url, including http:// or https:// in front');
         return;
       }
-      self.$router.push({name: 'bam-view', query: { bam: this.selectedBamURL, bai: this.selectedBaiURL}});
+      this.$router.push({
+        name: 'alignment-page',
+        query: Object.assign({
+          bam: this.selectedBamURL,
+          bai: this.selectedBaiURL
+        }, this.$route.query),
+      });
     },
 
     processBamFile: function(event){
@@ -163,10 +172,14 @@ export default {
       }
 
       const proxyAddress = 'lf-proxy.iobio.io';
-      const port = 80;
+      const port = 443;
+      const secure = true;
+
+      const protocol = secure ? 'https:' : 'http:';
+
       // TODO: shouldn't this be going out of scope and eventually garbage
       // collected, which could lead to race conditions?
-      createHoster({ proxyAddress, port, secure: false }).then((hoster) => {
+      createHoster({ proxyAddress, port, secure }).then((hoster) => {
 
         const bamPath = '/' + bamFile.name;
         hoster.hostFile({ path: bamPath, file: bamFile });
@@ -174,11 +187,17 @@ export default {
         hoster.hostFile({ path: baiPath, file: baiFile });
 
         const portStr = hoster.getPortStr();
-        const baseUrl = `${window.location.protocol}//${proxyAddress}${portStr}`;
+        const baseUrl = `${protocol}//${proxyAddress}${portStr}`;
         this.selectedBamURL = `${baseUrl}${hoster.getHostedPath(bamPath)}`;
         this.selectedBaiURL = `${baseUrl}${hoster.getHostedPath(baiPath)}`;
 
-        self.$router.push({name: 'bam-view', query: { bam: this.selectedBamURL, bai: this.selectedBaiURL}});
+        self.$router.push({
+          name: 'alignment-page',
+          query: Object.assign({
+            bam: this.selectedBamURL,
+            bai: this.selectedBaiURL
+          }, this.$route.query),
+        });
       });
     }
   }

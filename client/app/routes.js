@@ -5,10 +5,13 @@ global.$ = jQuery
 import d3 from 'd3'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import VueAnalytics from 'vue-analytics'
 
 import App from './App.vue'
 import BamView from './components/pages/BamView.vue'
+import AlignmentPage from './components/pages/AlignmentPage.vue'
 import Help from './components/pages/Help.vue'
+import FileRequirements from './components/pages/FileRequirements.vue'
 import Home from './components/pages/Home.vue'
 import License from './components/pages/License.vue'
 
@@ -20,31 +23,33 @@ Vue.use(VueRouter);
 
 const routes = [
   {
-    path: '/',
+    path: '/home',
+    name: 'home',
     component: Home
   },
   {
-    path: '/bamview',
-    name: 'bam-view',
-    component: BamView,
-    props: (route) => ({
-      selectedBamURL: route.query.bam,
-      selectedBaiURL: route.query.bai,
-      regionURLParam: route.query.region,
-      sampling: route.query.sampling,
-    })
-  },
-  {
-    // File objects not working sending in as query params like above, so use properties instead.
-    path: '/bamview?bamFile=:selectedBamFile?&baiFile=:selectedBaiFile?',
-    name: 'bam-view-file',
-    component: BamView,
-    props: true
+    path: '/',
+    name: 'alignment-page',
+    component: AlignmentPage,
+    props: (route) => {
+      return {
+        selectedBamURL: route.query.bam ? route.query.bam : route.params.bam,
+        selectedBaiURL: route.query.bai ? route.query.bai : route.params.bai,
+        regionURLParam: route.query.region ? route.query.region : route.params.region,
+        sampling: route.query.sampling ? route.query.sampling : route.params.sampling,
+        backendSource: route.query.iobio_source ? route.query.iobio_source : route.params.backendSource,
+      };
+    }
   },
   {
     path: '/help',
     name: 'help',
-    component: Help
+    component: Help,
+  },
+  {
+    path: '/file-requirements',
+    name: 'file-requirements',
+    component: FileRequirements,
   },
   {
     path: '/license',
@@ -55,8 +60,13 @@ const routes = [
 
 const router = new VueRouter({
   mode: 'history',
-  base: window.location.pathname.replace('/bamview',''),
   routes: routes
+})
+
+// Google analytics
+Vue.use(VueAnalytics, {
+  id: 'UA-47481907-9',
+  router
 })
 
 new Vue({

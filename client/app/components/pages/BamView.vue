@@ -1,6 +1,6 @@
 <style module lang="scss">
   .bootstrap-css {
-    @import url("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css");
+    @import url("https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css");
     @font-face {
       font-family: 'Glyphicons Halflings';
     }
@@ -23,7 +23,7 @@
 </style>
 
 <style lang="scss">
-  @import url('http://fonts.googleapis.com/css?family=Quicksand:300');
+  @import url('https://fonts.googleapis.com/css?family=Quicksand:300');
 
   body {
     font-family: Quicksand;
@@ -126,7 +126,7 @@
   }
 
   #nprogress .bar {
-    background: #29d;
+    background: red;
 
     position: fixed;
     z-index: 100;
@@ -168,8 +168,8 @@
     height: 14px;
 
     border:  solid 2px transparent;
-    border-top-color:  #29d;
-    border-left-color: #29d;
+    border-top-color:  #fff;
+    border-left-color: #fff;
     border-radius: 10px;
 
     -webkit-animation: nprogress-spinner 400ms linear infinite;
@@ -257,16 +257,15 @@
 
 <template>
   <div class="$style.bootstrap-css">
+    <!--
     <div class="file-name" >
       <span v-show="selectedBamURL!=undefined"
             v-html="shortenedBamFileURL"
             style="margin-top: -19pt"
             @mouseover="showFullURL=true"
             @mouseleave="showFullURL=false"></span>
-      <div style="margin-top: 16px" v-show="selectedBamFile.size>0">
-        {{selectedBamFile.name}}
-      </div>
     </div>
+    -->
 
     <section id="top">
 
@@ -289,6 +288,7 @@
                          :chartData="readDepthChartData"
                          :references="references"
                          :conversionRatio="readDepthConversionRatio"
+                         :averageCoverage="coverageMean"
                          :brushRange="coverageBrushRange"
                          v-tooltip.top-center="{content: clinTooltip.genome_wide_coverage.content, show: clinTooltip.genome_wide_coverage.show, trigger: 'manual'}">
                          </read-coverage-box>
@@ -564,12 +564,13 @@
 
   import PieChooserChart from "../viz/PieChooserChart.vue";
 
-  import DefaultBed from '../../../../data/20130108.exome.targets.bed';
   import DonutChart from "../viz/DonutChart.vue";
   import PercentChartBox from "../partials/PercentChartBox.vue";
   import StackedHistogram from "../viz/StackedHistogram.vue";
 
   import Vue from 'vue';
+
+  import { Bam } from '../../../js/bam.iobio.js/bam.iobio.js';
 
   export default {
     name: 'bam-view',
@@ -587,20 +588,9 @@
     props: {
       selectedBamURL: '',
       selectedBaiURL: '',
-      selectedBamFile: {
-        default: function() {
-          return new File([""], "emptyfile");
-        },
-        type: File
-      },
-      selectedBaiFile: {
-        default: function() {
-          return new File([""], "emptyfile");
-        },
-        type: File
-      },
-      regionURLParam: '',
+      region: null,
       sampling: '',
+      backendSource: String,
     },
 
     data() {
@@ -608,7 +598,6 @@
         showFullURL: false,
 
         // default sampling values
-        samplingBinSize: 40000,
         binNumber: 20,
         binSize: 40000,
         sampleMultiplier: 1,
@@ -620,7 +609,6 @@
 
         sampleStats: {},
 
-        referenceDepthData: [],
         readDepthConversionRatio: 0,
 
         bam: {},
@@ -630,7 +618,6 @@
         references: [],
 
         selectedSeqId: 'all',
-        region: {},
         coverageBrushRange: {},
 
         // Percent Chart Data
@@ -667,7 +654,7 @@
           sensitivity: 'base'
         }),
 
-        totalPoints: 0,
+        coverageMean: 0,
       }
     },
 
@@ -706,6 +693,13 @@
           } else {
 
             this.sampleStats = data;
+            let freqs = 0;
+            let coverageMean = 0;
+            for (const coverage in data.coverage_hist) {
+              const freq = data.coverage_hist[coverage];
+              coverageMean += (coverage * freq);
+            }
+            this.coverageMean = Math.floor(coverageMean);
 
             // update progress bar
             if (options.start != null && options.end != null) {
@@ -727,30 +721,6 @@
             this.updateHistogramCharts(undefined, "sampleBar");
           }
         }.bind(this), options);
-      },
-
-      calculateReferenceRatio: function() {
-        if ( this.referenceDepthData.length == 0 || this.bam.readDepth == undefined ) return;
-
-        var convRatios = [];
-        var readDepthData = this.bam.readDepth;
-        this.referenceDepthData.forEach( data => {
-            if ( !data.hasOwnProperty('averageDepth') || data.averageDepth == -1 ||
-                 !data.hasOwnProperty('binNumber') || data.binNumber == -1 ) return;
-
-            var binNumber = data.binNumber;
-            var chr = data.chr;
-            var bytes = readDepthData[chr].depths[binNumber].depth;
-
-            var aveDepth = data.averageDepth;
-
-            if ( bytes != 0 && aveDepth > 1 ) {
-              var convRatio = bytes / aveDepth;
-              convRatios.push(convRatio);
-            }
-          }
-        )
-        this.readDepthConversionRatio = d3.mean(convRatios);
       },
 
       updatePercentCharts: function () {
@@ -946,7 +916,7 @@
 
         // reset brush
         this.resetBrush();
-        this.setUrlRegion({chr: selected, 'start': start, 'end': end});
+        this.$emit('region-change', { chr: selected, start, end });
 
         // start sampling
         if (start != undefined && end != undefined) {
@@ -958,29 +928,6 @@
           }.bind(this), 200);
         } else {
           this.goSampling({sampling: this.sampling, sequenceNames: seqDataIds});
-        }
-      },
-
-      setUrlRegion: function (region) {
-        this.region = region;
-
-        if (this.bam.sourceType == 'url' && region != undefined) {
-          if (region.start != undefined && region.end != undefined) {
-            var regionStr = region.chr + ':' + region.start + '-' + region.end;
-          } else {
-            var regionStr = region.chr;
-          }
-
-          var queryParams = {
-            bam: this.selectedBamURL,
-            region: regionStr};
-
-          if ( this.selectedBaiURL != '') queryParams.bai = this.selectedBaiURL;
-          if ( this.sampling != '') queryParams.sampling = this.sampling;
-
-          this.$router.push({
-            name: "bam-view",
-            query: queryParams});
         }
       },
 
@@ -1007,9 +954,13 @@
         $(".iobio-bar-1").css("display", "none");
         $(".samplingLoader").css("display", "block");
 
-        var defaultBed = DefaultBed.replace(/chr/g, '');
-        this.bed = defaultBed;
-        this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
+        fetch('/data/20130108.exome.targets.bed')
+        .then(response => response.text())
+        .then(bed => {
+          const defaultBed = bed.replace(/chr/g, '');
+          this.bed = defaultBed;
+          this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
+        });
       },
 
       openBedFile: function (file) {
@@ -1028,11 +979,6 @@
           this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
         }.bind(this)
         reader.readAsText(file)
-      },
-
-      openBamFile: function () {
-        this.bam = new Bam(this.selectedBamFile, {bai: this.selectedBaiFile});
-        this.goBam(this.region);
       },
 
       goBam: function (region) {
@@ -1059,7 +1005,6 @@
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
 
-            //console.log(name, index, ref.depths.length, filterRef(name));
             if (ref.depths.length > 0 && !filterRef(name)) {
               // Have to use Object.freeze here to prevent Vue from
               // recursively setting up data listeners, which causes huge
@@ -1117,11 +1062,9 @@
               this.setSelectedSeq(region.chr, start, end);
           });
 
-          this.referenceDepthData = this.bam.referenceDepthData;
         }.bind(this),
         (err) => {
-          // if there's an error start over on the home page
-          this.$router.push({ path: '/' });
+          this.$emit('error');
         })
       },
 
@@ -1147,28 +1090,14 @@
 
       load: function() {
         this.bed = undefined;
-        this.region = undefined;
 
         if ( this.selectedBamURL && this.selectedBamURL != '' ) {
           // Props should be set by query params
-          this.bam = new Bam(this.selectedBamURL, {bai: this.selectedBaiURL});
-
-          if (this.regionURLParam != undefined && this.regionURLParam != '') {
-            if (this.regionURLParam.split(":").length == 1)
-              this.region = {chr: this.regionURLParam.split(":")[0]}
-            else
-              this.region = {
-                chr: this.regionURLParam.split(":")[0],
-                start: parseInt(this.regionURLParam.split(":")[1].split('-')[0]),
-                end: parseInt(this.regionURLParam.split(":")[1].split('-')[1])
-              };
-          }
+          this.bam = new Bam(this.backendSource, this.selectedBamURL, {
+            bai: this.selectedBaiURL
+          });
 
           this.goBam(this.region);
-
-        } else if ( this.selectedBamFile.size>0 && this.selectedBaiFile.size>0 ){
-          // Local files, so properties set by router params instead of query
-          this.openBamFile();
         }
       },
 
@@ -1209,54 +1138,47 @@
       readOutliers: function() {
         this.updateLengthHistograms();
       },
-      referenceDepthData: {
-        handler: function (val, oldVal) {
-          if ( val ) {
-            this.calculateReferenceRatio();
-          }
-        },
-        deep: true,
-      }
     },
 
     computed: {
-      shortenedBamFileURL: function() {
-        if (this.selectedBamURL !== undefined) {
-          const protocolDiv = this.selectedBamURL.split('//');
+      // TODO: Determine if this is needed
+      //shortenedBamFileURL: function() {
+      //  if (this.selectedBamURL !== undefined) {
+      //    const protocolDiv = this.selectedBamURL.split('//');
 
-          const protocol = protocolDiv[0];
-          const withoutProtocol = protocolDiv[1];
+      //    const protocol = protocolDiv[0];
+      //    const withoutProtocol = protocolDiv[1];
 
-          let pathDivision = withoutProtocol.split('/');
+      //    let pathDivision = withoutProtocol.split('/');
 
-          // Edge case for '/' ending causing empty item
-          if (pathDivision[pathDivision.length - 1] === '') {
-            pathDivision.splice(pathDivision.length - 1, 1);
-          }
+      //    // Edge case for '/' ending causing empty item
+      //    if (pathDivision[pathDivision.length - 1] === '') {
+      //      pathDivision.splice(pathDivision.length - 1, 1);
+      //    }
 
-          const host = pathDivision.shift();
-          const fileName = pathDivision.pop();
-          const middlePart = pathDivision.join("/");
+      //    const host = pathDivision.shift();
+      //    const fileName = pathDivision.pop();
+      //    const middlePart = pathDivision.join("/");
 
-          const fontSize = 25;
-          const sizingStr = `<span style="font-size: ${fontSize}pt"></span>`;
+      //    const fontSize = 25;
+      //    const sizingStr = `<span style="font-size: ${fontSize}pt"></span>`;
 
-          if (middlePart.length === 0) {
-            return sizingStr + this.selectedBamURL;
-          }
-          else if (this.showFullURL) {
-            return protocol + "//" + host +
-              sizingStr + "/" + middlePart + "/" +
-              (fileName !== undefined ? fileName : "")
-          }
-          else {
-            return protocol + "//" + host +
-              `/<span style="font-size: ${fontSize}pt;color:#2687BE;" >...</span> /` +
-              (fileName !== undefined ? fileName : "")
-          }
-        }
-        return '';
-      },
+      //    if (middlePart.length === 0) {
+      //      return sizingStr + this.selectedBamURL;
+      //    }
+      //    else if (this.showFullURL) {
+      //      return protocol + "//" + host +
+      //        sizingStr + "/" + middlePart + "/" +
+      //        (fileName !== undefined ? fileName : "")
+      //    }
+      //    else {
+      //      return protocol + "//" + host +
+      //        `/<span style="font-size: ${fontSize}pt;color:#2687BE;" >...</span> /` +
+      //        (fileName !== undefined ? fileName : "")
+      //    }
+      //  }
+      //  return '';
+      //},
     }
 
   }

@@ -2,7 +2,7 @@
 
 var Bam = Class.extend({
 
-   init: function(bamUri, options) {
+   init: function(backendSource, bamUri, options) {
       this.bamUri = bamUri;
       this.ssl = true;
       this.options = options; // *** add options mapper ***
@@ -12,10 +12,10 @@ var Bam = Class.extend({
       // set iobio servers
       this.iobio = {}
 
-      this.iobio.samtools       = "nv-prod.iobio.io/samtools/";
-      this.iobio.od_samtools    = "nv-prod.iobio.io/od_samtools/";
-      this.iobio.bamReadDepther = "nv-prod.iobio.io/bamreaddepther/";
-      this.iobio.bamstatsAlive  = "nv-prod.iobio.io/bamstatsalive/";
+      this.iobio.samtools       = backendSource + "/samtools/";
+      this.iobio.od_samtools    = backendSource + "/od_samtools/";
+      this.iobio.bamReadDepther = backendSource + "/bamreaddepther/";
+      this.iobio.bamstatsAlive  = backendSource + "/bamstatsalive/";
 
       this.hadError = false;
 
@@ -36,7 +36,7 @@ var Bam = Class.extend({
         samtools_service = this.iobio.od_samtools;
         args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' '), '"'+this.baiUri+'"'];
       } else {
-        samtools_service = this.iobio.samtools;
+        samtools_service = this.iobio.od_samtools;
         args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' ')];
       }
       var cmd = new iobio.cmd(
@@ -199,22 +199,8 @@ var Bam = Class.extend({
       cmd.on('end', function() {
 
         submitRef(currentSequence); 
-
-        // Get some random reference read depth data
-        var seq = Object.keys(me.readDepth);
-
-        if ( seq != undefined && seq.length > 0 ) {
-          for (var count = 0; count < numRefSamples; count++) {
-            var randSeqInd = Math.floor(Math.random() * seq.length);
-            var randSeq = seq[randSeqInd];
-            var readDepthLength = me.readDepth[randSeq].depths.length;
-            var randBinNumber = Math.floor(Math.random() * readDepthLength);
-            randBinNumber = randBinNumber == 0 ? 1 : randBinNumber;
-            me.getReferenceStats(randSeq, randBinNumber);
-          }
-        }
-
         doneCallback();
+
       }.bind(me));
       cmd.run();
 
@@ -233,8 +219,9 @@ var Bam = Class.extend({
      this._headerPromise = new Promise((resolve, reject) => {
 
        var me = this;
-       var rawHeader = ""
-       var cmd = new iobio.cmd(this.iobio.samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl,})
+       var rawHeader = "";
+
+       const cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl});
 
        cmd.on('error', (error) => {
          // only show the alert on the first error
@@ -401,52 +388,6 @@ var Bam = Class.extend({
          });
       }
    },
-
-
-  getReferenceStats: function(chr, binNumber) {
-    var me = this;
-    var binSize = 16384;
-
-    var r =  {
-      'name': chr,
-      'start': binNumber + binNumber * binSize,
-      'end': (binNumber + binNumber * binSize) + binSize
-    };
-
-    if(!me.referenceDepthData) me.referenceDepthData = [];
-
-    var refDepthObject = {};
-    refDepthObject.chr = chr;
-    refDepthObject.binNumber = binNumber;
-
-    var refDepthData = "";
-
-    var cmd; //samtools depth -a -r [region] [bamfile]
-
-    cmd = new iobio.cmd(this.iobio.samtools,
-      ['depth', '-a', '-r', r.name + ":"+ r.start + '-' + r.end, '"' + this.bamUri + '"'],
-      {ssl:this.ssl,});
-
-    cmd.on('error', function(error) {
-      console.log(error);
-    })
-    cmd.on('data', function(data, options) {
-      refDepthData += data;
-    });
-    cmd.on('end', function() {
-      if ( refDepthData != "" ) {
-        var depthData = [];
-        refDepthData.split('\n').forEach(function (line) {
-          depthData.push(line.split('\t')[2]);
-        });
-        refDepthObject.data = refDepthData;
-        refDepthObject.averageDepth = d3.mean(depthData);
-        me.referenceDepthData.push(refDepthObject);
-      }
-    });
-
-    cmd.run();
-
-  },
-
 });
+
+export { Bam };

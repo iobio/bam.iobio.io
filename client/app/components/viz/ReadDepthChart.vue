@@ -1,6 +1,6 @@
 <template>
   <div class='read-depth-chart'>
-    <MultiLineChart
+    <MultiMinibarChart
       v-if='allPoints.length > 0'
       :allPoints='allPoints'
       :xAccessFunc='xAccessFunc'
@@ -20,13 +20,13 @@
 
 <script>
 
-import MultiLineChart from './MultiLineChart.vue';
+import MultiMinibarChart from './MultiMinibarChart.vue';
 import d3 from 'd3';
 
 
 export default {
   name: 'read-depth-chart',
-  props: ['references', 'allPoints', 'selectedSeqId', 'conversionRatio',
+  props: ['references', 'allPoints', 'selectedSeqId', 'averageCoverage',
     'yZoom'],
   data: function() {
     return {
@@ -39,7 +39,7 @@ export default {
     };
   },
   components: {
-    MultiLineChart,
+    MultiMinibarChart,
   },
   computed: {
     domains: function() {
@@ -55,6 +55,9 @@ export default {
     },
     range: function() {
       return { min: 0, max: this.average * 3 * this.yScaleFactor };
+    },
+    conversionRatio: function() {
+      return this.average / this.averageCoverage;
     },
   },
   watch: {
@@ -99,9 +102,12 @@ export default {
       let len = 0;
       // first average
       for (const refPoints of this.allPoints) {
-        len += refPoints.length;
-        for (const point of refPoints) {
-          sum += this.yAccessFunc(point);
+        // entire chromosome might be missing (!refPoints)
+        if (refPoints) {
+          len += refPoints.length;
+          for (const point of refPoints) {
+            sum += this.yAccessFunc(point);
+          }
         }
       }
 

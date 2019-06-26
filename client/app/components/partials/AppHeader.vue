@@ -1,33 +1,51 @@
-<style type="text/css" scoped>
+<style lang='scss' scoped>
+
+  $header-color: #2d8fc1;
+  $header-height: 42px;
+
   body {
     font-family: Quicksand;
     font-weight: 300;
     width: 100% ;
   }
+
   header {
-    font-size: 46px;
-    color:#2d8fc1;
+    height: $header-height;
+    font-size: 26px;
+    color: #ffffff;
     text-align: left;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1;
+    background-color: $header-color;
     /*padding-left: 10px;*/
   }
+
   a:visited {
     color:none;
   }
-  a, a:hover {
+  a {
+    color: inherit;
     text-decoration:none;
-    color:#2d8fc1;
+    height: $header-height;
+    line-height: $header-height;
   }
-  .iobio-project {
+
+  .help {
+    color: #ffffff;
     float: right;
-    /*padding-top: 20px;*/
-    font-size:18px;
-    letter-spacing:6px;
-    margin-top:8px;
+    font-size:24px;
+    font-weight: bold;
     margin-right: 33px;
-    color: rgb(120,120,120)
+    text-align: center;
+    height: $header-height;
+    line-height: $header-height;
   }
-  .iobio-project a {
-    color: rgb(120,120,120)
+  .help:hover {
+    color: $header-color; 
+    background-color: #ffffff;
+    cursor: pointer;
   }
 
 </style>
@@ -36,9 +54,9 @@
   <div >
     <body>
       <header>
-        <a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio</span></a>
-        <div class="iobio-project" >
-          <a href="http://iobio.io" style="margin: 0px 5px 0px 5px;">an iobio project</a>
+        <a href="http://bam.iobio.io">bam.iobio</a>
+        <div @click='helpClicked' class='help'>
+          Get Help
         </div>
       </header>
     </body>
@@ -46,6 +64,7 @@
 </template>
 
 <script>
+
 export default {
   name: 'app-header',
   data() {
@@ -54,7 +73,9 @@ export default {
     }
   },
   methods: {
-
+    helpClicked: function() {
+      this.$router.push('help');
+    },
   }
 }
 </script>

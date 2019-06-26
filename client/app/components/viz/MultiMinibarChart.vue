@@ -1,20 +1,20 @@
 <template>
-  <div class='multiline-chart' ref='container'>
-    <svg class='multiline-chart__svg'>
+  <div class='multi-minibar-chart' ref='container'>
+    <svg class='multi-minibar-chart__svg'>
       <g class='content' :transform='translateStr(yAxisWidth, 0)'>
         <g class='y-axis'>
           <g class='y-axis__label' transform='translate(-40, 80) rotate(-90)'>
             <text>Estimated Coverage</text>
           </g>
         </g>
-        <g class='multiline-chart_lines'
+        <g class='multi-minibar-chart_segments'
             :transform='translateStr(0, 0)' >
           <g v-for="(points, i) in shownPoints" :key="ids[i]"
-            :transform="lineTransform(i)">
-            <line-segment
+            :transform="segmentTransform(i)">
+            <MinibarSegment
               color="SteelBlue"
               :width='widths[i]'
-              :height='lineHeight'
+              :height='segmentHeight'
               :index="i"
               :points="shownPoints[i]"
               :xAccessFunc='xAccessFunc'
@@ -27,14 +27,14 @@
         <g class='mean-line'>
           <line x1='0' :y1='yScale(average)' :x2='width' :y2='yScale(average)'/>
         </g>
-        <g v-if='shownPoints.length > 0' class='multiline-chart__buttons'
+        <g v-if='shownPoints.length > 0' class='multi-minibar-chart__buttons'
             :transform='translateStr(0, 0)' >
           <g v-for='(id, i) in shownIds' :key='shownIds[i]'
               :transform='buttonTransform(i)'>
-            <rect class='multiline-chart__button' :width='widths[i]'
+            <rect class='multi-minibar-chart__button' :width='widths[i]'
               :height='buttonHeight' :style='rectStyle(shownIds[i])' 
               @click='buttonClick(shownIds[i])'/>
-            <text class='multiline-chart__button__text' :x='widths[i] / 2'
+            <text class='multi-minibar-chart__button__text' :x='widths[i] / 2'
                 y='12' fill='#eee' text-anchor='middle'
                 alignment-baseline='middle' >
               {{ shownIds[i] }}
@@ -48,7 +48,7 @@
 
 <script>
 
-import LineSegment from './LineSegment.vue'
+import MinibarSegment from './MinibarSegment.vue'
 import d3 from 'd3';
 
 export default {
@@ -70,10 +70,10 @@ export default {
     };
   },
   components: {
-    LineSegment,
+    MinibarSegment,
   },
   computed: {
-    lineHeight: function() {
+    segmentHeight: function() {
       return this.height - (this.buttonHeight + this.buttonPadding);
     },
     shownPoints: function() {
@@ -160,7 +160,7 @@ export default {
 
       const scale = d3.scale.linear()
         .domain([this.yAxisRange.min, this.yAxisRange.max])
-        .range([this.lineHeight, 0]);
+        .range([this.segmentHeight, 0]);
 
       const g = d3.select(this.$el).select('.y-axis');
 
@@ -180,7 +180,7 @@ export default {
     this.handleResize();
   },
   methods: {
-    lineTransform: function(i) {
+    segmentTransform: function(i) {
       const offsetRatio = this.offsets[i] / this.totalLength;
       const pixelOffset = offsetRatio * this.width;
       //const yOffset = -this.buttonHeight - this.buttonPadding;
@@ -210,7 +210,7 @@ export default {
       this.height = dim.height;
     },
     yScale: function(value) {
-      return this.lineHeight - ((value / this.range.max) * this.lineHeight);
+      return this.segmentHeight - ((value / this.range.max) * this.segmentHeight);
     },
     calcAverage: function(points) {
       let sum = 0;
@@ -250,27 +250,28 @@ export default {
 </script>
 
 <style scoped>
-.multiline-chart {
+.multi-minibar-chart {
   height: 100%;
 }
 
-.multiline-chart__svg {
+.multi-minibar-chart__svg {
   width: 100%;
   height: 100%;
 }
 
-.multiline-chart__button:hover {
+.multi-minibar-chart__button:hover {
   stroke: red;
   cursor: pointer;
 }
 
-.multiline-chart__button__text {
+.multi-minibar-chart__button__text {
   pointer-events: none;
 }
 
 .mean-line {
   stroke: red;
-  stroke-width: 5px;
+  stroke-dasharray: 4 2;
+  stroke-width: 3px;
   opacity: .6;
 }
 
