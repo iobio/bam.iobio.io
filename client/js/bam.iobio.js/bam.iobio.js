@@ -60,6 +60,7 @@ var Bam = Class.extend({
          this.baiUri = this.options.bai;
 
       this.api = new Api('backend.iobio.io', { secure: true });
+      //this.api = new Api('localhost:9001', { secure: false });
 
       // set iobio servers
       this.iobio = {}
@@ -104,7 +105,7 @@ var Bam = Class.extend({
       //        // { ssl:this.ssl, urlparams: {cache:'stats.json', partialCache:true}}
       //      );
 
-      const cmd = this.api.alignmentStatsStream(this.bamUri, regions);
+      const cmd = this.api.alignmentStatsStream(this.bamUri, this.baiUri, regions);
 
       if (window.lastCmd) {
         //window.lastCmd.closeClient();
