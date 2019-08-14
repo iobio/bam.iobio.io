@@ -24,5 +24,5 @@ elif [ "$target" == "blue" ] || [ "$target" == "green" ] || [ "$target" == "red"
   echo "** Uploading to prod s3 bucket **"
   aws s3 cp ./client s3://static.iobio.io/prod/bam.iobio.io/$target/ --recursive --cache-control 'public, max-age=86400'
   echo "** Renew cloudfrount cache **"
-  #aws cloudfront create-invalidation --distribution-id E1SI8J5TK5FF8 --paths /\*
+  aws cloudfront create-invalidation --distribution-id E1SI8J5TK5FF8 --paths /\*
 fi
