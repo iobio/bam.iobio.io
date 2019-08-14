@@ -47,6 +47,8 @@ class MosaicIntegration extends Integration {
       "https://mosaic-dev.genetics.utah.edu": "mosaic.chpc.utah.edu",
       "http://mosaic-dev.genetics.utah.edu":  "mosaic.chpc.utah.edu",
       "https://staging.frameshift.io":        "nv-prod.iobio.io",
+			"https://viewer.sfari.org":             "nv-prod.iobio.io",
+			"https://sfari.frameshift.io":          "nv-prod.iobio.io",
     };
 
     return new Promise((resolve, reject) => {
