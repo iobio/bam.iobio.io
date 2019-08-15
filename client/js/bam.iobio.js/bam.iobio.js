@@ -1,6 +1,6 @@
 // extending Thomas Down's original BAM js work
 
-import { Api } from 'iobio-client';
+import { Client } from 'iobio-client';
 import EventEmitter from 'events';
 
 
@@ -59,7 +59,8 @@ var Bam = Class.extend({
       if (this.options && this.options.bai)
          this.baiUri = this.options.bai;
 
-      this.api = new Api('backend.iobio.io', { secure: true });
+      //this.api = new Client('backend.iobio.io', { secure: true });
+      this.api = new Client('mosaic.chpc.utah.edu/gru/api/v1', { secure: true });
       //this.api = new Api('localhost:9001', { secure: false });
 
       // set iobio servers
@@ -105,7 +106,7 @@ var Bam = Class.extend({
       //        // { ssl:this.ssl, urlparams: {cache:'stats.json', partialCache:true}}
       //      );
 
-      const cmd = this.api.alignmentStatsStream(this.bamUri, this.baiUri, regions);
+      const cmd = this.api.streamAlignmentStatsStream(this.bamUri, this.baiUri, regions);
 
       if (window.lastCmd) {
         //window.lastCmd.closeClient();
@@ -214,10 +215,10 @@ var Bam = Class.extend({
       let cmd;
 
       if (indexUrl.endsWith('.bai')) {
-        cmd = this.api.baiReadDepth(indexUrl);
+        cmd = this.api.streamBaiReadDepth(indexUrl);
       }
       else {
-        cmd = this.api.craiReadDepth(indexUrl);
+        cmd = this.api.streamCraiReadDepth(indexUrl);
       }
 
      console.log(LineReader);
@@ -285,7 +286,7 @@ var Bam = Class.extend({
        var rawHeader = "";
 
        //const cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl});
-       const cmd = this.api.alignmentHeader(this.bamUri);
+       const cmd = this.api.streamAlignmentHeader(this.bamUri);
 
        cmd.on('error', (error) => {
          // only show the alert on the first error
