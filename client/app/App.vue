@@ -18,6 +18,7 @@
 <template>
   <div id="app">
     <app-header></app-header>
+    <!--
     <help-modal v-if='showWelcomeModal' @close='modalClosed' modalTitle="Welcome to bam.iobio 2.0!">
       <div class='welcome-modal-body' slot='body'>
         <h3>We've cooked up a bunch of new features for you:</h3>
@@ -49,6 +50,7 @@
         </p>
       </div>
     </help-modal>
+    -->
     <div id='main'>
       <router-view></router-view>
     </div>
@@ -70,17 +72,17 @@ export default {
 
   data() {
     return {
-      showWelcomeModal: false,
+      //showWelcomeModal: false,
     };
   },
 
   mounted: function() {
-    if (localStorage.getItem('welcomeModalAlreadyShown')) {
-      this.showWelcomeModal = false;
-    }
-    else {
-      this.showWelcomeModal = true;
-    }
+    //if (localStorage.getItem('welcomeModalAlreadyShown')) {
+    //  this.showWelcomeModal = false;
+    //}
+    //else {
+    //  this.showWelcomeModal = true;
+    //}
 
     if (this.$route.query.reset) {
       window.location.reload(true);
@@ -89,7 +91,7 @@ export default {
 
   methods: {
     modalClosed: function() {
-      this.showWelcomeModal = false;
+      //this.showWelcomeModal = false;
       localStorage.setItem('welcomeModalAlreadyShown', true);
     }
   },
