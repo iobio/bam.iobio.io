@@ -44,6 +44,7 @@ class MosaicIntegration extends Integration {
   init() {
     this.hubToIobioSources = {
       "https://mosaic.chpc.utah.edu":         "mosaic.chpc.utah.edu",
+      "https://mosaic-staging.chpc.utah.edu":  "mosaic-staging.chpc.utah.edu",
       "https://mosaic-dev.genetics.utah.edu": "mosaic.chpc.utah.edu",
       "http://mosaic-dev.genetics.utah.edu":  "mosaic.chpc.utah.edu",
       "https://staging.frameshift.io":        "nv-prod.iobio.io",
