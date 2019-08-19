@@ -166,8 +166,8 @@ var Bam = Class.extend({
         return true;
       }
       // Try stripping chr from reference names and then comparing
-      ref1 = ref.replace(/^chr?/,'');
-      bedRef1 = bedRef.replace(/^chr?/,'');
+      const ref1 = ref.replace(/^chr?/,'');
+      const bedRef1 = bedRef.replace(/^chr?/,'');
 
       return (ref1 == bedRef1);
    },
