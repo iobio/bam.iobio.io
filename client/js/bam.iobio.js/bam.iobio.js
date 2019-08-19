@@ -59,10 +59,7 @@ var Bam = Class.extend({
       if (this.options && this.options.bai)
          this.baiUri = this.options.bai;
 
-      const backendUrl = backendSource + '/gru/api/v1';
-
-      //this.api = new Client('backend.iobio.io', { secure: true });
-      this.api = new Client(backendUrl, { secure: true });
+      this.api = new Client(backendSource, { secure: true });
       //this.api = new Client('localhost:9001', { secure: false });
 
       // set iobio servers
