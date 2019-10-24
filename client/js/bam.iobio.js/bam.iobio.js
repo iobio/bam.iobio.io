@@ -61,6 +61,7 @@ var Bam = Class.extend({
 
       this.api = new Client(backendSource, { secure: true });
       //this.api = new Client('localhost:9001', { secure: false });
+      //this.api = new Client('staging.backend.iobio.io:9001', { secure: false });
 
       // set iobio servers
       this.iobio = {}
@@ -78,34 +79,12 @@ var Bam = Class.extend({
    },
 
    _getBamCmd: function(regions) {
-      var me = this;
-      var regArr = regions.map(function(d) { return d.name+ ":"+ d.start + '-' + d.end;});
-      var regStr = JSON.stringify(regions.map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));
 
-      var args,
-      samtools_service;
-      //if (this.baiUri) {
-      //  // explciity set bai url
-      //  samtools_service = this.iobio.od_samtools;
-      //  args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' '), '"'+this.baiUri+'"'];
-      //} else {
-      //  samtools_service = this.iobio.od_samtools;
-      //  args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' ')];
-      //}
-      //var cmd = new iobio.cmd(
-      //      samtools_service,
-      //      args,
-      //      { ssl:this.ssl, 'urlparams': {'encoding':'binary'} }
-      //    )
-
-      //cmd = cmd.pipe(
-      //        this.iobio.bamstatsAlive,
-      //        ['-u', '500', '-k', '1', '-r', regStr],
-      //        { ssl:this.ssl}
-      //        // { ssl:this.ssl, urlparams: {cache:'stats.json', partialCache:true}}
-      //      );
-
-      const cmd = this.api.streamAlignmentStatsStream(this.bamUri, this.baiUri, regions);
+      const cmd = this.api.streamCommand('alignmentStatsStream', {
+        url: this.bamUri,
+        indexUrl: this.baiUri,
+        regions,
+      });
 
       if (window.lastCmd) {
         //window.lastCmd.closeClient();
@@ -213,14 +192,15 @@ var Bam = Class.extend({
 
       let cmd;
 
-      if (indexUrl.endsWith('.bai')) {
-        cmd = this.api.streamBaiReadDepth(indexUrl);
+      const indexPath = indexUrl.split('?')[0];
+
+      if (indexPath.endsWith('.bai')) {
+        cmd = this.api.streamCommand('baiReadDepth', { url: indexUrl });
       }
       else {
-        cmd = this.api.streamCraiReadDepth(indexUrl);
+        cmd = this.api.streamCommand('craiReadDepth', { url: indexUrl });
       }
 
-     console.log(LineReader);
       const lineReader = new LineReader(cmd);
 
       lineReader.on('error', (e) => {
@@ -284,8 +264,9 @@ var Bam = Class.extend({
        var me = this;
        var rawHeader = "";
 
-       //const cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl});
-       const cmd = this.api.streamAlignmentHeader(this.bamUri);
+       const cmd = this.api.streamCommand('alignmentHeader', {
+         url: this.bamUri,
+       });
 
        cmd.on('error', (error) => {
          // only show the alert on the first error
