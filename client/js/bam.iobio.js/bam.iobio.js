@@ -1,6 +1,6 @@
 // extending Thomas Down's original BAM js work
 
-import { Client } from 'iobio-client';
+import { Client } from 'iobio-api-client';
 import EventEmitter from 'events';
 
 
