@@ -32,6 +32,10 @@
     line-height: $header-height;
   }
 
+  .home-page-link:hover {
+    color: #ffffff;
+  }
+
   .help {
     color: #ffffff;
     float: right;
@@ -54,7 +58,7 @@
   <div >
     <body>
       <header>
-        <a href="http://bam.iobio.io">bam.iobio</a>
+        <a class='home-page-link' href="https://bam.iobio.io">bam.iobio</a>
         <div @click='helpClicked' class='help'>
           Get Help
         </div>
