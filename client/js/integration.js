@@ -27,7 +27,7 @@ class StandardIntegration extends Integration {
 
   buildParams() {
     return Object.assign({
-      backendSource: 'nv-prod.iobio.io',
+      backendSource: 'backend.iobio.io',
     }, this.query);
   }
 
@@ -43,12 +43,13 @@ class MosaicIntegration extends Integration {
 
   init() {
     this.hubToIobioSources = {
-      "https://mosaic.chpc.utah.edu":         "mosaic.chpc.utah.edu",
+      "https://mosaic.chpc.utah.edu":         "mosaic.chpc.utah.edu/gru/api/v1",
+      "https://mosaic-staging.chpc.utah.edu": "mosaic-staging.chpc.utah.edu/gru/api/v1",
       "https://mosaic-dev.genetics.utah.edu": "mosaic.chpc.utah.edu",
       "http://mosaic-dev.genetics.utah.edu":  "mosaic.chpc.utah.edu",
-      "https://staging.frameshift.io":        "nv-prod.iobio.io",
-			"https://viewer.sfari.org":             "nv-prod.iobio.io",
-			"https://sfari.frameshift.io":          "nv-prod.iobio.io",
+      "https://staging.frameshift.io":        "backend.iobio.io",
+			"https://viewer.sfari.org":             "backend.iobio.io",
+			"https://sfari.frameshift.io":          "backend.iobio.io",
     };
 
     return new Promise((resolve, reject) => {

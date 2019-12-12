@@ -6,7 +6,7 @@ target=$1
 if [ "$target" == "stage" ]; then
   echo "** Building stage **"
   npm run build
-elif [ "$target" == "blue" ] || [ "$target" == "green" ]; then
+elif [ "$target" ]; then
   echo "** Building prod **"
   #NODE_ENV=production npm run build
   npm run build
@@ -16,11 +16,11 @@ fi
 if [ "$target" == "stage" ]; then
 
   echo "** Uploading to stage s3 bucket **"
-  aws s3 cp . s3://static.iobio.io/stage/bam.iobio.io/ --recursive --exclude '.git/*'
+  aws s3 cp ./client s3://static.iobio.io/stage/bam.iobio.io/stage/ --recursive --cache-control 'public, max-age=86400'
   echo "** Renew cloudfrount cache **"
   aws cloudfront create-invalidation --distribution-id EW1T1HDKHSTBF --paths /\*
 
-elif [ "$target" == "blue" ] || [ "$target" == "green" ] || [ "$target" == "red" ]; then
+elif [ "$target" ]; then
   echo "** Uploading to prod s3 bucket **"
   aws s3 cp ./client s3://static.iobio.io/prod/bam.iobio.io/$target/ --recursive --cache-control 'public, max-age=86400'
   echo "** Renew cloudfrount cache **"

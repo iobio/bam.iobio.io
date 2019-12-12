@@ -1,5 +1,55 @@
 // extending Thomas Down's original BAM js work
 
+import { Client } from 'iobio-api-client';
+import EventEmitter from 'events';
+
+
+class LineReader extends EventEmitter {
+  constructor(cmd) {
+    super();
+
+    let remainder = "";
+    let prev = "";
+
+    cmd.on('data', (data) => {
+
+      const lines = data.split('\n');
+
+      if (remainder.length > 0) {
+        lines[0] = remainder + lines[0];
+        remainder = "";
+      }
+
+      if (!lines[lines.length - 1].endsWith('\n')) {
+        remainder = lines.pop();
+      }
+
+      for (const line of lines) {
+        prev = line;
+        this.emit('line', line);
+      }
+    });
+
+    cmd.on('end', () => {
+      if (remainder.length > 0) {
+        this.emit('line', remainder);
+      }
+      this.emit('end');
+    });
+
+    cmd.on('error', (e) => {
+      this.emit('error', e);
+    });
+
+    this._cmd = cmd;
+  }
+
+  run() {
+    this._cmd.run();
+  }
+}
+
+
 var Bam = Class.extend({
 
    init: function(backendSource, bamUri, options) {
@@ -8,6 +58,10 @@ var Bam = Class.extend({
       this.options = options; // *** add options mapper ***
       if (this.options && this.options.bai)
          this.baiUri = this.options.bai;
+
+      this.api = new Client(backendSource, { secure: true });
+      //this.api = new Client('localhost:9001', { secure: false });
+      //this.api = new Client('staging.backend.iobio.io:9001', { secure: false });
 
       // set iobio servers
       this.iobio = {}
@@ -25,36 +79,16 @@ var Bam = Class.extend({
    },
 
    _getBamCmd: function(regions) {
-      var me = this;
-      var regArr = regions.map(function(d) { return d.name+ ":"+ d.start + '-' + d.end;});
-      var regStr = JSON.stringify(regions.map(function(d) { return {start:d.start,end:d.end,chr:d.name};}));
 
-      var args,
-      samtools_service;
-      if (this.baiUri) {
-        // explciity set bai url
-        samtools_service = this.iobio.od_samtools;
-        args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' '), '"'+this.baiUri+'"'];
-      } else {
-        samtools_service = this.iobio.od_samtools;
-        args = ['view', '-b', '"'+this.bamUri+'"', regArr.join(' ')];
-      }
-      var cmd = new iobio.cmd(
-            samtools_service,
-            args,
-            { ssl:this.ssl, 'urlparams': {'encoding':'binary'} }
-          )
-
-      cmd = cmd.pipe(
-              this.iobio.bamstatsAlive,
-              ['-u', '500', '-k', '1', '-r', regStr],
-              { ssl:this.ssl}
-              // { ssl:this.ssl, urlparams: {cache:'stats.json', partialCache:true}}
-            );
-
+      const cmd = this.api.streamCommand('alignmentStatsStream', {
+        url: this.bamUri,
+        indexUrl: this.baiUri,
+        regions,
+      });
 
       if (window.lastCmd) {
-        window.lastCmd.closeClient();
+        //window.lastCmd.closeClient();
+        window.lastCmd.cancel();
       }
       window.lastCmd = cmd;
       return cmd;
@@ -111,8 +145,8 @@ var Bam = Class.extend({
         return true;
       }
       // Try stripping chr from reference names and then comparing
-      ref1 = ref.replace(/^chr?/,'');
-      bedRef1 = bedRef.replace(/^chr?/,'');
+      const ref1 = ref.replace(/^chr?/,'');
+      const bedRef1 = bedRef.replace(/^chr?/,'');
 
       return (ref1 == bedRef1);
    },
@@ -154,9 +188,22 @@ var Bam = Class.extend({
 
       let currentSequence;
       const indexUrl = this.baiUri || this.getIndexUrl(this.bamUri);
-      var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
+      //var cmd = new iobio.cmd(this.iobio.bamReadDepther, [ '-i', '"' + indexUrl + '"'], {ssl:this.ssl,})
 
-      cmd.on('error', (e) => {
+      let cmd;
+
+      const indexPath = indexUrl.split('?')[0];
+
+      if (indexPath.endsWith('.bai')) {
+        cmd = this.api.streamCommand('baiReadDepth', { url: indexUrl });
+      }
+      else {
+        cmd = this.api.streamCommand('craiReadDepth', { url: indexUrl });
+      }
+
+      const lineReader = new LineReader(cmd);
+
+      lineReader.on('error', (e) => {
         if (!this.hadError) {
           alert("Error accessing the BAM index file. Please provide an " +
                 "index file URL or ensure that " +
@@ -165,44 +212,40 @@ var Bam = Class.extend({
         }
         console.log(e);
       });
-      cmd.on('data', function(data, options) {
+      lineReader.on('line', function(line, options) {
 
-        data = data.split('\n');
+         if ( line[0] == '#' ) {
 
-        for (var i=0; i < data.length; i++)  {
-           if ( data[i][0] == '#' ) {
+            if (currentSequence) {
+              submitRef(currentSequence); 
+            }
 
-              if (currentSequence) {
-                submitRef(currentSequence); 
-              }
-
-              var fields = data[i].substr(1).split("\t");
-              currentSequence = fields[0]
-              readDepth[currentSequence] = [];
-              if (fields[1]) {
-                readDepth[currentSequence].mapped = +fields[1];
-                readDepth[currentSequence].unmapped = +fields[2];
-              }
-           }
-           else if (data[i][0] == '*') {
-             me.n_no_coor = +data[i].split("\t")[2];
-           }
-           else {
-              if (data[i] != "") {
-                 var d = data[i].split("\t");
-                 readDepth[currentSequence].push({ pos:parseInt(d[0]), depth:parseInt(d[1]) });
-              }
-           }
+            var fields = line.substr(1).split("\t");
+            currentSequence = fields[0]
+            readDepth[currentSequence] = [];
+            if (fields[1]) {
+              readDepth[currentSequence].mapped = +fields[1];
+              readDepth[currentSequence].unmapped = +fields[2];
+            }
+         }
+         else if (line[0] == '*') {
+           me.n_no_coor = +line.split("\t")[2];
+         }
+         else {
+            if (line != "") {
+               var d = line.split("\t");
+               readDepth[currentSequence].push({ pos:parseInt(d[0]), depth:parseInt(d[1]) });
+            }
         }
 
       }.bind(me));
-      cmd.on('end', function() {
+      lineReader.on('end', function() {
 
         submitRef(currentSequence); 
         doneCallback();
 
       }.bind(me));
-      cmd.run();
+      lineReader.run();
 
    },
 
@@ -221,7 +264,9 @@ var Bam = Class.extend({
        var me = this;
        var rawHeader = "";
 
-       const cmd = new iobio.cmd(this.iobio.od_samtools,['view', '-H', '"' + this.bamUri + '"'], {ssl:this.ssl});
+       const cmd = this.api.streamCommand('alignmentHeader', {
+         url: this.bamUri,
+       });
 
        cmd.on('error', (error) => {
          // only show the alert on the first error
