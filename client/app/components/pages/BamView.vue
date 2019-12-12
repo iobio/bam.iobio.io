@@ -1194,6 +1194,8 @@
     validRefs[i] = true;
     validRefs['chr' + i] = true;
   }
+  validRefs['chrX'] = true;
+  validRefs['chrY'] = true;
   validRefs['X'] = true;
   validRefs['Y'] = true;
 
