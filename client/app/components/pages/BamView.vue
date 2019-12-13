@@ -890,12 +890,16 @@
         this.goSampling(options);
       },
 
+      // TODO: As written, this will include refs that might not show up in
+      // the top coverage chart (event though they're in the pie chart
+      // drop-down, which might not be intuitive to the user. Is this what we
+      // want?
       getSelectedSeqIds: function () {
         if (this.selectedSeqId == 'all') {
           return Object.keys(this.bam.readDepth)
             .filter(function (key) {
-              if (filterRef(key))
-                return false
+              //if (filterRef(key))
+              //  return false
               if (this.bam.readDepth[key].depths.length > 0)
                 return true
             }.bind(this))
@@ -987,29 +991,22 @@
 
         let refIndex = 0;
 
-        this.bam.getHeader().then((header) => {
-          this.references = header.sq.filter((sq) => {
-            return !filterRef(sq.name);
-          })
-          .map((sq) => {
-            return {
-              id: sq.name,
-              length: sq.end,
-            };
-          });
-        });
-
         // get read depth
         this.bam.estimateBaiReadDepth((name, index, ref) => {
 
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
 
-            if (ref.depths.length > 0 && !filterRef(name)) {
+            if (ref.depths.length > 1000) {
               // Have to use Object.freeze here to prevent Vue from
               // recursively setting up data listeners, which causes huge
               // performance issues with data this big.
-              Vue.set(this.readDepthChartData, index, Object.freeze(ref.depths));
+              this.readDepthChartData.push(Object.freeze(ref.depths));
+
+              this.references.push({
+                id: name,
+                length: ref.sqLength,
+              });
 
               if (!this.draw) {
                 this.draw = true;
