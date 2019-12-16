@@ -286,7 +286,6 @@
                          :selectedSeqId="selectedSeqId"
                          :draw="draw"
                          :chartData="readDepthChartData"
-                         :references="references"
                          :conversionRatio="readDepthConversionRatio"
                          :averageCoverage="coverageMean"
                          :brushRange="coverageBrushRange"
@@ -1001,12 +1000,20 @@
               // Have to use Object.freeze here to prevent Vue from
               // recursively setting up data listeners, which causes huge
               // performance issues with data this big.
-              this.readDepthChartData.push(Object.freeze(ref.depths));
-
-              this.references.push({
-                id: name,
-                length: ref.sqLength,
+              this.readDepthChartData.push({
+                refName: name,
+                sqLength: ref.sqLength,
+                depths: Object.freeze(ref.depths),
               });
+
+              this.readDepthChartData.sort((a, b) => {
+                return this.sorter.compare(a.refName, b.refName);
+              });
+
+              this.references = this.readDepthChartData.map(d => ({
+                id: d.refName,
+                length: d.sqLength,
+              }));
 
               if (!this.draw) {
                 this.draw = true;
