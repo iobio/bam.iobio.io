@@ -1029,31 +1029,12 @@
             $(".samplingLoader").css("display", "block");
           }
 
-          const allPoints = keys
-            //.sort(this.sorter.compare)
-            .filter(function (key) {
-              if (filterRef(key))
-                return false
-              if (this.bam.readDepth[key].depths.length > 0)
-                return true
-            }.bind(this))
-            .map(function (key) {
-              return {
-                name: key,
-                data: this.bam.readDepth[key].depths,
-                sqLength: this.bam.readDepth[key].sqLength,
-              }
-            }.bind(this));
-
           keys.forEach(function(id) {
             $('#reference-select')
               .append($("<option></option>")
                 .attr("value", id)
                 .text(id));
           });
-
-          allPoints
-            .sort((a, b) => this.sorter.compare(a.name, b.name));
 
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
