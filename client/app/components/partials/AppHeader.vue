@@ -32,6 +32,9 @@
     line-height: $header-height;
   }
 
+  .home-page-link {
+    margin-left: 20px;
+  }
   .home-page-link:hover {
     color: #ffffff;
   }
