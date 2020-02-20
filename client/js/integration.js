@@ -47,9 +47,6 @@ class MosaicIntegration extends Integration {
       "https://mosaic-staging.chpc.utah.edu": "mosaic-staging.chpc.utah.edu/gru/api/v1",
       "https://mosaic-dev.genetics.utah.edu": "mosaic.chpc.utah.edu",
       "http://mosaic-dev.genetics.utah.edu":  "mosaic.chpc.utah.edu",
-      "https://staging.frameshift.io":        "backend.iobio.io",
-			"https://viewer.sfari.org":             "backend.iobio.io",
-			"https://sfari.frameshift.io":          "backend.iobio.io",
     };
 
     return new Promise((resolve, reject) => {
@@ -66,10 +63,16 @@ class MosaicIntegration extends Integration {
   }
 
   buildParams() {
+
+    let backendSource = this.hubToIobioSources[this.query.source];
+    if (!backendSource) {
+      backendSource = 'backend.iobio.io';
+    }
+
     return {
       bam: this.alignmentURL,
       bai: this.alignmentIndexURL,
-      backendSource: this.hubToIobioSources[this.query.source],
+      backendSource,
     };
   }
 
