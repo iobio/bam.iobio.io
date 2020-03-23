@@ -1,4 +1,5 @@
 #!/bin/bash
+yolo
 
 target=$1
 
