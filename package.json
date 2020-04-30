@@ -15,7 +15,7 @@
     "express": "^4.16.4",
     "fibridge-host": "^0.16.0",
     "iobio-api-client": "^0.6.0",
-    "jquery": "^3.3.1",
+    "jquery": "^3.5.0",
     "js-cookie": "^2.2.0",
     "less-loader": "^4.1.0",
     "qs": "^6.7.0",
