@@ -2,7 +2,7 @@
   "name": "bam.iobio",
   "version": "1.0.0",
   "scripts": {
-    "serve": "DEBUG=http nodemon --debug=127.0.0.1:5862 --inspect --ignore client/ www.js",
+    "serve": "DEBUG=http nodemon --inspect --ignore client/ www.js",
     "build": "webpack --mode production",
     "watch": "webpack --mode development --watch",
     "test": "mocha-webpack --webpack-config webpack.test.config.js --require client/spec/spec_helper.js \"client/spec/**/*_spec.js\""
