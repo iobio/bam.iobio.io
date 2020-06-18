@@ -974,8 +974,10 @@
 
         // read bed file and store
         var reader = new FileReader();
-        reader.onload = function (theFile) {
-          this.bed = this.result;
+        reader.onload = function (e) {
+          let bedText = e.target.result;
+          bedText = bedText.replace(/chr/g, '');
+          this.bed = bedText;
           this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
         }.bind(this)
         reader.readAsText(file)
