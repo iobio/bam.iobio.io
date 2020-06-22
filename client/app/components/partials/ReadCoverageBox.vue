@@ -25,6 +25,9 @@
   .bedfile-button-row {
     display: flex;
     float: right;
+    position: absolute;
+    right: 15px;
+    top: 20px;
   }
 
   .bedfile-button {
