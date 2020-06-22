@@ -257,15 +257,11 @@
 
 <template>
   <div class="$style.bootstrap-css">
-    <!--
     <div class="file-name" >
       <span v-show="selectedBamURL!=undefined"
-            v-html="shortenedBamFileURL"
-            style="margin-top: -19pt"
-            @mouseover="showFullURL=true"
-            @mouseleave="showFullURL=false"></span>
+        v-html="pathToFilename">
+      </span>
     </div>
-    -->
 
     <section id="top">
 
@@ -1139,6 +1135,15 @@
     },
 
     computed: {
+      pathToFilename: function(path) {
+        if (this.selectedBamURL !== undefined) {
+          const pathParts = this.selectedBamURL.split('/');
+          const filename = pathParts[pathParts.length - 1];
+          return filename;
+        }
+
+        return '';
+      },
       // TODO: Determine if this is needed
       //shortenedBamFileURL: function() {
       //  if (this.selectedBamURL !== undefined) {

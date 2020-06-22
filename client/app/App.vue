@@ -6,7 +6,7 @@
   @import url('https://fonts.googleapis.com/css?family=Muli');
 
   #main {
-    margin-top: 40px;
+    margin-top: 60px;
   }
 
   .welcome-modal-body {
