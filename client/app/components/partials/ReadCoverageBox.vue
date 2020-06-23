@@ -22,10 +22,16 @@
     color:rgb(170,170,170);
   }
 
-  .bedfile-button{
-    position:absolute;
-    right:15px;
-    top:20px;
+  .bedfile-button-row {
+    display: flex;
+    float: right;
+    position: absolute;
+    right: 15px;
+    top: 20px;
+  }
+
+  .bedfile-button {
+    margin: 5px;
     font-size:13px;
     color: rgb(60,60,60);
     cursor: pointer;
@@ -88,10 +94,21 @@
       <div v-show="selectedSeqId!='all'" >(drag to select region)</div>
     </div>
 
-    <input type="file" name="files[]" id="bedfile"  multiple @change="processBedFile"/>
-    <div id="remove-bedfile-button" class="bedfile-button" @click="$emit('removeBedFile')" style="visibility:hidden">Remove Bed</div>
-    <div id="default-bedfile-button" class="bedfile-button" @click="$emit('addDefaultBedFile')" title="1000G human exome targets file " style="right:100px">GRCh37 Exonic Regions</div>
-    <label id="add-bedfile-button" class="bedfile-button" for="bedfile" style="font-weight:300" title="Add Bed format capture target definition file">Custom Bed</label>
+    <div class='bedfile-button-row'>
+      <div v-if="bedfileSelected" id="remove-bedfile-button" class="bedfile-button" @click="removeBedFile">
+        Remove Bed
+      </div>
+      <div v-if="!bedfileSelected" id="default-bedfile-button" class="bedfile-button" @click="addH37BedFile" title="1000G human exome targets file ">
+        GRCh37 Exonic Regions
+      </div>
+      <div v-if="!bedfileSelected" id="default-bedfile-button" class="bedfile-button" @click="addH38BedFile" title="1000G human exome targets file ">
+        GRCh38 Exonic Regions
+      </div>
+      <input type="file" name="files[]" id="bedfile"  multiple @change="processBedFile"/>
+      <label v-if="!bedfileSelected" id="add-bedfile-button" class="bedfile-button" for="bedfile" style="font-weight:300" title="Add Bed format capture target definition file">
+        Custom Bed
+      </label>
+    </div>
 
     <div id='zoom-buttons' style="display: inline-block;vertical-align: middle">
       <label style="padding-left: 0">
@@ -150,6 +167,7 @@ export default {
   data() {
     return {
       yZoom: 1,
+      bedfileSelected: false,
     }
   },
 
@@ -157,6 +175,17 @@ export default {
     setSelectedSeq: function( selected, start, end) {
       this.$emit('setSelectedSeq', selected, start, end);
     },
+
+    addH37BedFile: function() {
+      this.bedfileSelected = true;
+      this.$emit('addH37BedFile');
+    },
+    
+    addH38BedFile: function() {
+      this.bedfileSelected = true;
+      this.$emit('addH38BedFile');
+    },
+
     processBedFile: function(event){
       if (event.target.files.length != 1) {
         alert('must select a .bed file');
@@ -170,15 +199,24 @@ export default {
         return;
       }
 
+      this.bedfileSelected = true;
       this.$emit('processBedFile', event.target.files[0]);
     },
+
     zoomIn: function() {
       this.yZoom *= 2;
     },
+
     zoomOut: function() {
       this.yZoom /= 2;
     },
+
+    removeBedFile: function() {
+      this.bedfileSelected = false;
+      this.$emit('removeBedFile');
+    },
   },
+
   computed: {
     notEnoughData: function() {
       const totalPoints = this.chartData.reduce(function (acc, val) {
