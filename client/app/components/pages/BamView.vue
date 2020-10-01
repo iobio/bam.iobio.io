@@ -257,15 +257,11 @@
 
 <template>
   <div class="$style.bootstrap-css">
-    <!--
     <div class="file-name" >
       <span v-show="selectedBamURL!=undefined"
-            v-html="shortenedBamFileURL"
-            style="margin-top: -19pt"
-            @mouseover="showFullURL=true"
-            @mouseleave="showFullURL=false"></span>
+        v-html="pathToFilename">
+      </span>
     </div>
-    -->
 
     <section id="top">
 
@@ -281,7 +277,8 @@
 
       <read-coverage-box @removeBedFile="removeBedFile"
                          @processBedFile="openBedFile"
-                         @addDefaultBedFile="addDefaultBedFile"
+                         @addH37BedFile="addH37BedFile"
+                         @addH38BedFile="addH38BedFile"
                          @setSelectedSeq="setSelectedSeq"
                          :selectedSeqId="selectedSeqId"
                          :draw="draw"
@@ -935,21 +932,21 @@
       },
 
       removeBedFile: function () {
-        $("#remove-bedfile-button").css('visibility', 'hidden');
-        $("#default-bedfile-button").css('visibility', 'visible');
-        $("#add-bedfile-button").css('visibility', 'visible');
         this.bed = undefined;
         this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
       },
 
-      addDefaultBedFile: function () {
+      addH37BedFile: function() {
+        this.addDefaultBedFile('/data/20130108.exome.targets.bed');
+      },
+
+      addH38BedFile: function() {
+        this.addDefaultBedFile('/data/20130108.exome.targets.grch38.bed');
+      },
+
+      addDefaultBedFile: function (bedPath) {
         // clear brush on read coverage chart
         this.resetBrush();
-
-        // hide add bed / show remove bed buttons
-        $("#add-bedfile-button").css('visibility', 'hidden');
-        $("#default-bedfile-button").css('visibility', 'hidden');
-        $("#remove-bedfile-button").css('visibility', 'visible');
 
         // turn on sampling message and off svg
         // turn it on here b\c the bed file is so big it takes a while to download
@@ -957,7 +954,7 @@
         $(".iobio-bar-1").css("display", "none");
         $(".samplingLoader").css("display", "block");
 
-        fetch('/data/20130108.exome.targets.bed')
+        fetch(bedPath)
         .then(response => response.text())
         .then(bed => {
           const defaultBed = bed.replace(/chr/g, '');
@@ -970,15 +967,12 @@
         // clear brush on read coverage chart
         this.resetBrush();
 
-        // hide add bed / show remove bed buttons
-        $("#add-bedfile-button").css('visibility', 'hidden');
-        $("#default-bedfile-button").css('visibility', 'hidden');
-        $("#remove-bedfile-button").css('visibility', 'visible')
-
         // read bed file and store
         var reader = new FileReader();
-        reader.onload = function (theFile) {
-          this.bed = this.result;
+        reader.onload = function (e) {
+          let bedText = e.target.result;
+          bedText = bedText.replace(/chr/g, '');
+          this.bed = bedText;
           this.goSampling({sampling: this.sampling, sequenceNames: this.getSelectedSeqIds()});
         }.bind(this)
         reader.readAsText(file)
@@ -1126,6 +1120,15 @@
     },
 
     computed: {
+      pathToFilename: function(path) {
+        if (this.selectedBamURL !== undefined) {
+          const pathParts = this.selectedBamURL.split('/');
+          const filename = pathParts[pathParts.length - 1];
+          return filename;
+        }
+
+        return '';
+      },
       // TODO: Determine if this is needed
       //shortenedBamFileURL: function() {
       //  if (this.selectedBamURL !== undefined) {

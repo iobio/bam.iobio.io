@@ -87,7 +87,7 @@ class MosaicIntegration extends Integration {
   }
 
   getMosaicIobioUrls(callback) {
-    let api = decodeURIComponent(this.query.source) + "/apiv1";
+    let api = decodeURIComponent(this.query.source) + "/api/v1";
 
     let project_id = this.query.project_id;
     let access_token = this.query.access_token;
