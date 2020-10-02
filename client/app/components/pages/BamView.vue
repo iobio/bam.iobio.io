@@ -886,18 +886,17 @@
         this.goSampling(options);
       },
 
-      // TODO: As written, this will include refs that might not show up in
-      // the top coverage chart (event though they're in the pie chart
-      // drop-down, which might not be intuitive to the user. Is this what we
-      // want?
       getSelectedSeqIds: function () {
         if (this.selectedSeqId == 'all') {
           return Object.keys(this.bam.readDepth)
             .filter(function (key) {
-              //if (filterRef(key))
-              //  return false
-              if (this.bam.readDepth[key].depths.length > 0)
-                return true
+              const validRef = -1 < this.references.findIndex(r => key === r.id);
+
+              if (validRef && this.bam.readDepth[key].depths.length > 0) {
+                return true;
+              }
+
+              return false;
             }.bind(this))
         } else
           return [this.selectedSeqId];
