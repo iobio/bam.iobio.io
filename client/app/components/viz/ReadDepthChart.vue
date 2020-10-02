@@ -26,7 +26,7 @@ import d3 from 'd3';
 
 export default {
   name: 'read-depth-chart',
-  props: ['references', 'allPoints', 'selectedSeqId', 'averageCoverage',
+  props: ['allData', 'selectedSeqId', 'averageCoverage',
     'yZoom'],
   data: function() {
     return {
@@ -42,9 +42,12 @@ export default {
     MultiMinibarChart,
   },
   computed: {
+    allPoints: function() {
+      return this.allData.map(d => d.depths);
+    },
     domains: function() {
-      return this.references.map((ref) => {
-        return { min: 0, max: ref.length }; 
+      return this.allData.map((d) => {
+        return { min: 0, max: d.sqLength }; 
       });
     },
     yAxisRange: function() {
@@ -64,14 +67,14 @@ export default {
     // NOTE: I'm using a watcher for this rather than having multiple
     // computed maps over the same array. Maybe there's a better way to do
     // this in Vue.
-    references: function() {
+    allData: function() {
       let totalLength = 0;
       const refIds = [];
       const offsets = [];
-      for (const ref of this.references) {
-        refIds.push(ref.id);
+      for (const d of this.allData) {
+        refIds.push(d.refName);
         offsets.push(totalLength);
-        totalLength += ref.length;
+        totalLength += d.sqLength;
       }
 
       this.refIds = refIds;

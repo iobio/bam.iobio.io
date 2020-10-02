@@ -123,8 +123,7 @@
     <div v-if="tooManyRefs" class="warning">Too many references to display. Use the dropdown to the left to select the reference</div>
 
     <read-depth-chart
-      :references='references'
-      :allPoints='chartData'
+      :allData='chartData'
       :selectedSeqId='selectedSeqId'
       :conversionRatio='conversionRatio'
       :averageCoverage='averageCoverage'
@@ -162,7 +161,6 @@ export default {
     },
 
     chartData: {},
-    references: {},
   },
   data() {
     return {
@@ -220,7 +218,7 @@ export default {
   computed: {
     notEnoughData: function() {
       const totalPoints = this.chartData.reduce(function (acc, val) {
-        return acc + val.length
+        return acc + val.depths.length
       }, 0);
 
       return this.draw && totalPoints <= 1;

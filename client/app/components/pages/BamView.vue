@@ -283,7 +283,6 @@
                          :selectedSeqId="selectedSeqId"
                          :draw="draw"
                          :chartData="readDepthChartData"
-                         :references="references"
                          :conversionRatio="readDepthConversionRatio"
                          :averageCoverage="coverageMean"
                          :brushRange="coverageBrushRange"
@@ -891,10 +890,13 @@
         if (this.selectedSeqId == 'all') {
           return Object.keys(this.bam.readDepth)
             .filter(function (key) {
-              if (filterRef(key))
-                return false
-              if (this.bam.readDepth[key].depths.length > 0)
-                return true
+              const validRef = -1 < this.references.findIndex(r => key === r.id);
+
+              if (validRef && this.bam.readDepth[key].depths.length > 0) {
+                return true;
+              }
+
+              return false;
             }.bind(this))
         } else
           return [this.selectedSeqId];
@@ -981,29 +983,30 @@
 
         let refIndex = 0;
 
-        this.bam.getHeader().then((header) => {
-          this.references = header.sq.filter((sq) => {
-            return !filterRef(sq.name);
-          })
-          .map((sq) => {
-            return {
-              id: sq.name,
-              length: sq.end,
-            };
-          });
-        });
-
         // get read depth
         this.bam.estimateBaiReadDepth((name, index, ref) => {
 
             // turn off read depth loading msg
             $("#readDepthLoadingMsg").css("display", "none");
 
-            if (ref.depths.length > 0 && !filterRef(name)) {
+            if (ref.depths.length > 1000) {
               // Have to use Object.freeze here to prevent Vue from
               // recursively setting up data listeners, which causes huge
               // performance issues with data this big.
-              Vue.set(this.readDepthChartData, index, Object.freeze(ref.depths));
+              this.readDepthChartData.push({
+                refName: name,
+                sqLength: ref.sqLength,
+                depths: Object.freeze(ref.depths),
+              });
+
+              this.readDepthChartData.sort((a, b) => {
+                return this.sorter.compare(a.refName, b.refName);
+              });
+
+              this.references = this.readDepthChartData.map(d => ({
+                id: d.refName,
+                length: d.sqLength,
+              }));
 
               if (!this.draw) {
                 this.draw = true;
@@ -1019,31 +1022,12 @@
             $(".samplingLoader").css("display", "block");
           }
 
-          const allPoints = keys
-            //.sort(this.sorter.compare)
-            .filter(function (key) {
-              if (filterRef(key))
-                return false
-              if (this.bam.readDepth[key].depths.length > 0)
-                return true
-            }.bind(this))
-            .map(function (key) {
-              return {
-                name: key,
-                data: this.bam.readDepth[key].depths,
-                sqLength: this.bam.readDepth[key].sqLength,
-              }
-            }.bind(this));
-
           keys.forEach(function(id) {
             $('#reference-select')
               .append($("<option></option>")
                 .attr("value", id)
                 .text(id));
           });
-
-          allPoints
-            .sort((a, b) => this.sorter.compare(a.name, b.name));
 
           var start = region ? region.start : undefined;
           var end = region ? region.end : undefined;
@@ -1190,18 +1174,6 @@
   function precisionRound(number, precision) {
     var factor = Math.pow(10, precision);
     return Math.round(number * factor) / factor;
-  }
-
-  const validRefs = {};
-  for (let i = 1; i <= 22; i++) {
-    validRefs[i] = true;
-    validRefs['chr' + i] = true;
-  }
-  validRefs['X'] = true;
-  validRefs['Y'] = true;
-
-  function filterRef(ref) {
-    return validRefs[ref] === undefined;
   }
 
 </script>
