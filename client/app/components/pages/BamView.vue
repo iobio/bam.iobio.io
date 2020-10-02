@@ -1176,18 +1176,4 @@
     return Math.round(number * factor) / factor;
   }
 
-  const validRefs = {};
-  for (let i = 1; i <= 22; i++) {
-    validRefs[i] = true;
-    validRefs['chr' + i] = true;
-  }
-  validRefs['chrX'] = true;
-  validRefs['chrY'] = true;
-  validRefs['X'] = true;
-  validRefs['Y'] = true;
-
-  function filterRef(ref) {
-    return validRefs[ref] === undefined;
-  }
-
 </script>
