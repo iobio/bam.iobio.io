@@ -1,3 +1,6 @@
+import { backendMap } from 'iobio-integration';
+
+
 export function createIntegration(query) {
   if (query.source) {
     return new MosaicIntegration(query);
@@ -42,13 +45,6 @@ class StandardIntegration extends Integration {
 class MosaicIntegration extends Integration {
 
   init() {
-    this.hubToIobioSources = {
-      "https://mosaic.chpc.utah.edu":         "mosaic.chpc.utah.edu/gru/api/v1",
-      "https://mosaic-staging.chpc.utah.edu": "mosaic-staging.chpc.utah.edu/gru/api/v1",
-      "https://mosaic-dev.genetics.utah.edu": "mosaic.chpc.utah.edu",
-      "http://mosaic-dev.genetics.utah.edu":  "mosaic.chpc.utah.edu",
-    };
-
     return new Promise((resolve, reject) => {
       const projectId = this.query.project_id;
 
@@ -64,7 +60,7 @@ class MosaicIntegration extends Integration {
 
   buildParams() {
 
-    let backendSource = this.hubToIobioSources[this.query.source];
+    let backendSource = backendMap[this.query.source];
     if (!backendSource) {
       backendSource = 'backend.iobio.io';
     }
