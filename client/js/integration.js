@@ -31,10 +31,10 @@ class StandardIntegration extends Integration {
   buildParams() {
 
     const backendManager = createBackendManager(this.query.source);
-    const backendSource = backendManager.getBackend(this.query.iobio_source);
+    const backendUrl = backendManager.getBackend(this.query.backend_url);
 
     return Object.assign({
-      backendSource,
+      backendUrl,
     }, this.query);
   }
 
@@ -65,12 +65,12 @@ class MosaicIntegration extends Integration {
   buildParams() {
 
     const backendManager = createBackendManager(this.query.source);
-    const backendSource = backendManager.getBackend(this.query.iobio_source);
+    const backendUrl = backendManager.getBackend(this.query.backend_url);
 
     return {
       bam: this.alignmentURL,
       bai: this.alignmentIndexURL,
-      backendSource,
+      backendUrl,
     };
   }
 
@@ -81,6 +81,7 @@ class MosaicIntegration extends Integration {
       project_id: this.query.project_id,
       sampling: this.query.sampling,
       region: this.query.region,
+      backend_url: this.query.backend_url,
     };
   }
 

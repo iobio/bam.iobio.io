@@ -52,24 +52,19 @@ class LineReader extends EventEmitter {
 
 var Bam = Class.extend({
 
-   init: function(backendSource, bamUri, options) {
+   init: function(backendUrl, bamUri, options) {
       this.bamUri = bamUri;
       this.ssl = true;
       this.options = options; // *** add options mapper ***
       if (this.options && this.options.bai)
          this.baiUri = this.options.bai;
 
-      this.api = new Client(backendSource, { secure: true });
+      this.api = new Client(backendUrl, { secure: true });
       //this.api = new Client('localhost:9001', { secure: false });
       //this.api = new Client('staging.backend.iobio.io:9001', { secure: false });
 
       // set iobio servers
       this.iobio = {}
-
-      this.iobio.samtools       = backendSource + "/samtools/";
-      this.iobio.od_samtools    = backendSource + "/od_samtools/";
-      this.iobio.bamReadDepther = backendSource + "/bamreaddepther/";
-      this.iobio.bamstatsAlive  = backendSource + "/bamstatsalive/";
 
       this.hadError = false;
 
