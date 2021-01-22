@@ -1,4 +1,4 @@
-import { backendMap } from 'iobio-integration';
+import { createBackendManager } from 'iobio-integration';
 
 
 export function createIntegration(query) {
@@ -29,8 +29,12 @@ class StandardIntegration extends Integration {
   }
 
   buildParams() {
+
+    const backendManager = createBackendManager(this.query.source);
+    const backendSource = backendManager.getBackend(this.query.iobio_source);
+
     return Object.assign({
-      backendSource: 'backend.iobio.io',
+      backendSource,
     }, this.query);
   }
 
@@ -60,10 +64,8 @@ class MosaicIntegration extends Integration {
 
   buildParams() {
 
-    let backendSource = backendMap[this.query.source];
-    if (!backendSource) {
-      backendSource = 'backend.iobio.io';
-    }
+    const backendManager = createBackendManager(this.query.source);
+    const backendSource = backendManager.getBackend(this.query.iobio_source);
 
     return {
       bam: this.alignmentURL,
