@@ -37,7 +37,7 @@ const routes = [
         selectedBaiURL: route.query.bai ? route.query.bai : route.params.bai,
         regionURLParam: route.query.region ? route.query.region : route.params.region,
         sampling: route.query.sampling ? route.query.sampling : route.params.sampling,
-        backendSource: route.query.iobio_source ? route.query.iobio_source : route.params.backendSource,
+        backendUrl: route.query.backend_url ? route.query.backend_url : route.params.backendUrl,
       };
     }
   },

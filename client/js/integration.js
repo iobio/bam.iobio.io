@@ -1,3 +1,6 @@
+import { createBackendManager } from 'iobio-integration';
+
+
 export function createIntegration(query) {
   if (query.source) {
     return new MosaicIntegration(query);
@@ -26,8 +29,12 @@ class StandardIntegration extends Integration {
   }
 
   buildParams() {
+
+    const backendManager = createBackendManager(this.query.source);
+    const backendUrl = backendManager.getBackend(this.query.backend_url);
+
     return Object.assign({
-      backendSource: 'backend.iobio.io',
+      backendUrl,
     }, this.query);
   }
 
@@ -42,13 +49,6 @@ class StandardIntegration extends Integration {
 class MosaicIntegration extends Integration {
 
   init() {
-    this.hubToIobioSources = {
-      "https://mosaic.chpc.utah.edu":         "mosaic.chpc.utah.edu/gru/api/v1",
-      "https://mosaic-staging.chpc.utah.edu": "mosaic-staging.chpc.utah.edu/gru/api/v1",
-      "https://mosaic-dev.genetics.utah.edu": "mosaic.chpc.utah.edu",
-      "http://mosaic-dev.genetics.utah.edu":  "mosaic.chpc.utah.edu",
-    };
-
     return new Promise((resolve, reject) => {
       const projectId = this.query.project_id;
 
@@ -64,15 +64,13 @@ class MosaicIntegration extends Integration {
 
   buildParams() {
 
-    let backendSource = this.hubToIobioSources[this.query.source];
-    if (!backendSource) {
-      backendSource = 'backend.iobio.io';
-    }
+    const backendManager = createBackendManager(this.query.source);
+    const backendUrl = backendManager.getBackend(this.query.backend_url);
 
     return {
       bam: this.alignmentURL,
       bai: this.alignmentIndexURL,
-      backendSource,
+      backendUrl,
     };
   }
 
@@ -83,6 +81,7 @@ class MosaicIntegration extends Integration {
       project_id: this.query.project_id,
       sampling: this.query.sampling,
       region: this.query.region,
+      backend_url: this.query.backend_url,
     };
   }
 
