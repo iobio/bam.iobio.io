@@ -15,6 +15,7 @@
     "express": "^4.16.4",
     "fibridge-host": "^0.16.0",
     "iobio-api-client": "^0.6.0",
+    "iobio-launch": "^0.1.0",
     "jquery": "^3.3.1",
     "js-cookie": "^2.2.0",
     "less-loader": "^4.1.0",
@@ -23,8 +24,7 @@
     "v-tooltip": "^2.0.0-rc.33",
     "vue": "^2.6.10",
     "vue-analytics": "^5.16.4",
-    "vue-router": "^3.0.5",
-    "iobio-integration": "^0.2.0"
+    "vue-router": "^3.0.5"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

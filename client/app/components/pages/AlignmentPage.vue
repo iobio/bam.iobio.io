@@ -99,7 +99,7 @@
     methods: {
 
       launchedFromIntegration: function() {
-        return this.$route.query.source || this.$route.query.bam;
+        return this.$route.query.source || this.$route.query.bam || this.$route.query.config;
       },
 
       onRegionChange: function(region) {
