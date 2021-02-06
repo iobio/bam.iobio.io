@@ -62,6 +62,7 @@ class MosaicIntegration extends Integration {
       bam: this.alignmentURL,
       bai: this.alignmentIndexURL,
       backendUrl: this.config.backendUrl,
+      region: this.config.params.region,
     };
   }
 

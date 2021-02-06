@@ -9,7 +9,6 @@ import VueAnalytics from 'vue-analytics'
 
 import App from './App.vue'
 import BamView from './components/pages/BamView.vue'
-import AlignmentPage from './components/pages/AlignmentPage.vue'
 import Help from './components/pages/Help.vue'
 import FileRequirements from './components/pages/FileRequirements.vue'
 import Home from './components/pages/Home.vue'
@@ -23,23 +22,9 @@ Vue.use(VueRouter);
 
 const routes = [
   {
-    path: '/home',
+    path: '/',
     name: 'home',
     component: Home
-  },
-  {
-    path: '/',
-    name: 'alignment-page',
-    component: AlignmentPage,
-    props: (route) => {
-      return {
-        selectedBamURL: route.query.bam ? route.query.bam : route.params.bam,
-        selectedBaiURL: route.query.bai ? route.query.bai : route.params.bai,
-        regionURLParam: route.query.region ? route.query.region : route.params.region,
-        sampling: route.query.sampling ? route.query.sampling : route.params.sampling,
-        backendUrl: route.query.backend_url ? route.query.backend_url : route.params.backendUrl,
-      };
-    }
   },
   {
     path: '/help',
