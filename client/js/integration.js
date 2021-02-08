@@ -2,7 +2,7 @@ import { getLaunchConfig } from 'iobio-launch';
 
 
 export function createIntegration(query) {
-  if (query.source) {
+  if (query.source && query.project_id && query.sample_id) {
     return new MosaicIntegration(query);
   }
   else {
@@ -73,7 +73,7 @@ class MosaicIntegration extends Integration {
       project_id: this.config.params.project_id,
       sampling: this.config.params.sampling,
       region: this.config.params.region,
-      backend_url: this.config.params.backend_url,
+      backend: this.config.params.backend,
     };
   }
 
@@ -91,7 +91,7 @@ class MosaicIntegration extends Integration {
 
     if (localStorage.getItem('hub-iobio-tkn')) {
 
-    // Get VCF File
+      // Get VCF File
       getFilesForSample(sample_id).done(data => {
         const bam = data.data.filter(f => (f.type == 'bam' || f.type == 'cram'))[0];
         const bai = data.data.filter(f => (f.type == 'bai' || f.type == 'crai'))[0];
