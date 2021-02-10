@@ -7,7 +7,7 @@ RUN git clone --depth 1 --branch ${bam_version} https://github.com/anderspitman/
 WORKDIR /bam.iobio.io
 
 RUN ["npm", "install"]
-RUN ["npm", "run", "build"]
+RUN ["npm", "run", "build-docker"]
 RUN ["mv", "client", "/bam"]
 
 RUN mkdir -p /bam/config
