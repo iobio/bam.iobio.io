@@ -1,4 +1,4 @@
-import { getLaunchConfig } from 'iobio-launch';
+import { LaunchConfigManager } from 'iobio-launch';
 
 
 export function createIntegration(query) {
@@ -14,12 +14,23 @@ export function createIntegration(query) {
 class Integration {
   constructor(query) {
     this.query = query;
+
+    let configOpts = {};
+
+    if (BUILD_ENV_LOAD_LOCAL_CONFIG) {
+      configOpts = {
+        configLocation: '/config/config.json',
+        backendMapLocation: '/config/backend_map.json',
+      }
+    }
+
+    this.configMan = new LaunchConfigManager(configOpts);
   }
 }
 
 class StandardIntegration extends Integration {
   init() {
-    return getLaunchConfig().then(launchConfig => {
+    return this.configMan.getConfig().then(launchConfig => {
       this.config = launchConfig;
     });
   }
@@ -38,7 +49,7 @@ class StandardIntegration extends Integration {
 class MosaicIntegration extends Integration {
 
   init() {
-    return getLaunchConfig().then(launchConfig => {
+    return this.configMan.getConfig().then(launchConfig => {
 
       this.config = launchConfig;
 
