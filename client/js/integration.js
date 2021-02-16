@@ -18,7 +18,7 @@ class Integration {
     let configOpts = {};
 
     if (BUILD_ENV_LOCAL_BACKEND) {
-      this.backend = window.location.host + '/gru';
+      this.backend = window.location.origin + '/gru';
       configOpts = {
         configLocation: '/config/config.json',
       }
