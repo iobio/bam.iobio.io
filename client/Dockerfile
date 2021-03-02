@@ -17,4 +17,4 @@ RUN rm -rf /bam.iobio.io
 
 EXPOSE 8000
 
-ENTRYPOINT ["node", "src/index.js", "--tools-dir=/iobio-gru-backend/tool_bin", "--app-dir=/bam"]
+ENTRYPOINT ["node", "/iobio-gru-backend/src/index.js", "--tools-dir=/iobio-gru-backend/tool_bin", "--app-dir=/bam"]
