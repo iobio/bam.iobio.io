@@ -17,10 +17,10 @@ class Integration {
 
     let configOpts = {};
 
-    if (BUILD_ENV_LOAD_LOCAL_CONFIG) {
+    if (BUILD_ENV_LOCAL_BACKEND) {
+      this.backend = window.location.origin + '/gru';
       configOpts = {
         configLocation: '/config/config.json',
-        backendMapLocation: '/config/backend_map.json',
       }
     }
 
@@ -37,7 +37,7 @@ class StandardIntegration extends Integration {
 
   buildParams() {
     return Object.assign({
-      backendUrl: this.config.backendUrl,
+      backendUrl: this.backend ? this.backend : this.config.backendUrl,
     }, this.config.params);
   }
 

@@ -3,7 +3,7 @@ var webpack = require('webpack')
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CleanWebpackPlugin = require('clean-webpack-plugin');
 var inProduction = process.env.NODE_ENV === 'production';
-const loadDefaultConfig = process.env.BUILD_ENV_LOAD_LOCAL_CONFIG === 'true';
+const localBackend = process.env.BUILD_ENV_LOCAL_BACKEND === 'true';
 const { VueLoaderPlugin } = require('vue-loader');
 
 module.exports = {
@@ -70,7 +70,7 @@ module.exports = {
     new CleanWebpackPlugin(['client/dist'], {}),
     new VueLoaderPlugin(),
     new webpack.DefinePlugin({
-      BUILD_ENV_LOAD_LOCAL_CONFIG: loadDefaultConfig ? 'true' : 'false',
+      BUILD_ENV_LOCAL_BACKEND: localBackend ? 'true' : 'false',
     }),
   ],
   // resolve: {
