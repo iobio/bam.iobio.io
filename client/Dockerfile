@@ -11,10 +11,11 @@ RUN ["npm", "run", "build-docker"]
 RUN ["mv", "client", "/bam"]
 
 RUN mkdir -p /bam/config
+RUN chmod a+w /bam/config
 
 WORKDIR /iobio-gru-backend
 RUN rm -rf /bam.iobio.io
 
 EXPOSE 8000
 
-ENTRYPOINT ["node", "/iobio-gru-backend/src/index.js", "--tools-dir=/iobio-gru-backend/tool_bin", "--app-dir=/bam"]
+CMD ["node", "/iobio-gru-backend/src/index.js", "--tools-dir=/iobio-gru-backend/tool_bin", "--app-dir=/bam"]
