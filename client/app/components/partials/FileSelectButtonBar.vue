@@ -113,7 +113,7 @@ export default {
       selectedBamURL: '',
       selectedBaiURL: '',
       showUrl: false,
-      demoFileURL: 'http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam',
+      demoFileURL: 'https://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam',
     }
   },
   methods: {
