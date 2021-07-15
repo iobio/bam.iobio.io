@@ -100,7 +100,7 @@ class MosaicIntegration extends Integration {
     if (localStorage.getItem('hub-iobio-tkn')) {
 
     // Get VCF File
-      getFilesForSample(sample_id).done(data => {
+      getFilesForSample(sample_id, project_id).done(data => {
         const bam = data.data.filter(f => (f.type == 'bam' || f.type == 'cram'))[0];
         const bai = data.data.filter(f => (f.type == 'bai' || f.type == 'crai'))[0];
 
@@ -118,9 +118,9 @@ class MosaicIntegration extends Integration {
 
     }
 
-    function getFilesForSample(sample_id) {
+    function getFilesForSample(sample_id, project_id) {
       return $.ajax({
-        url: api + '/samples/' + sample_id + '/files',
+        url: api + '/projects/' + project_id + '/samples/' + sample_id + '/files',
         type: 'GET',
         contentType: 'application/json',
         headers: {
