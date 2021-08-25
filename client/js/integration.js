@@ -82,6 +82,7 @@ class MosaicIntegration extends Integration {
       sampling: this.query.sampling,
       region: this.query.region,
       backend_url: this.query.backend_url,
+      experiment_id: this.query.experiment_id,
     };
   }
 
@@ -92,6 +93,7 @@ class MosaicIntegration extends Integration {
     let access_token = this.query.access_token;
     let sample_id = this.query.sample_id;
     let token_type = this.query.token_type;
+    let experiment_id = this.query.experiment_id;
 
     if (access_token !== undefined) {
       localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
@@ -100,9 +102,17 @@ class MosaicIntegration extends Integration {
     if (localStorage.getItem('hub-iobio-tkn')) {
 
     // Get VCF File
-      getFilesForSample(sample_id, project_id).done(data => {
-        const bam = data.data.filter(f => (f.type == 'bam' || f.type == 'cram'))[0];
-        const bai = data.data.filter(f => (f.type == 'bai' || f.type == 'crai'))[0];
+      getFilesForSample(sample_id, project_id).done(files => {
+        var data = files.data.filter(file => {
+          if(experiment_id){
+            return file.experiment_ids.includes(Number(experiment_id))
+          }
+          else {
+            return file
+          }
+        })
+        const bam = data.filter(f => (f.type == 'bam' || f.type == 'cram'))[0];
+        const bai = data.filter(f => (f.type == 'bai' || f.type == 'crai'))[0];
 
         // Get Signed Url
         getSignedUrlForFile(project_id, bam).done(bamUrlData => {
