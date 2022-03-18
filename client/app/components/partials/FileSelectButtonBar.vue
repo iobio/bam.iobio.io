@@ -113,7 +113,7 @@ export default {
       selectedBamURL: '',
       selectedBaiURL: '',
       showUrl: false,
-      demoFileURL: 'http://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam',
+      demoFileURL: 'https://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam',
     }
   },
   methods: {
@@ -124,12 +124,7 @@ export default {
     },
 
     launchDemoData : function () {
-      this.$router.push({
-        name: 'alignment-page',
-        query: Object.assign({
-          bam: this.demoFileURL
-        }, this.$route.query),
-      });
+      this.$emit('files-selected', { bamUrl: this.demoFileURL });
     },
 
     openBamURL : function() {
@@ -137,12 +132,10 @@ export default {
         alert('Please enter a valid bam/cram url, including http:// or https:// in front');
         return;
       }
-      this.$router.push({
-        name: 'alignment-page',
-        query: Object.assign({
-          bam: this.selectedBamURL,
-          bai: this.selectedBaiURL
-        }, this.$route.query),
+
+      this.$emit('files-selected', {
+        bamUrl: this.selectedBamURL,
+        baiUrl: this.selectedBaiURL
       });
     },
 
@@ -191,12 +184,9 @@ export default {
         this.selectedBamURL = `${baseUrl}${hoster.getHostedPath(bamPath)}`;
         this.selectedBaiURL = `${baseUrl}${hoster.getHostedPath(baiPath)}`;
 
-        self.$router.push({
-          name: 'alignment-page',
-          query: Object.assign({
-            bam: this.selectedBamURL,
-            bai: this.selectedBaiURL
-          }, this.$route.query),
+        this.$emit('files-selected', {
+          bamUrl: this.selectedBamURL,
+          baiUrl: this.selectedBaiURL
         });
       });
     }

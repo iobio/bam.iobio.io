@@ -1,8 +1,8 @@
-import { createBackendManager } from 'iobio-integration';
+import { LaunchConfigManager } from 'iobio-launch';
 
 
 export function createIntegration(query) {
-  if (query.source) {
+  if (query.source && query.project_id && query.sample_id) {
     return new MosaicIntegration(query);
   }
   else {
@@ -13,87 +13,90 @@ export function createIntegration(query) {
 
 class Integration {
   constructor(query) {
-
     this.query = query;
+
+    let configOpts = {};
+
+    if (BUILD_ENV_LOCAL_BACKEND) {
+      this.backend = window.location.origin + '/gru';
+      configOpts = {
+        configLocation: '/config/config.json',
+      }
+    }
+
+    this.configMan = new LaunchConfigManager(configOpts);
   }
 }
 
 class StandardIntegration extends Integration {
   init() {
-
-    return new Promise((resolve, reject) => {
-      this.alignmentURL = this.query.bam;
-      this.alignmentIndexURL = this.query.bai;
-      resolve();
+    return this.configMan.getConfig().then(launchConfig => {
+      this.config = launchConfig;
     });
   }
 
   buildParams() {
-
-    const backendManager = createBackendManager(this.query.source);
-    const backendUrl = backendManager.getBackend(this.query.backend_url);
-
     return Object.assign({
-      backendUrl,
-    }, this.query);
+      backendUrl: this.backend ? this.backend : this.config.backendUrl,
+    }, this.config.params);
   }
 
   buildQuery() {
-    return Object.assign({
-      bam: this.alignmentURL,
-      bai: this.alignmentIndexURL,
-    }, this.query);
+    return Object.assign({}, this.query);
   }
 }
 
 class MosaicIntegration extends Integration {
 
   init() {
-    return new Promise((resolve, reject) => {
-      const projectId = this.query.project_id;
+    return this.configMan.getConfig().then(launchConfig => {
 
-      if (projectId) {
-        this.getMosaicIobioUrls((alignmentURL, alignmentIndexURL) => {
-          this.alignmentURL = alignmentURL;
-          this.alignmentIndexURL = alignmentIndexURL;
-          resolve(alignmentURL, alignmentIndexURL);
-        });
-      }
+      this.config = launchConfig;
+
+      return new Promise((resolve, reject) => {
+
+        const projectId = this.config.params.project_id;
+
+        if (projectId) {
+          this.getMosaicIobioUrls((alignmentURL, alignmentIndexURL) => {
+            this.alignmentURL = alignmentURL;
+            this.alignmentIndexURL = alignmentIndexURL;
+            resolve(alignmentURL, alignmentIndexURL);
+          });
+        }
+      });
     });
   }
 
   buildParams() {
-
-    const backendManager = createBackendManager(this.query.source);
-    const backendUrl = backendManager.getBackend(this.query.backend_url);
-
     return {
       bam: this.alignmentURL,
       bai: this.alignmentIndexURL,
-      backendUrl,
+      backendUrl: this.config.backendUrl,
+      region: this.config.params.region,
     };
   }
 
   buildQuery() {
     return {
-      source: this.query.source, 
-      sample_id: this.query.sample_id,
-      project_id: this.query.project_id,
-      sampling: this.query.sampling,
-      region: this.query.region,
-      backend_url: this.query.backend_url,
-      experiment_id: this.query.experiment_id,
+      source: this.config.params.source, 
+      sample_id: this.config.params.sample_id,
+      project_id: this.config.params.project_id,
+      sampling: this.config.params.sampling,
+      region: this.config.params.region,
+      backend: this.config.params.backend,
+      experiment_id: this.config.params.experiment_id,
     };
   }
 
   getMosaicIobioUrls(callback) {
-    let api = decodeURIComponent(this.query.source) + "/api/v1";
+    let api = decodeURIComponent(this.config.params.source) + "/api/v1";
 
-    let project_id = this.query.project_id;
-    let access_token = this.query.access_token;
-    let sample_id = this.query.sample_id;
-    let token_type = this.query.token_type;
-    let experiment_id = this.query.experiment_id;
+    let project_id = this.config.params.project_id;
+    let access_token = this.config.params.access_token;
+    let sample_id = this.config.params.sample_id;
+    let token_type = this.config.params.token_type;
+    let experiment_id = this.config.params.experiment_id;
 
     if (access_token !== undefined) {
       localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
@@ -101,7 +104,7 @@ class MosaicIntegration extends Integration {
 
     if (localStorage.getItem('hub-iobio-tkn')) {
 
-    // Get VCF File
+      // Get VCF File
       getFilesForSample(sample_id, project_id).done(files => {
         var data = files.data.filter(file => {
           if(experiment_id){

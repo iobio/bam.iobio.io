@@ -4,6 +4,7 @@
   "scripts": {
     "serve": "DEBUG=http nodemon --inspect=127.0.0.1:3001  --ignore client/ www.js",
     "build": "webpack --mode production",
+    "build-docker": "BUILD_ENV_LOCAL_BACKEND=true webpack --mode production",
     "watch": "webpack --mode development --watch",
     "test": "mocha-webpack --webpack-config webpack.test.config.js --require client/spec/spec_helper.js \"client/spec/**/*_spec.js\""
   },
@@ -14,7 +15,8 @@
     "debug": "^2.6.9",
     "express": "^4.16.4",
     "fibridge-host": "^0.16.0",
-    "iobio-api-client": "^0.6.0",
+    "iobio-api-client": "^0.9.0",
+    "iobio-launch": "^0.7.0",
     "jquery": "^3.3.1",
     "js-cookie": "^2.2.0",
     "less-loader": "^4.1.0",
@@ -23,8 +25,7 @@
     "v-tooltip": "^2.0.0-rc.33",
     "vue": "^2.6.10",
     "vue-analytics": "^5.16.4",
-    "vue-router": "^3.0.5",
-    "iobio-integration": "^0.2.0"
+    "vue-router": "^3.0.5"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

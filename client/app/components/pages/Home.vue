@@ -88,7 +88,17 @@
 </style>
 
 <template>
-  <div id="bodydiv">
+  <bam-view
+    v-if='bamUrl && backendUrl'
+    :selectedBamURL='bamUrl'
+    :selectedBaiURL='baiUrl'
+    :region='region'
+    :sampling='sampling'
+    :backendUrl='backendUrl'
+    @region-change='onRegionChange'
+    @error='onError'
+  />
+  <div v-else-if='backendUrl' id="bodydiv">
 
     <div id="selectData">
       <div style="width:700px; margin-left:auto; margin-right:auto; margin-top: 100px">
@@ -96,7 +106,9 @@
           examine your sequence alignment file in seconds
         </div>
 
-        <file-select-button-bar></file-select-button-bar>
+        <file-select-button-bar
+          @files-selected='onFilesSelected'
+        />
         <div style="clear:both"></div>
         <div id="info">
           <ul>
@@ -121,26 +133,124 @@
 <script>
   import MarthLabFooter from "../partials/MarthLabFooter.vue";
   import FileSelectButtonBar from "../partials/FileSelectButtonBar.vue";
+  import BamView from "./BamView.vue";
+
+  import { createIntegration } from '../../../js/integration';
 
   export default {
     name: 'home',
     components: {
       FileSelectButtonBar,
-      MarthLabFooter
+      MarthLabFooter,
+      BamView,
     },
     props: {},
     data() {
       return {
+        bamUrl: '',
+        baiUrl: '',
+        sampling: '',
+        backendUrl: '',
+        regionUrlParam: '',
         launchedFromClin: null,
         clinIobioUrls: ["http://localhost:4030", "http://clin.iobio.io"],
         clinIobioUrl: null
       }
     },
+
+    computed: {
+      region: function() {
+        let region = undefined;
+        const regionParam = this.regionUrlParam;
+        if (regionParam !== undefined) {
+          const paramParts = regionParam.split(":");
+          if (paramParts.length === 1) {
+            region = {
+              chr: paramParts[0]
+            };
+          }
+          else {
+            const rangeParts = paramParts[1].split('-');
+            region = {
+              chr: paramParts[0],
+              start: parseInt(rangeParts[0]),
+              end: parseInt(rangeParts[1])
+            };
+          }
+        }
+        return region;
+      },
+    },
+
     mounted: function() {
+
+      this.integration = createIntegration(this.$route.query);
+      this.integration.init().then(() => {
+
+        // params are for values we want to use in the code. query is for
+        // what we want to appear in the query string, which is up to the
+        // integration to decide.
+        const query = this.integration.buildQuery();
+        const params = this.integration.buildParams();
+
+        this.bamUrl = params.bam;
+        this.baiUrl = params.bai;
+        this.backendUrl = params.backendUrl;
+        this.regionUrlParam = params.region;
+
+        // catching errors to get rid of 
+        this.$router.push({
+          name: 'home',
+          query,
+        }).catch(() => {});
+      });
+
+
       let self = this;
       window.addEventListener("message", self.receiveClinMessage, false);
     },
+
     methods: {
+
+      onFilesSelected: function(files) {
+
+        this.bamUrl = files.bamUrl;
+        this.baiUrl = files.baiUrl;
+
+        this.$router.push({
+          name: 'home',
+          query: {
+            bam: files.bamUrl,
+            bai: files.baiUrl,
+          }
+        });
+      },
+
+      onRegionChange: function(region) {
+
+        if (region != undefined) {
+          let regionStr;
+
+          if (region.start != undefined && region.end != undefined) {
+            regionStr = region.chr + ':' + region.start + '-' + region.end;
+          } else {
+            regionStr = region.chr;
+          }
+
+          const query = Object.assign({}, this.$route.query, { region: regionStr });
+
+          this.$router.push({
+            name: "home",
+            query,
+          }).catch(() => {});
+        }
+      },
+
+      onError: function() {
+        // if there's an error start over on the home page
+        this.$router.push({ path: '/' });
+      },
+
       receiveClinMessage: function(event) {
         let self = this;
         // Do we trust the sender of this message?
@@ -154,7 +264,7 @@
         if (clinObject.type == 'set-data') {
           self.launchedFromClin = true;
           self.$router.push({
-            name: 'alignment-page',
+            name: 'home',
             query: {
               bam: clinObject.modelInfo.bam,
               bai: clinObject.modelInfo.bai
