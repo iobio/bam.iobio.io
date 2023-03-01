@@ -268,7 +268,7 @@ var Bam = Class.extend({
            alert("Error downloading file. Please check the URL.")
            reject(error);
          }
-         console.log(error);
+         console.error(error);
        })
        cmd.on('data', function(data, options) {
           rawHeader += data;
@@ -372,7 +372,7 @@ var Bam = Class.extend({
           var buffer = "";
 
           cmd.on('error', function (err) {
-            console.log(err);
+            console.error(err);
           })
 
 
