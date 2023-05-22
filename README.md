@@ -1,4 +1,5 @@
-##Bam.iobio
+## Bam.iobio
+[bam.iobio](https://www.nature.com/articles/nmeth.3174) was developed by the Marth lab, is free for academic use, and distributed under the MIT license. For further information, or commercial usage, please contact iobioproject@gmail.com.
 
 # Starting App
 
