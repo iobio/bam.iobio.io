@@ -105,6 +105,7 @@
 <script>
 
 import { createHoster } from 'fibridge-host';
+import { createHoster as createHosterNew, genRandomKey } from 'patchbay-browser-responder';
 
 export default {
   name: 'file-select-button-bar',
@@ -164,31 +165,51 @@ export default {
         return;
       }
 
-      const proxyAddress = 'lf-proxy.iobio.io';
-      const port = 443;
-      const secure = true;
+      const proxyAddress = 'https://pbtest.apitman.com';
 
-      const protocol = secure ? 'https:' : 'http:';
-
-      // TODO: shouldn't this be going out of scope and eventually garbage
-      // collected, which could lead to race conditions?
-      createHoster({ proxyAddress, port, secure }).then((hoster) => {
-
-        const bamPath = '/' + bamFile.name;
-        hoster.hostFile({ path: bamPath, file: bamFile });
-        const baiPath = '/' + baiFile.name;
-        hoster.hostFile({ path: baiPath, file: baiFile });
-
-        const portStr = hoster.getPortStr();
-        const baseUrl = `${protocol}//${proxyAddress}${portStr}`;
-        this.selectedBamURL = `${baseUrl}${hoster.getHostedPath(bamPath)}`;
-        this.selectedBaiURL = `${baseUrl}${hoster.getHostedPath(baiPath)}`;
-
-        this.$emit('files-selected', {
-          bamUrl: this.selectedBamURL,
-          baiUrl: this.selectedBaiURL
-        });
+      const randChan = genRandomKey(8);
+      const hoster = createHosterNew('https://pbtest.apitman.com', randChan, {
+        numWorkers: 2,
       });
+
+      const bamPath = '/' + bamFile.name;
+      hoster.hostFile(bamFile, bamPath);
+      const baiPath = '/' + baiFile.name;
+      hoster.hostFile(baiFile, baiPath);
+
+      this.selectedBamURL = `${proxyAddress}/${randChan}${bamPath}`;
+      this.selectedBaiURL = `${proxyAddress}/${randChan}${baiPath}`;
+
+      this.$emit('files-selected', {
+        bamUrl: this.selectedBamURL,
+        baiUrl: this.selectedBaiURL
+      });
+
+      //const proxyAddress = 'lf-proxy.iobio.io';
+      //const port = 443;
+      //const secure = true;
+      //const protocol = secure ? 'https:' : 'http:';
+
+
+      //// TODO: shouldn't this be going out of scope and eventually garbage
+      //// collected, which could lead to race conditions?
+      //createHoster({ proxyAddress, port, secure }).then((hoster) => {
+
+      //  const bamPath = '/' + bamFile.name;
+      //  hoster.hostFile({ path: bamPath, file: bamFile });
+      //  const baiPath = '/' + baiFile.name;
+      //  hoster.hostFile({ path: baiPath, file: baiFile });
+
+      //  const portStr = hoster.getPortStr();
+      //  const baseUrl = `${protocol}//${proxyAddress}${portStr}`;
+      //  this.selectedBamURL = `${baseUrl}${hoster.getHostedPath(bamPath)}`;
+      //  this.selectedBaiURL = `${baseUrl}${hoster.getHostedPath(baiPath)}`;
+
+      //  this.$emit('files-selected', {
+      //    bamUrl: this.selectedBamURL,
+      //    baiUrl: this.selectedBaiURL
+      //  });
+      //});
     }
   }
 }
