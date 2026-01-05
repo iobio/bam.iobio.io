@@ -5,7 +5,7 @@
 
 # Starting App
 
-Using node version 8.5.x
+Using node version 24.x
 
 ```
 npm install
@@ -18,4 +18,3 @@ npm run serve
 ```
 
 Now open [http://localhost:4027](http://localhost:4027).
-

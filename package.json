@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "scripts": {
     "serve": "DEBUG=http nodemon --inspect=127.0.0.1:3001  --ignore client/ www.js",
-    "build": "webpack --mode production",
-    "build-docker": "BUILD_ENV_LOCAL_BACKEND=true webpack --mode production",
-    "watch": "webpack --mode development --watch",
-    "test": "mocha-webpack --webpack-config webpack.test.config.js --require client/spec/spec_helper.js \"client/spec/**/*_spec.js\""
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode production",
+    "build-docker": "NODE_OPTIONS=--openssl-legacy-provider BUILD_ENV_LOCAL_BACKEND=true webpack --mode production",
+    "watch": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode development --watch",
+    "test": "NODE_OPTIONS=--openssl-legacy-provider mocha-webpack --webpack-config webpack.test.config.js --require client/spec/spec_helper.js \"client/spec/**/*_spec.js\""
+  },
+  "engines": {
+    "node": "24.x"
   },
   "dependencies": {
     "bootstrap": "^3.4.1",
@@ -43,10 +46,10 @@
     "jsdom-global": "^3.0.2",
     "mocha": "^3.4.2",
     "mocha-webpack": "^0.7.0",
-    "node-sass": "^4.11.0",
+    "sass": "^1.77.4",
     "nodemon": "^1.18.10",
     "raw-loader": "^0.5.1",
-    "sass-loader": "^6.0.7",
+    "sass-loader": "^10.5.2",
     "sinon": "^2.3.5",
     "sinon-chai": "^2.11.0",
     "style-loader": "^0.18.2",
