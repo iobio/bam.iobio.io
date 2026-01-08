@@ -259,7 +259,7 @@
   <div class="$style.bootstrap-css">
     <div class="file-name" >
       <span v-show="selectedBamURL!=undefined"
-        v-html="pathToFilename">
+        v-text="pathToFilename">
       </span>
     </div>
 
