@@ -104,7 +104,7 @@
 
 <script>
 
-import { createHoster } from 'fibridge-host';
+import * as waygate from 'waygate-js';
 
 export default {
   name: 'file-select-button-bar',
@@ -164,31 +164,30 @@ export default {
         return;
       }
 
-      const proxyAddress = 'lf-proxy.iobio.io';
-      const port = 443;
-      const secure = true;
+      (async () => {
 
-      const protocol = secure ? 'https:' : 'http:';
+        waygate.setServerUri('https://waygate.iobio.io');
 
-      // TODO: shouldn't this be going out of scope and eventually garbage
-      // collected, which could lead to race conditions?
-      createHoster({ proxyAddress, port, secure }).then((hoster) => {
+        const listener = await waygate.listen({
+          tunnelType: 'websocket',
+        });
 
-        const bamPath = '/' + bamFile.name;
-        hoster.hostFile({ path: bamPath, file: bamFile });
-        const baiPath = '/' + baiFile.name;
-        hoster.hostFile({ path: baiPath, file: baiFile });
+        const tunnelDomain = listener.getDomain();
 
-        const portStr = hoster.getPortStr();
-        const baseUrl = `${protocol}//${proxyAddress}${portStr}`;
-        this.selectedBamURL = `${baseUrl}${hoster.getHostedPath(bamPath)}`;
-        this.selectedBaiURL = `${baseUrl}${hoster.getHostedPath(baiPath)}`;
+        const dirTree = waygate.openDirectory();
+        dirTree.addFiles([ bamFile, baiFile ]);
+
+        waygate.serve(listener, waygate.directoryTreeHandler(dirTree));
+
+        this.selectedBamURL = `https://${tunnelDomain}/${bamFile.name}`;
+        this.selectedBaiURL = `https://${tunnelDomain}/${baiFile.name}`;
 
         this.$emit('files-selected', {
           bamUrl: this.selectedBamURL,
           baiUrl: this.selectedBaiURL
         });
-      });
+
+      })();
     }
   }
 }
