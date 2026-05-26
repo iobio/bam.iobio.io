@@ -113,7 +113,9 @@ export default {
       selectedBamURL: '',
       selectedBaiURL: '',
       showUrl: false,
-      demoFileURL: 'https://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam',
+      // old demo file
+      //demoFileURL: 'https://s3.amazonaws.com/iobio/NA12878/NA12878.autsome.bam',
+      demoFileURL: 'https://files.iobio.io/HG002/HG002.GRCh38.60x.1.bam',
     }
   },
   methods: {
