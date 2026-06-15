@@ -61,7 +61,7 @@
   <div >
     <body>
       <header>
-        <a class='home-page-link' href="https://bam.iobio.io">bam.iobio</a>
+        <router-link class='home-page-link' :to="{ name: 'home' }">bam.iobio</router-link>
         <div @click='helpClicked' class='help'>
           Get Help
         </div>
@@ -81,7 +81,7 @@ export default {
   },
   methods: {
     helpClicked: function() {
-      this.$router.push('help');
+      this.$router.push({ name: 'help' }).catch(() => {});
     },
   }
 }

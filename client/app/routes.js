@@ -16,6 +16,7 @@ import License from './components/pages/License.vue'
 
 import VTooltip from 'v-tooltip'
 import               '../assets/css/v-tooltip.css'
+import { loadAppConfig } from '../js/appConfig'
 Vue.use(VTooltip)
 
 Vue.use(VueRouter);
@@ -43,19 +44,34 @@ const routes = [
   }
 ]
 
-const router = new VueRouter({
-  mode: 'history',
-  routes: routes
-})
+loadAppConfig()
+.then(appConfig => {
+  appConfig.bam.path = appConfig.bam.path.replace(/\/?$/, '/');
 
-// Google analytics
-Vue.use(VueAnalytics, {
-  id: 'UA-47481907-2',
-  router
-})
+  const router = new VueRouter({
+    mode: 'history',
+    base: appConfig.bam.path,
+    routes: routes
+  })
 
-new Vue({
-  el: '#app',
-  render: h => h(App),
-  router
+  Vue.prototype.$appConfig = appConfig;
+
+  // Google analytics
+  Vue.use(VueAnalytics, {
+    id: 'UA-47481907-2',
+    router
+  })
+
+  new Vue({
+    el: '#app',
+    render: h => h(App),
+    router
+  })
 })
+.catch(error => {
+  console.error(error);
+  const appEl = document.getElementById('app');
+  if (appEl) {
+    appEl.innerHTML = '<div style="margin: 40px; font-family: sans-serif; color: #900;">Unable to load bam.iobio configuration.</div>';
+  }
+});

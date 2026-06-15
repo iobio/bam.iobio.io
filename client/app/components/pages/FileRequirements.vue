@@ -42,7 +42,7 @@
 
     <body>
 
-    <header><a href="http://bam.iobio.io">bam<span style="color:rgb(200,200,200)">.iobio.io</span><span color>&nbsp;</span></a></header>
+    <header><router-link :to="{ name: 'home' }">bam<span style="color:rgb(200,200,200)">.iobio.io</span><span color>&nbsp;</span></router-link></header>
 
     <h1>The indexed BAM</h1>
 
@@ -58,7 +58,7 @@
     <pre style="border: none;background: none">
 	$ /path/to/bamtools index -in mybam.bam
     </pre>
-    This commands will create a new file, the index file (.bam.bai).  Now you are ready to run <a href="../../../../index.html">bam.iobio</a>, selecting this file and your bam file when prompted.
+    This commands will create a new file, the index file (.bam.bai).  Now you are ready to run <router-link :to="{ name: 'home' }">bam.iobio</router-link>, selecting this file and your bam file when prompted.
     <p></p>
 
     </body>

@@ -88,8 +88,11 @@
 </style>
 
 <template>
+  <div v-if='initError' style="margin: 80px auto; max-width: 800px; color: #900; font-size: 18px; text-align: center;">
+    {{initError}}
+  </div>
   <bam-view
-    v-if='bamUrl && backendUrl'
+    v-else-if='bamUrl && backendUrl'
     :selectedBamURL='bamUrl'
     :selectedBaiURL='baiUrl'
     :region='region'
@@ -113,8 +116,8 @@
         <div id="info">
           <ul>
             <li><a href="http://www.nature.com/nmeth/journal/v11/n12/full/nmeth.3174.html">Publication</a></li>
-            <li><router-link :to="{name: 'file-requirements'}"><a >File Requirements</a> </router-link></li>
-            <li><router-link :to="{name: 'license'}"><a>License</a></router-link></li>
+            <li><router-link :to="{name: 'file-requirements'}">File Requirements</router-link></li>
+            <li><router-link :to="{name: 'license'}">License</router-link></li>
             <li><a :href="require('../../../images/browserCompatability.png')">Compatible Browsers</a></li>
           </ul>
         </div>
@@ -154,7 +157,8 @@
         regionUrlParam: '',
         launchedFromClin: null,
         clinIobioUrls: ["http://localhost:4030", "http://clin.iobio.io"],
-        clinIobioUrl: null
+        clinIobioUrl: null,
+        initError: ''
       }
     },
 
@@ -203,6 +207,10 @@
           name: 'home',
           query,
         }).catch(() => {});
+      })
+      .catch(error => {
+        console.error(error);
+        this.initError = error.message || 'Unable to initialize bam.iobio';
       });
 
 

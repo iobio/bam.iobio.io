@@ -1,4 +1,4 @@
-import { LaunchConfigManager } from 'iobio-launch';
+import { loadAppConfig } from './appConfig';
 
 
 export function createIntegration(query) {
@@ -13,32 +13,74 @@ export function createIntegration(query) {
 
 class Integration {
   constructor(query) {
-    this.query = query;
+    this.query = query || {};
+  }
 
-    let configOpts = {};
+  initConfig() {
+    return loadAppConfig()
+    .then(appConfig => {
+      this.appConfig = appConfig;
+      return this.loadLaunchParams();
+    })
+    .then(launchParams => {
+      // URL params have precedence over params loaded from ?config=...
+      this.params = Object.assign({}, launchParams, this.query);
+      this.backendUrl = this.getBackendUrl();
+    });
+  }
 
-    if (BUILD_ENV_LOCAL_BACKEND) {
-      this.backend = window.location.origin + '/gru';
-      configOpts = {
-        configLocation: '/config/config.json',
-      }
+  loadLaunchParams() {
+    if (!this.query.config) {
+      return Promise.resolve({});
     }
 
-    this.configMan = new LaunchConfigManager(configOpts);
+    return fetch(this.query.config).then(response => response.json());
+  }
+
+  getBackendUrl() {
+    const map = this.appConfig.backend_map || {};
+
+    if (this.params.source) {
+      const source = new URL(decodeURIComponent(this.params.source)).origin;
+      let allowedBackend = map[source];
+
+      // Allow source entries to point to a named backend entry, e.g.
+      // "https://mosaic...": "mosaic".
+      allowedBackend = map[allowedBackend] || allowedBackend;
+
+      if (!allowedBackend) {
+        throw new Error('Source is not allowed by backend_map: ' + source);
+      }
+
+      if (this.params.backend && this.params.backend !== allowedBackend) {
+        throw new Error('Backend is not allowed for source ' + source + ': ' + this.params.backend);
+      }
+
+      return this.params.backend || allowedBackend;
+    }
+
+    const configuredBackend = getServiceUrl(this.appConfig, 'backend');
+
+    if (this.params.backend) {
+      if (this.params.backend === configuredBackend || this.params.backend === map.default) {
+        return this.params.backend;
+      }
+      throw new Error('Backend is not allowed: ' + this.params.backend);
+    }
+
+    return configuredBackend || map.default;
   }
 }
 
 class StandardIntegration extends Integration {
   init() {
-    return this.configMan.getConfig().then(launchConfig => {
-      this.config = launchConfig;
-    });
+    return this.initConfig();
   }
 
   buildParams() {
     return Object.assign({
-      backendUrl: this.backend ? this.backend : this.config.backendUrl,
-    }, this.config.params);
+      backendUrl: this.backendUrl,
+    }, this.params);
   }
 
   buildQuery() {
@@ -49,13 +91,10 @@ class StandardIntegration extends Integration {
 class MosaicIntegration extends Integration {
 
   init() {
-    return this.configMan.getConfig().then(launchConfig => {
-
-      this.config = launchConfig;
-
+    return this.initConfig().then(() => {
       return new Promise((resolve, reject) => {
 
-        const projectId = this.config.params.project_id;
+        const projectId = this.params.project_id;
 
         if (projectId) {
           this.getMosaicIobioUrls((alignmentURL, alignmentIndexURL) => {
@@ -72,31 +111,32 @@ class MosaicIntegration extends Integration {
     return {
       bam: this.alignmentURL,
       bai: this.alignmentIndexURL,
-      backendUrl: this.config.backendUrl,
-      region: this.config.params.region,
+      backendUrl: this.backendUrl,
+      region: this.params.region,
     };
   }
 
   buildQuery() {
     return {
-      source: this.config.params.source, 
-      sample_id: this.config.params.sample_id,
-      project_id: this.config.params.project_id,
-      sampling: this.config.params.sampling,
-      region: this.config.params.region,
-      backend: this.config.params.backend,
-      experiment_id: this.config.params.experiment_id,
+      source: this.params.source,
+      sample_id: this.params.sample_id,
+      project_id: this.params.project_id,
+      sampling: this.params.sampling,
+      region: this.params.region,
+      backend: this.params.backend,
+      experiment_id: this.params.experiment_id,
     };
   }
 
   getMosaicIobioUrls(callback) {
-    let api = decodeURIComponent(this.config.params.source) + "/api/v1";
+    let source = decodeURIComponent(this.params.source);
+    let api = source + "/api/v1";
 
-    let project_id = this.config.params.project_id;
-    let access_token = this.config.params.access_token;
-    let sample_id = this.config.params.sample_id;
-    let token_type = this.config.params.token_type;
-    let experiment_id = this.config.params.experiment_id;
+    let project_id = this.params.project_id;
+    let access_token = this.params.access_token;
+    let sample_id = this.params.sample_id;
+    let token_type = this.params.token_type;
+    let experiment_id = this.params.experiment_id;
 
     if (access_token !== undefined) {
       localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
@@ -158,5 +198,22 @@ class MosaicIntegration extends Integration {
         }
       });
     }
+
+    function buildOauthLink() {
+      const link = new URL('/oauth/authorize', source);
+      link.searchParams.set('redirect_uri', window.location.href);
+      return link.toString();
+    }
   }
+}
+
+function getServiceUrl(config, name) {
+  const service = config[name] || {};
+  const origin = service.origin || config.origin || window.location.origin;
+
+  if (!service.path) {
+    return '';
+  }
+
+  return (origin + service.path).replace(/\/+$/, '');
 }
