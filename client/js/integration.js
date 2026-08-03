@@ -211,9 +211,9 @@ function getServiceUrl(config, name) {
   const service = config[name] || {};
   const origin = service.origin || config.origin || window.location.origin;
 
-  if (!service.path) {
+  if (!service.path_prefix) {
     return '';
   }
 
-  return (origin + service.path).replace(/\/+$/, '');
+  return (origin + service.path_prefix).replace(/\/+$/, '');
 }

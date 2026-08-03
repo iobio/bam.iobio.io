@@ -46,11 +46,11 @@ const routes = [
 
 loadAppConfig()
 .then(appConfig => {
-  appConfig.bam.path = appConfig.bam.path.replace(/\/?$/, '/');
+  appConfig.bam.path_prefix = appConfig.bam.path_prefix.replace(/\/?$/, '/');
 
   const router = new VueRouter({
     mode: 'history',
-    base: appConfig.bam.path,
+    base: appConfig.bam.path_prefix,
     routes: routes
   })
 

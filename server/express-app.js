@@ -12,7 +12,7 @@ try {
 }
 catch (e) {}
 
-var appPath = config.bam && config.bam.path || '/';
+var appPath = config.bam && config.bam.path_prefix || '/';
 var mountPath = appPath === '/' ? '/' : appPath.replace(/\/+$/, '');
 
 if (mountPath === '/') {

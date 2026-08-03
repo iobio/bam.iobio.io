@@ -21,13 +21,13 @@ Now open [http://localhost:4027](http://localhost:4027).
 
 # Runtime config and path hosting
 
-The app loads `./config.json` at runtime. The checked-in `client/config.json` is the local/dev default; replace it for a deployment to change paths/origins without rebuilding. For example, to serve bam at `/bam/` and GRU at `/gru` on the same origin:
+The app loads `./config.json` at runtime. The hosting server supplies this file to change paths and origins without rebuilding. For example, to serve bam at `/bam/` and GRU at `/gru` on the same origin:
 
 ```json
 {
   "origin": "https://apps.iobio.io",
-  "bam": { "path": "/bam/" },
-  "backend": { "path": "/gru" }
+  "bam": { "path_prefix": "/bam/" },
+  "backend": { "path_prefix": "/gru" }
 }
 ```
 
