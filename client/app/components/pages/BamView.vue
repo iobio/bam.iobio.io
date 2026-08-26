@@ -936,11 +936,13 @@
       },
 
       addH37BedFile: function() {
-        this.addDefaultBedFile('/data/20130108.exome.targets.bed');
+        const base = this.$appConfig.bam.path_prefix.replace(/\/?$/, '/');
+        this.addDefaultBedFile(base + 'data/20130108.exome.targets.bed');
       },
 
       addH38BedFile: function() {
-        this.addDefaultBedFile('/data/20130108.exome.targets.grch38.bed');
+        const base = this.$appConfig.bam.path_prefix.replace(/\/?$/, '/');
+        this.addDefaultBedFile(base + 'data/20130108.exome.targets.grch38.bed');
       },
 
       addDefaultBedFile: function (bedPath) {

@@ -18,3 +18,17 @@ npm run serve
 ```
 
 Now open [http://localhost:4027](http://localhost:4027).
+
+# Runtime config and path hosting
+
+The app loads `./config.json` at runtime. The hosting server supplies this file to change paths and origins without rebuilding. For example, to serve bam at `/bam/` and GRU at `/gru` on the same origin:
+
+```json
+{
+  "origin": "https://apps.iobio.io",
+  "bam": { "path_prefix": "/bam/" },
+  "backend": { "path_prefix": "/gru" }
+}
+```
+
+When serving from a subpath, configure the static server to serve `index.html` for app routes under that subpath, and prefer canonical URLs with a trailing app slash (for example `/bam/`, `/bam/help`).
